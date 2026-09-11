@@ -1,3 +1,12 @@
+import { Metadata } from "next";
+import { SwatchRequestTrigger } from "@/components/SwatchRequestModal";
+
+export const metadata: Metadata = {
+  title: "Noble Hardwoods & Botanical Provenance | KILN STUDIO Bengaluru",
+  description:
+    "Explore our single-origin hardwoods: Karnataka Hunsur Teak, Deccan Rosewood, and Assam Teak. Vacuum kiln-dried for South Indian ambient humidity.",
+};
+
 export default function WoodTypesPage() {
   return (
     <div className="w-full">
@@ -119,13 +128,13 @@ export default function WoodTypesPage() {
 </div>
 {/*  Order Swatch Action  */}
 <div className="pt-space-xs flex flex-col sm:flex-row gap-space-sm items-stretch">
-<button className="flex-1 bg-primary text-surface hover:bg-primary-container px-6 py-3.5 rounded font-title-md text-title-md transition-colors duration-150 flex items-center justify-center gap-2">
-<span className="material-symbols-outlined text-lg" data-icon="layers">layers</span>
-<span className="">Request Hunsur Teak Swatch</span>
-</button>
+<SwatchRequestTrigger
+  woodType="Hunsur Teak"
+  label="Request Hunsur Teak Swatch"
+/>
 <button className="px-4 py-3.5 border border-primary text-primary hover:bg-primary hover:text-surface rounded font-label-caps text-label-caps transition-colors duration-150 text-center">
-              SPEC SHEET (PDF)
-            </button>
+  SPEC SHEET (PDF)
+</button>
 </div>
 </div>
 </div>
@@ -177,13 +186,13 @@ export default function WoodTypesPage() {
 </div>
 {/*  Swatch Action  */}
 <div className="pt-space-xs flex flex-col sm:flex-row gap-space-sm items-stretch">
-<button className="flex-1 bg-primary text-surface hover:bg-primary-container px-6 py-3.5 rounded font-title-md text-title-md transition-colors duration-150 flex items-center justify-center gap-2">
-<span className="material-symbols-outlined text-lg" data-icon="layers">layers</span>
-<span className="">Request Rosewood Material Sample</span>
-</button>
+<SwatchRequestTrigger
+  woodType="Indian Rosewood"
+  label="Request Rosewood Material Sample"
+/>
 <button className="px-4 py-3.5 border border-primary text-primary hover:bg-primary hover:text-surface rounded font-label-caps text-label-caps transition-colors duration-150 text-center">
-              SPEC SHEET (PDF)
-            </button>
+  SPEC SHEET (PDF)
+</button>
 </div>
 </div>
 {/*  Right: Imagery & Companion Pieces (7 cols)  */}
@@ -301,13 +310,13 @@ export default function WoodTypesPage() {
 </div>
 {/*  Swatch Action  */}
 <div className="pt-space-xs flex flex-col sm:flex-row gap-space-sm items-stretch">
-<button className="flex-1 bg-primary text-surface hover:bg-primary-container px-6 py-3.5 rounded font-title-md text-title-md transition-colors duration-150 flex items-center justify-center gap-2">
-<span className="material-symbols-outlined text-lg" data-icon="layers">layers</span>
-<span className="">Request Assam Teak Material Sample</span>
-</button>
+<SwatchRequestTrigger
+  woodType="Assam Teak"
+  label="Request Assam Teak Material Sample"
+/>
 <button className="px-4 py-3.5 border border-primary text-primary hover:bg-primary hover:text-surface rounded font-label-caps text-label-caps transition-colors duration-150 text-center">
-              SPEC SHEET (PDF)
-            </button>
+  SPEC SHEET (PDF)
+</button>
 </div>
 </div>
 </div>
@@ -389,10 +398,11 @@ export default function WoodTypesPage() {
             Wood lives in the specific orientation, sunlight, and humidity of your room. Request our Material Provenance Box containing hand-planed 120mm solid specimens of Hunsur Teak, Indian Rosewood, and Assam Teak—accompanied by sample tins of Nilgiri beeswax and cold-pressed linseed oil.
           </p>
 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
-<button className="bg-surface text-primary hover:bg-surface-container-high px-8 py-4 rounded font-title-md text-title-md transition-colors duration-150 flex items-center justify-center gap-2">
-<span className="material-symbols-outlined text-lg" data-icon="inventory_2">inventory_2</span>
-<span className="">Order Atelier Swatch Box — ₹1,800</span>
-</button>
+<SwatchRequestTrigger
+  woodType="Complete Atelier Provenance Box (3 Timbers + Waxes)"
+  label="Order Atelier Swatch Box — ₹1,800"
+  variant="cta"
+/>
 <p className="font-body-sm text-body-sm text-outline-variant flex items-center gap-1.5">
 <span className="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
               Fully credited toward your future commission

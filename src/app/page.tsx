@@ -288,95 +288,77 @@ export default function HomePage() {
 {/*  6 Product Grid  */}
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-xl">
 {/*  Product 1: Fluted Credenza  */}
-<div className="group flex flex-col">
+<Link href="/products/p-1" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="A front view of a long horizontal credenza crafted from warm golden solid teak with fluted vertical tambour sliding doors and circular brass hardware, set on a textured ivory carpet against a neutral minimalist wall." src="/images/img_029_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">HERITAGE SPEC</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Hunsur Fluted Teak Credenza</h3>
-<span className="font-title-md text-title-md text-primary">₹1,18,000</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹1,18,000</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">Solid Hunsur Teak • 180cm • Fluted Tambour</p>
-</div>
+</Link>
 {/*  Product 2: Cane Chair  */}
-<div className="group flex flex-col">
+<Link href="/products/p-2" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="A studio portrait of a handcrafted dining chair made from solid Indian rosewood with a delicate handwoven wicker cane backrest, soft studio lighting highlighting the rich wood grain and refined joinery." src="/images/img_030_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">HAND-WOVEN CANE</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Malabar Rattan Dining Chair</h3>
-<span className="font-title-md text-title-md text-primary">₹28,500</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹28,500</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">Hand-woven Cane &amp; Rosewood • Ergonomic Arch</p>
-</div>
+</Link>
 {/*  Product 3: Coffee Table  */}
-<div className="group flex flex-col">
+<Link href="/products/p-3" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Solid low teak coffee table with visible mortise and tenon exposed joinery accents and a recessed open book shelf underneath, sitting comfortably in an airy living space with light terrazzo stone floors." src="/images/img_031_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">BESTSELLER</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Indiranagar Teak Coffee Table</h3>
-<span className="font-title-md text-title-md text-primary">₹54,000</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹54,000</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">Solid Teak Planks • Low-Profile Mortise Joinery</p>
-</div>
+</Link>
 {/*  Product 4: Platform Bed  */}
-<div className="group flex flex-col">
+<Link href="/products/p-4" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Low profile king size bed platform in solid natural oiled Assam teak with integrated cantilevered floating nightstands, styled with neutral linen duvet and textured cushions in a calm bedroom setting." src="/images/img_032_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">HEIRLOOM FRAME</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Cubbon Platform Bed</h3>
-<span className="font-title-md text-title-md text-primary">₹1,42,000</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹1,42,000</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">King Floating Base • Assam Teak • Slat Support</p>
-</div>
+</Link>
 {/*  Product 5: Bookshelf  */}
-<div className="group flex flex-col">
+<Link href="/products/p-5" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Tall open architecture 5-tier bookshelf constructed from dark chocolate Indian sheesham rosewood timber, styled with ceramic vases, art books, and small green potted plants in an architect's study." src="/images/img_033_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">DECCAN SHEESHAM</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Deccan Sheesham Bookshelf</h3>
-<span className="font-title-md text-title-md text-primary">₹72,000</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹72,000</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">5 Tiers • Mortise &amp; Tenon • Natural Beeswax</p>
-</div>
+</Link>
 {/*  Product 6: Console  */}
-<div className="group flex flex-col">
+<Link href="/products/p-6" className="group flex flex-col cursor-pointer">
 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low mb-space-sm relative border border-outline-variant/30">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Slender entryway console table with elegantly tapered legs and a smooth beveled edge tabletop crafted from golden solid Hunsur teak, decorated with a brass bowl and dried botanical stems against a stone wall." src="/images/img_034_stitch.png" />
 <span className="absolute top-3 left-3 bg-surface-container-low/95 text-on-primary-fixed-variant px-2.5 py-0.5 rounded font-label-caps text-[10px]">ENTRYWAY PIECE</span>
-<button className="absolute bottom-3 right-3 bg-surface text-primary p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-surface">
-<span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-</button>
 </div>
 <div className="flex items-start justify-between">
 <h3 className="font-display text-title-lg text-primary group-hover:text-secondary transition-colors">Ulsoor Tapered Console</h3>
-<span className="font-title-md text-title-md text-primary">₹46,000</span>
+<span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹46,000</span>
 </div>
 <p className="font-label-sm text-label-sm text-outline mt-0.5">120cm Width • Tapered Leg Profile • Matte Oil</p>
-</div>
+</Link>
 </div>
 {/*  Bespoke Banner Callout  */}
 <div className="mt-space-3xl p-space-xl bg-surface-container-low rounded-xl border border-outline-variant/40 flex flex-col md:flex-row items-center justify-between gap-space-lg">

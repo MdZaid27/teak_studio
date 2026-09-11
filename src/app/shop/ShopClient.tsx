@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useCart } from "@/context/CartContext";
+import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/types/database";
 
 const categories = ["All Pieces", "Dining", "Living", "Storage", "Bedroom"];
@@ -14,11 +13,9 @@ interface ShopClientProps {
 }
 
 export default function ShopClient({ initialProducts }: ShopClientProps) {
-  const { addItem, setIsCartOpen } = useCart();
   const [selectedCategory, setSelectedCategory] = useState("All Pieces");
   const [selectedTimber, setSelectedTimber] = useState("All Timbers");
   const [sortBy, setSortBy] = useState("curated");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Filter and sort products in-memory from server-provided initialProducts
   const filteredProducts = initialProducts
@@ -38,22 +35,6 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
       if (sortBy === "price-high") return b.price - a.price;
       return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
     });
-
-  const handleQuickAdd = (product: Product) => {
-    addItem({
-      id: product.id,
-      productId: product.id,
-      timberOption: product.timber,
-      name: product.name,
-      timber: product.timber,
-      finish: "Natural Hand-Rubbed Beeswax",
-      price: product.price,
-      image: product.image,
-      dimensions: product.dimensions,
-    });
-    setToastMessage(`Added ${product.name} to your bag`);
-    setTimeout(() => setToastMessage(null), 2500);
-  };
 
   return (
     <div className="w-full bg-[#fcf9f4] pb-24">
@@ -129,94 +110,11 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
 
         </div>
 
-        {/* Toast Feedback */}
-        {toastMessage && (
-          <div className="my-4 p-3 bg-[#feb383]/20 border border-[#895029]/30 rounded-lg flex items-center justify-between text-xs text-[#0e0300] animate-in fade-in">
-            <span className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#895029] text-[18px]">check_circle</span>
-              {toastMessage}
-            </span>
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="font-bold underline text-[#895029] uppercase tracking-wider text-[11px]"
-            >
-              Open Bag
-            </button>
-          </div>
-        )}
-
         {/* Product Grid */}
+        {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pt-8">
           {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="relative group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#e5e2dd] hover:border-[#895029] hover:shadow-xl transition-all duration-300 cursor-pointer"
-            >
-              {/* Entire Card Clickable Link to Product Detail Page */}
-              <Link
-                href={product.link}
-                className="absolute inset-0 z-0"
-                aria-label={`View details for ${product.name}`}
-              />
-
-              {/* Product Image */}
-              <div className="relative aspect-[4/3] bg-[#f6f3ee] overflow-hidden pointer-events-none">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                {product.isPopular && (
-                  <span className="absolute top-3 left-3 bg-[#0e0300]/80 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full pointer-events-auto">
-                    Atelier Highlight
-                  </span>
-                )}
-                <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#895029] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-[#d3c3bd]/30 pointer-events-auto">
-                  {product.timber}
-                </span>
-              </div>
-
-              {/* Product Info */}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-4 pointer-events-none">
-                <div className="space-y-1.5">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-[#81746f]">
-                    {product.category} Collection
-                  </div>
-                  <h3 className="font-display text-lg text-[#0e0300] font-normal leading-snug group-hover:text-[#895029] transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-[#81746f] line-clamp-2 leading-relaxed">
-                    {product.description}
-                  </p>
-                  <p className="text-[11px] text-[#4f4540] font-medium pt-1">
-                    Dimensions: {product.dimensions}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#f0ede9] flex items-center justify-between">
-                  <span className="font-display text-lg font-semibold text-[#0e0300]">
-                    ₹{product.price.toLocaleString("en-IN")}
-                  </span>
-                  
-                  {/* Quick Add To Bag Button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleQuickAdd(product);
-                    }}
-                    className="relative z-10 pointer-events-auto p-2.5 bg-[#0e0300] hover:bg-[#895029] text-white rounded-lg transition-all flex items-center justify-center shadow-xs active:scale-95"
-                    title="Add to Atelier Bag"
-                    aria-label={`Add ${product.name} to bag`}
-                  >
-                    <span className="material-symbols-outlined text-[19px]">add_shopping_cart</span>
-                  </button>
-                </div>
-
-              </div>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 

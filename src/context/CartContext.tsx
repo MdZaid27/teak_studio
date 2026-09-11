@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface CartItem {
   id: string;
@@ -29,23 +29,39 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([
-    {
-      id: "malabar-dining-chair-rosewood",
-      productId: "malabar-dining-chair",
-      timberOption: "Indian Rosewood (Sheesham)",
-      name: "Malabar Rattan Dining Chair",
-      timber: "Indian Rosewood (Sheesham)",
-      finish: "Hand-rubbed Beeswax & Natural Cane",
-      price: 28500,
-      quantity: 2,
-      image: "/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png",
-      dimensions: "54W × 56D × 82H cm",
-    },
-  ]);
+const CART_STORAGE_KEY = "kiln_cart";
 
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Hydrate cart from localStorage on mount (client-only)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("[KILN STUDIO] Error reading cart from localStorage:", err);
+    } finally {
+      setIsHydrated(true);
+    }
+  }, []);
+
+  // Sync to localStorage whenever items change, but strictly only after initial hydration
+  useEffect(() => {
+    if (!isHydrated) return;
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (err) {
+      console.error("[KILN STUDIO] Error saving cart to localStorage:", err);
+    }
+  }, [items, isHydrated]);
 
   const addItem = (item: Omit<CartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
@@ -61,12 +77,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => {
+      const next = prev.filter((i) => i.id !== id);
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const updateQuantity = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev
+    setItems((prev) => {
+      const next = prev
         .map((i) => {
           if (i.id === id) {
             const newQty = i.quantity + delta;
@@ -74,11 +96,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
           return i;
         })
-        .filter(Boolean) as CartItem[]
-    );
+        .filter(Boolean) as CartItem[];
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    setItems([]);
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]));
+    } catch {}
+  };
 
   const totalItems = items.reduce((acc, i) => acc + i.quantity, 0);
   const subtotal = items.reduce((acc, i) => acc + i.price * i.quantity, 0);

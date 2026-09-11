@@ -67,6 +67,10 @@ export interface ProductTimberVariation {
   swatch: string;
   price: number;
   desc: string;
+  origin?: string;
+  region?: string;
+  swatchImage?: string;
+  slug?: string;
 }
 
 export interface ProductGalleryItem {
@@ -87,10 +91,12 @@ export interface Product {
   description: string;
   isPopular?: boolean;
   link: string;
+  slug?: string;
   tagline?: string;
   leadTime?: string;
   gallery?: ProductGalleryItem[];
   timbers?: ProductTimberVariation[];
+  woodOptions?: ProductTimberVariation[];
   features?: string[];
   specs?: DbProductSpec[];
 }
@@ -169,4 +175,63 @@ export interface CreateOrderResponse {
   orderId?: string;
   error?: string;
 }
+
+// ==========================================================
+// Customer Interaction Types (Milestone 4)
+// ==========================================================
+export type BespokeInquiryStatus = "new" | "contacted" | "in_review" | "archived";
+
+export interface DbBespokeInquiry {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  pincode: string;
+  wood_preference?: string | null;
+  dimensions_notes: string;
+  status: BespokeInquiryStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateBespokeInquiryInput {
+  name: string;
+  phone: string;
+  email: string;
+  pincode: string;
+  wood_preference?: string;
+  dimensions_notes: string;
+}
+
+export type SwatchRequestStatus = "requested" | "dispatched" | "delivered";
+
+export interface DbSwatchRequest {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  pincode: string;
+  status: SwatchRequestStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateSwatchRequestInput {
+  name: string;
+  phone: string;
+  address: string;
+  pincode: string;
+}
+
+export interface DbNewsletterSubscriber {
+  id: string;
+  email: string;
+  is_active: boolean;
+  subscribed_at?: string;
+}
+
+export interface CreateNewsletterSubscriberInput {
+  email: string;
+}
+
 

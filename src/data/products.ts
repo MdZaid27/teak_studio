@@ -19,6 +19,22 @@ export interface Product {
     swatch: string;
     price: number;
     desc: string;
+    origin?: string;
+    region?: string;
+    swatchImage?: string;
+    slug?: string;
+  }[];
+  woodOptions?: {
+    id: string;
+    name: string;
+    provenance: string;
+    swatch: string;
+    price: number;
+    desc: string;
+    origin?: string;
+    region?: string;
+    swatchImage?: string;
+    slug?: string;
   }[];
   features?: string[];
   specs?: { label: string; value: string }[];
@@ -133,6 +149,14 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 98000,
+        desc: "Dramatic dark chocolate swirls with natural amber chatoyancy.",
+      },
+      {
         id: "teak",
         name: "Hunsur Teak",
         provenance: "Mysore / Karnataka",
@@ -141,12 +165,12 @@ export const allProducts: Product[] = [
         desc: "Rich honey gold with deep natural oils and high water resistance.",
       },
       {
-        id: "rosewood",
-        name: "Indian Rosewood",
-        provenance: "Malabar / Western Ghats",
-        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
-        price: 98000,
-        desc: "Dramatic dark chocolate swirls with natural amber chatoyancy.",
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 78000,
+        desc: "Muted olive-golden tones with tranquil linear grain, seasoned to perfection.",
       },
     ],
     features: [
@@ -196,6 +220,14 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 79000,
+        desc: "Dark ebony-violet grain contrasted against aged brushed brass.",
+      },
+      {
         id: "teak",
         name: "Hunsur Teak",
         provenance: "Mysore / Karnataka",
@@ -204,12 +236,12 @@ export const allProducts: Product[] = [
         desc: "Warm golden hue with satin natural sheen and turned solid brass pulls.",
       },
       {
-        id: "rosewood",
-        name: "Indian Rosewood",
-        provenance: "Malabar / Western Ghats",
-        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
-        price: 79000,
-        desc: "Dark ebony-violet grain contrasted against aged brushed brass.",
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 67000,
+        desc: "Subtle olive-gold heartwood grain paired with unlacquered brass hardware.",
       },
     ],
     features: [
@@ -273,6 +305,14 @@ export const allProducts: Product[] = [
         price: 43000,
         desc: "Calm golden hue with silky hand-rubbed wax finish.",
       },
+      {
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 39500,
+        desc: "Minimalist pale olive teak planks showing exposed joinery pins.",
+      },
     ],
     features: [
       "Exposed mortise and tenon through-joints pegged with contrasting timber",
@@ -320,12 +360,12 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
-        id: "assam",
-        name: "Assam Teak",
-        provenance: "North-East Foothills",
-        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
-        price: 96000,
-        desc: "Calm, blonde-olive teak timber with uniform tight grain structure.",
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 112000,
+        desc: "Noble dark rosewood frame providing regal contrast with rattan headboard.",
       },
       {
         id: "teak",
@@ -334,6 +374,14 @@ export const allProducts: Product[] = [
         swatch: "/images/stitch_screen_a0a5379e8eea47e393610be2c57ca04b.png",
         price: 104000,
         desc: "Rich honey amber with high natural protective resins.",
+      },
+      {
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 96000,
+        desc: "Calm, blonde-olive teak timber with uniform tight grain structure.",
       },
     ],
     features: [
@@ -382,6 +430,14 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 58000,
+        desc: "Deep chocolate heartwood with rich organic streaks.",
+      },
+      {
         id: "teak",
         name: "Hunsur Teak",
         provenance: "Mysore / Karnataka",
@@ -390,12 +446,12 @@ export const allProducts: Product[] = [
         desc: "Warm honey timber seasoned to perfection.",
       },
       {
-        id: "rosewood",
-        name: "Indian Rosewood",
-        provenance: "Malabar / Western Ghats",
-        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
-        price: 58000,
-        desc: "Deep chocolate heartwood with rich organic streaks.",
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 47500,
+        desc: "Silky olive teak slab with natural chatoyancy.",
       },
     ],
     features: [
@@ -442,6 +498,14 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 37000,
+        desc: "Rich dark tone with subtle amber undertones.",
+      },
+      {
         id: "teak",
         name: "Hunsur Teak",
         provenance: "Mysore / Karnataka",
@@ -450,12 +514,12 @@ export const allProducts: Product[] = [
         desc: "Resilient golden teak with natural organic oils.",
       },
       {
-        id: "rosewood",
-        name: "Indian Rosewood",
-        provenance: "Malabar / Western Ghats",
-        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
-        price: 37000,
-        desc: "Rich dark tone with subtle amber undertones.",
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 31500,
+        desc: "Tranquil pale olive frame matching light natural cotton upholstery.",
       },
     ],
     features: [
@@ -503,6 +567,14 @@ export const allProducts: Product[] = [
     ],
     timbers: [
       {
+        id: "rosewood",
+        name: "Indian Rosewood",
+        provenance: "Malabar / Western Ghats",
+        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
+        price: 74000,
+        desc: "Bold violet-chocolate heartwood grain.",
+      },
+      {
         id: "teak",
         name: "Hunsur Teak",
         provenance: "Mysore / Karnataka",
@@ -511,12 +583,12 @@ export const allProducts: Product[] = [
         desc: "Smooth hand-planed teak with silky beeswax protection.",
       },
       {
-        id: "rosewood",
-        name: "Indian Rosewood",
-        provenance: "Malabar / Western Ghats",
-        swatch: "/images/stitch_screen_c6908ee15beb41a1b62131d90c81d62f.png",
-        price: 74000,
-        desc: "Bold violet-chocolate heartwood grain.",
+        id: "assam",
+        name: "Assam Teak",
+        provenance: "North-East Foothills",
+        swatch: "/images/stitch_screen_7f0ae18667fc429fbc3c8441ebfd9093.png",
+        price: 63000,
+        desc: "Warm olive-toned timber featuring fine fluted tambour texture.",
       },
     ],
     features: [

@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { siteConfig } from "@/config/site";
+
+const initialFormData = {
+  customer_name: "",
+  customer_phone: "",
+  customer_email: "",
+  delivery_address: "",
+  pincode: "",
+};
 
 export default function CartDrawer() {
   const {
@@ -21,40 +28,52 @@ export default function CartDrawer() {
 
   const router = useRouter();
 
-  // Multi-step drawer state: 1 = Bag Review, 2 = Shipping & Placement
-  const [step, setStep] = useState<1 | 2>(1);
+  // Multi-step drawer state: 'cart' = Bag Review, 'shipping' = Shipping & Placement Form
+  const [step, setStep] = useState<"cart" | "shipping">("cart");
 
   // Form state
-  const [formData, setFormData] = useState({
-    customer_name: "",
-    customer_phone: "",
-    customer_email: "",
-    delivery_address: "",
-    pincode: "",
-  });
-
+  const [formData, setFormData] = useState(initialFormData);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Reset step & errors when drawer is opened or closed
+  // Dedicated helper to completely reset the drawer and checkout state
+  const resetDrawerState = useCallback(() => {
+    setStep("cart");
+    setFormData({ ...initialFormData });
+    setFormErrors({});
+    setSubmitError(null);
+    setIsSubmitting(false);
+  }, []);
+
+  // Whenever the drawer is opened or closed, strictly reset back to Step 1 ('cart') and clear form
   useEffect(() => {
-    if (!isCartOpen) {
-      setStep(1);
-      setSubmitError(null);
-      setFormErrors({});
+    resetDrawerState();
+  }, [isCartOpen, resetDrawerState]);
+
+  // If all items are removed from the bag, reset back to 'cart'
+  useEffect(() => {
+    if (items.length === 0) {
+      setStep("cart");
     }
-  }, [isCartOpen]);
+  }, [items.length]);
 
   if (!isCartOpen) return null;
+
+  const handleClose = () => {
+    if (isSubmitting) return;
+    resetDrawerState();
+    setIsCartOpen(false);
+  };
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
     if (!formData.customer_name.trim() || formData.customer_name.trim().length < 2) {
       errs.customer_name = "Full patron name is required";
     }
-    if (!formData.customer_phone.trim() || formData.customer_phone.trim().length < 10) {
-      errs.customer_phone = "Valid 10-digit contact number is required";
+    const cleanPhone = formData.customer_phone.replace(/\D/g, "");
+    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      errs.customer_phone = "Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.";
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.customer_email.trim() || !emailRegex.test(formData.customer_email.trim())) {
@@ -63,11 +82,24 @@ export default function CartDrawer() {
     if (!formData.delivery_address.trim() || formData.delivery_address.trim().length < 6) {
       errs.delivery_address = "Complete address with street/building is required";
     }
-    if (!formData.pincode.trim() || formData.pincode.trim().length < 4) {
-      errs.pincode = "Valid postal pincode is required";
+    const pincodeRegex = /^[1-9][0-9]{5}$/;
+    if (!formData.pincode.trim() || !pincodeRegex.test(formData.pincode.trim())) {
+      errs.pincode = "Enter a valid 6-digit postal PIN code (cannot start with 0)";
     }
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setFormData((prev) => ({ ...prev, customer_phone: sanitized }));
+    if (formErrors.customer_phone && sanitized.length === 10 && /^[6-9]\d{9}$/.test(sanitized)) {
+      setFormErrors((prev) => {
+        const updated = { ...prev };
+        delete updated.customer_phone;
+        return updated;
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -84,6 +116,11 @@ export default function CartDrawer() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Guard: Order can ONLY be submitted when explicitly in the shipping step and not currently submitting
+    if (step !== "shipping" || isSubmitting) return;
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -116,14 +153,18 @@ export default function CartDrawer() {
         throw new Error(data.error || "Failed to place atelier order. Please check details.");
       }
 
-      // Order created successfully: clear cart, close drawer, navigate to confirmation
+      // Successful order creation:
+      // 1. Reset all form inputs and step state to Step 1 ('cart')
+      resetDrawerState();
+      // 2. Clear cart
       clearCart();
+      // 3. Close the drawer
       setIsCartOpen(false);
+      // 4. Navigate to order confirmation
       router.push(`/orders/${data.orderNumber}`);
     } catch (err: any) {
       console.error("[KILN STUDIO] Order checkout error:", err);
       setSubmitError(err.message || "An unexpected error occurred. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -133,9 +174,7 @@ export default function CartDrawer() {
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-        onClick={() => {
-          if (!isSubmitting) setIsCartOpen(false);
-        }}
+        onClick={handleClose}
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
@@ -144,10 +183,14 @@ export default function CartDrawer() {
           {/* Header */}
           <div className="p-6 border-b border-[#e5e2dd] flex items-center justify-between bg-white shrink-0">
             <div className="flex items-center gap-3">
-              {step === 2 ? (
+              {step === "shipping" ? (
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setStep("cart");
+                  }}
                   disabled={isSubmitting}
                   className="p-1.5 -ml-1 text-[#81746f] hover:text-[#0e0300] hover:bg-[#f0ede9] rounded-full transition-colors"
                   title="Back to Bag Review"
@@ -159,19 +202,17 @@ export default function CartDrawer() {
               )}
               <div>
                 <h2 className="font-display text-lg text-[#0e0300] font-medium tracking-wide">
-                  {step === 1 ? "Your Atelier Bag" : "Placement & Shipping"}
+                  {step === "cart" ? "Your Atelier Bag" : "Placement & Shipping"}
                 </h2>
                 <p className="text-xs text-[#81746f]">
-                  {step === 1
+                  {step === "cart"
                     ? `${totalItems} ${totalItems === 1 ? "Heirloom Item" : "Heirloom Items"}`
                     : `Step 2 of 2 — Bengaluru White-Glove Dispatch`}
                 </p>
               </div>
             </div>
             <button
-              onClick={() => {
-                if (!isSubmitting) setIsCartOpen(false);
-              }}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="p-2 text-[#81746f] hover:text-[#0e0300] rounded-full hover:bg-[#f0ede9] transition-colors"
               aria-label="Close cart drawer"
@@ -188,23 +229,23 @@ export default function CartDrawer() {
             </span>
           </div>
 
-          {/* Drawer Body: Step 1 vs Step 2 */}
+          {/* Drawer Body: Step 1 ('cart') vs Step 2 ('shipping') */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-            {step === 1 ? (
+            {step === "cart" ? (
               // STEP 1: BAG REVIEW
               items.length === 0 ? (
                 <div className="text-center py-16">
                   <span className="material-symbols-outlined text-4xl text-[#d3c3bd] mb-3 block">chair</span>
-                  <p className="font-display text-lg text-[#0e0300] mb-2">Your Bag is Empty</p>
+                  <p className="font-display text-lg text-[#0e0300] mb-2">Your Atelier Bag is Empty</p>
                   <p className="text-xs text-[#81746f] max-w-xs mx-auto mb-6">
                     Explore our solid wood dining chairs, credenzas, and handcrafted tables.
                   </p>
                   <Link
                     href="/shop"
-                    onClick={() => setIsCartOpen(false)}
-                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#2c1a11] text-[#fcf9f4] text-xs uppercase tracking-widest rounded-lg font-semibold hover:bg-[#895029] transition-colors"
+                    onClick={handleClose}
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#2c1a11] text-[#fcf9f4] text-xs uppercase tracking-widest rounded-lg font-semibold hover:bg-[#895029] transition-colors cursor-pointer"
                   >
-                    Explore Collection
+                    Explore Collections
                   </Link>
                 </div>
               ) : (
@@ -322,14 +363,15 @@ export default function CartDrawer() {
                     </label>
                     <input
                       type="tel"
+                      maxLength={10}
                       name="customer_phone"
                       value={formData.customer_phone}
-                      onChange={handleInputChange}
-                      placeholder="+91 98450 XXXXX"
+                      onChange={handlePhoneChange}
+                      placeholder="9876543210"
                       disabled={isSubmitting}
                       className={`w-full bg-white border ${
                         formErrors.customer_phone ? "border-red-500" : "border-[#d3c3bd]"
-                      } rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
+                      } rounded-lg px-3 py-2 text-xs font-mono text-[#0e0300] focus:outline-none focus:border-[#895029]`}
                     />
                     {formErrors.customer_phone && (
                       <p className="text-[10px] text-red-600">{formErrors.customer_phone}</p>
@@ -385,9 +427,22 @@ export default function CartDrawer() {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    pattern="[1-9][0-9]{5}"
+                    maxLength={6}
                     name="pincode"
                     value={formData.pincode}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      const numericOnly = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setFormData((prev) => ({ ...prev, pincode: numericOnly }));
+                      if (formErrors.pincode) {
+                        setFormErrors((prev) => {
+                          const updated = { ...prev };
+                          delete updated.pincode;
+                          return updated;
+                        });
+                      }
+                    }}
                     placeholder="e.g. 560038"
                     disabled={isSubmitting}
                     className={`w-full bg-white border ${
@@ -427,16 +482,20 @@ export default function CartDrawer() {
                 </div>
                 <div className="pt-2 border-t border-[#e5e2dd] flex justify-between text-base font-bold text-[#0e0300]">
                   <span>Total Amount</span>
-                  <span className="font-display">₹{subtotal.toLocaleString("en-IN")}</span>
+                  <span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
-              {step === 1 ? (
-                // Step 1 Button: Proceed to Shipping
+              {step === "cart" ? (
+                // Step 1 Button: Strictly transitions to Step 2 ('shipping') and DOES NOT submit
                 <div className="space-y-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setStep("shipping");
+                    }}
                     className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] transition-all rounded-lg font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99]"
                   >
                     <span>Proceed to Placement</span>
@@ -469,7 +528,11 @@ export default function CartDrawer() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setStep("cart");
+                    }}
                     disabled={isSubmitting}
                     className="w-full py-2 text-xs text-[#81746f] hover:text-[#0e0300] transition-colors"
                   >

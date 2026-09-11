@@ -6,13 +6,47 @@ import { siteConfig } from "@/config/site";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+    alreadySubscribed?: boolean;
+  } | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
+    if (!email.trim() || !email.includes("@")) {
+      setFeedback({ type: "error", message: "Please provide a valid email address." });
+      return;
+    }
+
+    setIsLoading(true);
+    setFeedback(null);
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Unable to process subscription. Please try again.");
+      }
+
+      setFeedback({
+        type: "success",
+        message: data.message || "Welcome to the KILN STUDIO Patron List.",
+        alreadySubscribed: Boolean(data.message?.toLowerCase().includes("already")),
+      });
       setEmail("");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Subscription failed. Please try again.";
+      setFeedback({ type: "error", message: msg });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -33,29 +67,50 @@ export default function Footer() {
             </p>
           </div>
           <div className="lg:col-span-5">
-            {subscribed ? (
-              <div className="bg-[#2c1a11] border border-[#feb383]/40 p-4 rounded-xl text-center">
+            {feedback?.type === "success" ? (
+              <div className="bg-[#2c1a11] border border-[#feb383]/40 p-4 rounded-xl text-center animate-fade-in">
                 <span className="material-symbols-outlined text-[#feb383] text-2xl mb-1">mark_email_read</span>
-                <p className="text-sm font-semibold text-white">Welcome to the {siteConfig.name} Guild.</p>
-                <p className="text-xs text-[#d3c3bd] mt-1">We have reserved your invitation to our upcoming timber reveal.</p>
+                <p className="text-sm font-semibold text-white">
+                  {feedback.alreadySubscribed ? "Patron Record Found" : `Welcome to the ${siteConfig.name} Guild.`}
+                </p>
+                <p className="text-xs text-[#d3c3bd] mt-1">{feedback.message}</p>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  required
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#feb383] flex-1"
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-[#895029] hover:bg-[#feb383] hover:text-[#0e0300] text-white font-semibold text-xs tracking-widest uppercase rounded-lg transition-all"
-                >
-                  Join Patron List
-                </button>
-              </form>
+              <div>
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (feedback) setFeedback(null);
+                    }}
+                    className="bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#feb383] flex-1 transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-6 py-3 bg-[#895029] hover:bg-[#feb383] hover:text-[#0e0300] text-white font-semibold text-xs tracking-widest uppercase rounded-lg transition-all disabled:opacity-60 flex items-center justify-center gap-1.5 shrink-0"
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block"></span>
+                        <span>Joining...</span>
+                      </>
+                    ) : (
+                      <span>Join Patron List</span>
+                    )}
+                  </button>
+                </form>
+                {feedback?.type === "error" && (
+                  <p className="text-xs text-[#ffb4a8] mt-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">error</span>
+                    <span>{feedback.message}</span>
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

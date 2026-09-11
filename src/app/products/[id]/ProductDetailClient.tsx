@@ -45,8 +45,13 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
 
   const checkPincode = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pincode.startsWith("560")) {
-      setPincodeMessage(`Pincode ${pincode} eligible for complimentary Bengaluru White-Glove installation & assembly.`);
+    const cleanPin = pincode.trim();
+    if (!/^[1-9][0-9]{5}$/.test(cleanPin)) {
+      setPincodeMessage("Please enter a valid 6-digit postal PIN code (cannot start with 0).");
+      return;
+    }
+    if (cleanPin.startsWith("560")) {
+      setPincodeMessage(`Pincode ${cleanPin} eligible for complimentary Bengaluru White-Glove installation & assembly.`);
     } else {
       setPincodeMessage(`Outside Bangalore municipal core: Insured wooden crate dispatch in 4–6 business days.`);
     }
@@ -115,7 +120,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                     key={idx}
                     type="button"
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all bg-[#f6f3ee] ${
+                    className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all bg-[#f6f3ee] cursor-pointer hover:opacity-80 transition-opacity ${
                       activeImageIndex === idx
                         ? "border-[#895029] shadow-sm ring-1 ring-[#895029]"
                         : "border-[#e5e2dd] opacity-70 hover:opacity-100"
@@ -179,7 +184,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
               </p>
               
               <div className="flex items-baseline gap-4 pt-2">
-                <span className="font-display text-3xl font-semibold text-[#0e0300]">
+                <span className="font-sans text-3xl font-semibold tracking-tight text-[#1A1A1A] tabular-nums">
                   ₹{(unitPrice * quantity).toLocaleString("en-IN")}
                 </span>
                 <span className="text-xs text-[#81746f]">
@@ -195,7 +200,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   <span className="font-semibold text-[#0e0300] uppercase tracking-wider text-[11px]">
                     1. Select Provenance Timber:
                   </span>
-                  <Link href="/wood-types" className="text-[#895029] hover:underline text-[11px]">
+                  <Link href="/wood-types" className="text-[#895029] hover:text-[#2c1a11] hover:underline text-[11px] cursor-pointer transition-colors">
                     Compare Wood Terroirs &rarr;
                   </Link>
                 </div>
@@ -205,10 +210,10 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                       key={t.id}
                       type="button"
                       onClick={() => setSelectedTimberIndex(idx)}
-                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                         selectedTimberIndex === idx
                           ? "bg-white border-[#895029] shadow-xs ring-1 ring-[#895029]"
-                          : "bg-white/60 border-[#e5e2dd] hover:bg-white"
+                          : "bg-white/60 border-[#e5e2dd] hover:border-[#766E65] hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -235,17 +240,19 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                 <div className="flex items-center border border-[#d3c3bd] rounded-xl bg-white px-2 py-1">
                   <button
                     type="button"
+                    disabled={quantity <= 1}
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-1.5 text-xs text-[#0e0300] hover:text-[#895029]"
+                    className="p-1.5 text-xs text-[#0e0300] hover:text-[#895029] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
                     aria-label="Decrease quantity"
                   >
                     <span className="material-symbols-outlined text-[16px]">remove</span>
                   </button>
-                  <span className="px-3 text-xs font-semibold">{quantity}</span>
+                  <span className="px-3 text-xs font-semibold tabular-nums">{quantity}</span>
                   <button
                     type="button"
+                    disabled={quantity >= 10}
                     onClick={() => setQuantity(quantity + 1)}
-                    className="p-1.5 text-xs text-[#0e0300] hover:text-[#895029]"
+                    className="p-1.5 text-xs text-[#0e0300] hover:text-[#895029] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
                     aria-label="Increase quantity"
                   >
                     <span className="material-symbols-outlined text-[16px]">add</span>
@@ -255,7 +262,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 bg-[#0e0300] hover:bg-[#895029] text-white rounded-xl text-xs uppercase tracking-widest font-semibold transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 bg-[#0e0300] hover:bg-[#895029] text-white rounded-xl text-xs uppercase tracking-widest font-semibold transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
                   <span>Add to Atelier Bag — ₹{(unitPrice * quantity).toLocaleString("en-IN")}</span>
@@ -271,7 +278,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   <button
                     type="button"
                     onClick={() => setIsCartOpen(true)}
-                    className="underline text-[11px] font-semibold"
+                    className="underline text-[11px] font-semibold cursor-pointer hover:text-white/80"
                   >
                     View Bag
                   </button>
@@ -287,14 +294,16 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
               <form onSubmit={checkPincode} className="flex gap-2">
                 <input
                   type="text"
+                  inputMode="numeric"
+                  maxLength={6}
                   value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="Enter 6-digit Pincode"
                   className="bg-[#fcf9f4] border border-[#d3c3bd] rounded-lg px-3 py-1.5 text-xs text-[#0e0300] flex-1 focus:outline-none focus:border-[#895029]"
                 />
                 <button
                   type="submit"
-                  className="px-3 py-1.5 bg-[#2c1a11] hover:bg-[#895029] text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+                  className="px-3 py-1.5 bg-[#2c1a11] hover:bg-black/90 text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   Check
                 </button>
@@ -382,7 +391,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as "specs" | "provenance" | "delivery" | "care")}
-                className={`pb-4 text-xs uppercase tracking-widest font-semibold transition-all border-b-2 whitespace-nowrap ${
+                className={`pb-4 text-xs uppercase tracking-widest font-semibold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
                   activeTab === tab.id
                     ? "border-[#895029] text-[#0e0300]"
                     : "border-transparent text-[#81746f] hover:text-[#0e0300]"
@@ -489,7 +498,10 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   <h4 className="font-display text-base text-[#0e0300] group-hover:text-[#895029] transition-colors">
                     {comp.name}
                   </h4>
-                  <p className="text-xs text-[#81746f] mt-1">₹{comp.price.toLocaleString("en-IN")} &bull; {comp.dimensions}</p>
+                  <p className="text-xs font-sans tracking-tight text-[#1A1A1A] tabular-nums font-semibold mt-1">
+                    ₹{comp.price.toLocaleString("en-IN")}{" "}
+                    <span className="font-normal text-[#81746f] text-[11px]">&bull; {comp.dimensions}</span>
+                  </p>
                 </Link>
               ))}
             </div>

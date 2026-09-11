@@ -2,7 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { siteConfig } from "@/config/site";
 import { getProductById } from "@/lib/products";
+import { getAllOrders, saveDevOrder } from "@/lib/orders";
 import { getSupabaseAdminClient, getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminSession } from "@/lib/auth";
+
+export async function GET() {
+  const auth = await requireAdminSession();
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
+  try {
+    const orders = await getAllOrders();
+    return NextResponse.json(
+      {
+        success: true,
+        orders,
+      },
+      { status: 200 }
+    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    console.error("[KILN STUDIO API ERROR] GET /api/orders:", err);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
 
 // Validation schema for incoming order creation requests
 const orderItemSchema = z.object({
@@ -13,10 +37,18 @@ const orderItemSchema = z.object({
 
 const createOrderSchema = z.object({
   customer_name: z.string().min(2, "Full name is required (min 2 characters)"),
-  customer_phone: z.string().min(10, "Valid phone number is required (min 10 digits)"),
+  customer_phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, {
+      message: "Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.",
+    }),
   customer_email: z.string().email("Valid email address is required"),
   delivery_address: z.string().min(5, "Delivery address is required"),
-  pincode: z.string().min(4, "Valid pincode is required"),
+  pincode: z
+    .string()
+    .trim()
+    .regex(/^[1-9][0-9]{5}$/, "Postal PIN code must be exactly 6 digits and cannot start with 0"),
   payment_method: z.string().optional().default("offline"),
   items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
 });
@@ -151,11 +183,39 @@ export async function POST(request: NextRequest) {
             "Simulating order creation in local development."
           );
 
+          const devOrderId = `dev-sim-${Date.now()}`;
+          saveDevOrder({
+            id: devOrderId,
+            order_number: orderNumber,
+            customer_name,
+            customer_phone,
+            customer_email,
+            delivery_address,
+            pincode,
+            subtotal: calculatedSubtotal,
+            total: calculatedTotal,
+            payment_method,
+            status: "pending",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            order_items: resolvedItems.map((item, idx) => ({
+              id: `item-${idx + 1}`,
+              order_id: devOrderId,
+              product_id: item.productId,
+              product_name: item.productName,
+              timber_option: item.timberOption,
+              quantity: item.quantity,
+              unit_price: item.unitPrice,
+              line_total: item.lineTotal,
+              created_at: new Date().toISOString(),
+            })),
+          });
+
           return NextResponse.json(
             {
               success: true,
               orderNumber,
-              orderId: `dev-sim-${Date.now()}`,
+              orderId: devOrderId,
               subtotal: calculatedSubtotal,
               total: calculatedTotal,
               itemsCount: resolvedItems.length,

@@ -33,13 +33,16 @@
   --color-on-surface-variant: #4f4540;
   --color-outline: #81746f;
   --color-outline-variant: #d3c3bd;
-  --color-background: #fcf9f4;
-  --color-on-background: #1c1c19;
+  --color-background: #FAF9F6;
+  --color-on-background: #1A1A1A;
 
-  --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
-  --font-headline: var(--font-playfair), "Playfair Display", Georgia, serif;
-  --font-body: var(--font-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  --font-headline: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  --font-body: var(--font-sans), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-playfair: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  --font-jakarta: var(--font-sans), "Plus Jakarta Sans", sans-serif;
 
   --spacing-container-max: 1360px;
   --spacing-gutter-desktop: 2rem;
@@ -57,10 +60,30 @@
 }
 
 @layer base {
+  :root {
+    --font-playfair: var(--font-serif);
+    --font-jakarta: var(--font-sans);
+  }
+
   body {
-    background-color: #fcf9f4;
-    color: #1c1c19;
-    font-family: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+    background-color: #FAF9F6;
+    color: #1A1A1A;
+    font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
   }
 }
 
@@ -84,9 +107,11 @@
 }
 
 /* Typography helper utilities */
-.font-display { font-family: var(--font-playfair), "Playfair Display", serif; }
-.font-headline { font-family: var(--font-playfair), "Playfair Display", serif; }
-.font-body { font-family: var(--font-jakarta), "Plus Jakarta Sans", sans-serif; }
+.font-serif { font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif; }
+.font-sans { font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif; }
+.font-display { font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif; }
+.font-headline { font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif; }
+.font-body { font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif; }
 
 .text-display { font-size: 3.5rem; line-height: 1.15; letter-spacing: -0.02em; }
 .text-headline-lg { font-size: 2.5rem; line-height: 1.2; letter-spacing: -0.015em; }

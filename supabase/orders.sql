@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS orders (
   customer_phone VARCHAR(50) NOT NULL,
   customer_email VARCHAR(255) NOT NULL,
   delivery_address TEXT NOT NULL,
-  pincode VARCHAR(20) NOT NULL,
+  pincode VARCHAR(6) NOT NULL CHECK (pincode ~ '^[1-9][0-9]{5}$'),
   subtotal INTEGER NOT NULL CHECK (subtotal >= 0),
   total INTEGER NOT NULL CHECK (total >= 0),
   payment_method VARCHAR(50) NOT NULL DEFAULT 'offline',

@@ -73,6 +73,10 @@ function mapDbProductToDomain(row: DbProductJoined): Product {
         swatch: opt.timbers?.swatch_url || "",
         price: opt.price,
         desc: opt.description || opt.timbers?.description || "",
+        origin: opt.timbers?.provenance || "",
+        region: opt.timbers?.provenance || "",
+        swatchImage: opt.timbers?.swatch_url || "",
+        slug: opt.timbers?.id || opt.timber_id,
       }))
     : undefined;
 
@@ -87,10 +91,12 @@ function mapDbProductToDomain(row: DbProductJoined): Product {
     description: row.description,
     isPopular: row.is_popular ?? false,
     link: row.link,
+    slug: row.link ? row.link.replace(/^\/(products|shop)\//, "") : row.id,
     tagline: row.tagline || undefined,
     leadTime: row.lead_time || undefined,
     gallery: gallery && gallery.length > 0 ? gallery : undefined,
     timbers: timberOptions && timberOptions.length > 0 ? timberOptions : undefined,
+    woodOptions: timberOptions && timberOptions.length > 0 ? timberOptions : undefined,
     features: row.features || undefined,
     specs: row.specs || undefined,
   };
@@ -244,7 +250,7 @@ export async function getProductById(id: string): Promise<Product | null> {
           timbers ( id, name, provenance, swatch_url, description )
         )
       `)
-      .or(`id.eq.${id},link.eq./products/${id}`)
+      .or(`id.eq.${id},link.eq./products/${id},link.eq./shop/${id}`)
       .maybeSingle();
 
     if (error) {
@@ -252,7 +258,7 @@ export async function getProductById(id: string): Promise<Product | null> {
         console.warn(
           `[KILN STUDIO NOTICE] Table 'products' does not exist yet. Serving baseline item '${id}'.`
         );
-        const found = staticProducts.find((p) => p.id === id || p.link.includes(id));
+        const found = staticProducts.find((p) => p.id === id || p.link.includes(id) || p.link.replace(/^\/(products|shop)\//, "") === id);
         return found || null;
       }
       throw new Error(
@@ -269,7 +275,7 @@ export async function getProductById(id: string): Promise<Product | null> {
     console.warn(
       "[KILN STUDIO DEV] Supabase credentials not configured in local environment. Serving verified local seed baseline for development testing."
     );
-    const found = staticProducts.find((p) => p.id === id || p.link.includes(id));
+    const found = staticProducts.find((p) => p.id === id || p.link.includes(id) || p.link.replace(/^\/(products|shop)\//, "") === id);
     return found || null;
   }
 
