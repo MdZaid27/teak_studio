@@ -22,13 +22,13 @@ export default function HomePage() {
             Timeless solid wood furniture, handcrafted with character and built for Bangalore homes. Ethically harvested timber, seasoned naturally for South India’s distinct microclimates.
           </p>
 <div className="flex flex-wrap items-center gap-space-md mb-space-2xl">
-<a className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all duration-150 group active:scale-95 shadow-sm" href="/shop">
+<Link className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all duration-150 group active:scale-95 shadow-sm" href="/shop">
               Explore Collections
               <span className="material-symbols-outlined ml-2 text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-</a>
-<a className="inline-flex items-center justify-center h-12 px-6 border border-primary text-primary rounded-full font-title-md text-title-md hover:bg-primary-container hover:text-surface-bright transition-all duration-150" href="/wood-types">
+</Link>
+<Link className="inline-flex items-center justify-center h-12 px-6 border border-primary text-primary rounded-full font-title-md text-title-md hover:bg-primary-container hover:text-surface-bright transition-all duration-150" href="/wood-types">
               Discover Our Woods
-            </a>
+            </Link>
 </div>
 {/*  Trust Badges Row  */}
 <div className="pt-space-md border-t border-outline-variant/30 flex flex-col gap-2">
@@ -58,9 +58,9 @@ export default function HomePage() {
 <h2 className="font-title-md text-title-md text-primary">Penthouse Residence, Bellandur</h2>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Hunsur Teak Fluted Low Table &amp; Hand-loomed Linen Lounger</p>
 </div>
-<a className="p-2 text-primary hover:text-secondary transition-colors" href="/#bangalore-homes" title="View Project">
+<Link className="p-2 text-primary hover:text-secondary transition-colors" href="/#bangalore-homes" title="View Project">
 <span className="material-symbols-outlined">north_east</span>
-</a>
+</Link>
 </div>
 </div>
 </div>
@@ -83,43 +83,43 @@ export default function HomePage() {
 {/*  5-Column Curated Gallery Grid  */}
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-space-md">
 {/*  Collection 1: Living Room  */}
-<a className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
+<Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
 <div className="aspect-[3/4] overflow-hidden rounded bg-surface-container relative mb-space-sm">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="A minimalist living room seating arrangement featuring a low-profile handcrafted solid teak arm chair with natural cane webbing backrest and neutral linen upholstery cushion. The piece stands against warm off-white textured plaster walls bathed in soft directional daylight." src="/images/img_024_stitch.png" />
 <span className="absolute top-2 right-2 bg-surface/90 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded">14 Designs</span>
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Living Space</h3>
 <p className="font-body-sm text-body-sm text-outline">Low-slung teak loungers &amp; tables</p>
-</a>
+</Link>
 {/*  Collection 2: Dining (Using malabar cane chair)  */}
-<a className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/products/malabar-dining-chair">
+<Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/products/malabar-dining-chair">
 <div className="aspect-[3/4] overflow-hidden rounded bg-surface-container relative mb-space-sm">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Artisanal dining chair sculpted from solid dark Indian rosewood with a gently curved hand-woven rattan cane backrest and contoured wooden seat, photographed in a light-drenched contemporary dining hall with minimal decor." src="/images/img_025_stitch.png" />
 <span className="absolute top-2 right-2 bg-surface/90 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded">09 Designs</span>
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Dining Atelier</h3>
 <p className="font-body-sm text-body-sm text-outline">Malabar cane &amp; solid timber chairs</p>
-</a>
+</Link>
 {/*  Collection 3: Bedroom  */}
-<a className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
+<Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
 <div className="aspect-[3/4] overflow-hidden rounded bg-surface-container relative mb-space-sm">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="An expansive Japanese-inspired king size low platform bed crafted from solid honey-toned Assam teak with seamless floating side ledges and headboard, styled with crisp washed oatmeal linen sheets in a tranquil sanctuary bedroom." src="/images/img_026_stitch.png" />
 <span className="absolute top-2 right-2 bg-surface/90 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded">08 Designs</span>
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Sleeping Sanctuaries</h3>
 <p className="font-body-sm text-body-sm text-outline">Floating platform beds &amp; nightstands</p>
-</a>
+</Link>
 {/*  Collection 4: Storage & Credenzas  */}
-<a className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
+<Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
 <div className="aspect-[3/4] overflow-hidden rounded bg-surface-container relative mb-space-sm">
 <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Mid-century modern horizontal solid teak credenza with vertically fluted tambour sliding doors and discrete hand-turned brass knob pulls, set in an airy Bangalore apartment with neutral limestone floors." src="/images/img_027_stitch.png" />
 <span className="absolute top-2 right-2 bg-surface/90 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded">11 Designs</span>
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Storage &amp; Credenzas</h3>
 <p className="font-body-sm text-body-sm text-outline">Fluted tambour consoles &amp; dressers</p>
-</a>
+</Link>
 {/*  Collection 5: Bespoke Commissions  */}
-<a className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/bespoke">
+<Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/bespoke">
 <div className="aspect-[3/4] overflow-hidden rounded bg-primary-container relative mb-space-sm flex flex-col justify-end p-space-md text-surface-bright">
 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
 <div className="relative z-10">
@@ -131,7 +131,7 @@ export default function HomePage() {
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Architectural Studio</h3>
 <p className="font-body-sm text-body-sm text-outline">Custom blueprints &amp; 3D renders</p>
-</a>
+</Link>
 </div>
 </div>
 </section>
@@ -262,10 +262,10 @@ export default function HomePage() {
 <span className="font-label-sm text-label-sm text-outline">Joinery Warranty</span>
 </div>
 </div>
-<a className="inline-flex items-center text-primary font-title-md text-title-md hover:text-secondary group transition-colors" href="/shop">
+<Link className="inline-flex items-center text-primary font-title-md text-title-md hover:text-secondary group transition-colors" href="/shop">
 <span className="">Read the Joinery Whitepaper</span>
 <span className="material-symbols-outlined ml-2 text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-</a>
+</Link>
 </div>
 </div>
 </div>
@@ -440,9 +440,9 @@ export default function HomePage() {
 <cite className="font-label-caps text-[10px] text-outline not-italic block">— PRAVEEN &amp; RADHIKA M., SADASHIVANAGAR</cite>
 </blockquote>
 <div className="flex items-center gap-space-md">
-<a className="inline-flex items-center justify-center h-11 px-6 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all" href="/shop">
+<Link className="inline-flex items-center justify-center h-11 px-6 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all" href="/shop">
               View Bangalore Home Tours
-            </a>
+            </Link>
 </div>
 </div>
 <div className="col-span-12 lg:col-span-7 grid grid-cols-2 gap-space-md">
@@ -538,12 +538,12 @@ export default function HomePage() {
           Visit our Bangalore experience studios in Indiranagar &amp; Whitefield, or consult with our master woodworkers for bespoke blueprints tailored to your residential architecture.
         </p>
 <div className="flex flex-wrap items-center justify-center gap-space-md mb-space-3xl">
-<a className="inline-flex items-center justify-center h-12 px-8 bg-surface-bright text-primary rounded-lg font-title-md text-title-md hover:bg-surface-container transition-all active:scale-95 shadow-md" href="/shop">
+<Link className="inline-flex items-center justify-center h-12 px-8 bg-surface-bright text-primary rounded-lg font-title-md text-title-md hover:bg-surface-container transition-all active:scale-95 shadow-md" href="/shop">
             Schedule Studio Walkthrough
-          </a>
-<a className="inline-flex items-center justify-center h-12 px-7 border border-surface-container text-surface-bright rounded-full font-title-md text-title-md hover:bg-surface-bright/10 transition-all" href="/shop">
+          </Link>
+<Link className="inline-flex items-center justify-center h-12 px-7 border border-surface-container text-surface-bright rounded-full font-title-md text-title-md hover:bg-surface-bright/10 transition-all" href="/shop">
             Download Wood Sample Guide
-          </a>
+          </Link>
 </div>
 {/*  Highlights Footer Strip  */}
 <div className="pt-space-lg border-t border-on-primary-container/30 grid grid-cols-1 md:grid-cols-3 gap-space-md text-surface-container-high font-body-sm text-body-sm">

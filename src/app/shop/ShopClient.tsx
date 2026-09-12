@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/types/database";
 
@@ -18,29 +18,31 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
   const [sortBy, setSortBy] = useState("curated");
 
   // Filter and sort products in-memory from server-provided initialProducts
-  const filteredProducts = initialProducts
-    .filter((product) => {
-      const matchCategory =
-        selectedCategory === "All Pieces" ||
-        product.category.toLowerCase() === selectedCategory.toLowerCase();
+  const filteredProducts = useMemo(() => {
+    return initialProducts
+      .filter((product) => {
+        const matchCategory =
+          selectedCategory === "All Pieces" ||
+          product.category.toLowerCase() === selectedCategory.toLowerCase();
 
-      const matchTimber =
-        selectedTimber === "All Timbers" ||
-        product.timber.toLowerCase().includes(selectedTimber.toLowerCase());
+        const matchTimber =
+          selectedTimber === "All Timbers" ||
+          product.timber.toLowerCase().includes(selectedTimber.toLowerCase());
 
-      return matchCategory && matchTimber;
-    })
-    .sort((a, b) => {
-      if (sortBy === "price-low") return a.price - b.price;
-      if (sortBy === "price-high") return b.price - a.price;
-      return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
-    });
+        return matchCategory && matchTimber;
+      })
+      .sort((a, b) => {
+        if (sortBy === "price-low") return a.price - b.price;
+        if (sortBy === "price-high") return b.price - a.price;
+        return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
+      });
+  }, [initialProducts, selectedCategory, selectedTimber, sortBy]);
 
   return (
     <div className="w-full bg-[#fcf9f4] pb-24">
       {/* Header Banner */}
       <div className="bg-[#f0ede9] border-b border-[#d3c3bd]/40 py-14 md:py-20">
-        <div className="max-w-[1360px] mx-auto px-6 md:px-12 text-center space-y-3">
+        <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 text-center space-y-3">
           <span className="font-label-caps text-xs text-[#895029] uppercase tracking-widest font-semibold block">
             The Living Catalog
           </span>
@@ -54,7 +56,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
       </div>
 
       {/* Main Filter & Products Area */}
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 pt-10">
+      <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 pt-10">
         
         {/* Filter Controls Bar */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-8 border-b border-[#e5e2dd]">

@@ -23,7 +23,7 @@ export function AdminSignOutButton({ className = "" }: AdminSignOutButtonProps) 
     } catch (err) {
       console.error("Sign out error:", err);
       // Fallback redirect
-      window.location.href = "/admin/login";
+      router.push("/admin/login");
     } finally {
       setIsSigningOut(false);
     }

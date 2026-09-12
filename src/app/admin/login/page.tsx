@@ -43,10 +43,27 @@ export default function AdminLoginPage() {
         return;
       }
 
-      if (data?.session) {
-        // Redirect to admin dashboard and revalidate router cache
-        router.push("/admin");
-        router.refresh();
+      if (data?.session && data?.user) {
+        // Verify user has admin privileges
+        const user = data.user;
+        const email = user.email?.toLowerCase();
+        const isAdmin =
+          user.app_metadata?.role === "admin" ||
+          user.user_metadata?.role === "admin" ||
+          (email &&
+            (email.startsWith("admin@") ||
+             email.includes("admin") ||
+             email === "curator@kilnstudio.in" ||
+             email.endsWith("@kilnstudio.in")));
+
+        if (!isAdmin) {
+          await supabase.auth.signOut();
+          setErrorMessage("Access denied. Your account does not have curator administrative privileges.");
+          return;
+        }
+
+        // Full page redirect ensures Supabase session cookies are synced for Next.js SSR middleware
+        window.location.href = "/admin";
       } else {
         setErrorMessage("Unable to establish an authenticated session.");
       }

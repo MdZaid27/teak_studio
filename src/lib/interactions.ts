@@ -12,7 +12,6 @@ import crypto from "crypto";
 
 // In-memory cache for development simulation when Supabase tables are pending migration
 declare global {
-  // eslint-disable-next-line no-var
   var __kilnDevInteractionsStore:
     | {
         inquiries: Map<string, DbBespokeInquiry>;

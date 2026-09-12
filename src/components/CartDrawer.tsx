@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 const initialFormData = {
   customer_name: "",
@@ -14,9 +15,8 @@ const initialFormData = {
   pincode: "",
 };
 
-export default function CartDrawer() {
+function CartDrawerContent() {
   const {
-    isCartOpen,
     setIsCartOpen,
     items,
     updateQuantity,
@@ -26,44 +26,57 @@ export default function CartDrawer() {
     clearCart,
   } = useCart();
 
+  const {
+    customerUser,
+    setIsAuthModalOpen,
+    setPendingAction,
+  } = useCustomerAuth();
+
   const router = useRouter();
 
   // Multi-step drawer state: 'cart' = Bag Review, 'shipping' = Shipping & Placement Form
   const [step, setStep] = useState<"cart" | "shipping">("cart");
 
-  // Form state
-  const [formData, setFormData] = useState(initialFormData);
+  // Form state initialized cleanly on mount with patron details
+  const cleanInitialPhone = customerUser?.phone ? customerUser.phone.replace("+91", "").replace(/\D/g, "") : "";
+  const [formData, setFormData] = useState({
+    ...initialFormData,
+    customer_phone: cleanInitialPhone,
+    customer_email: customerUser?.email || "",
+    customer_name: customerUser?.name || "",
+  });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Dedicated helper to completely reset the drawer and checkout state
-  const resetDrawerState = useCallback(() => {
-    setStep("cart");
-    setFormData({ ...initialFormData });
-    setFormErrors({});
-    setSubmitError(null);
-    setIsSubmitting(false);
-  }, []);
-
-  // Whenever the drawer is opened or closed, strictly reset back to Step 1 ('cart') and clear form
-  useEffect(() => {
-    resetDrawerState();
-  }, [isCartOpen, resetDrawerState]);
-
-  // If all items are removed from the bag, reset back to 'cart'
-  useEffect(() => {
-    if (items.length === 0) {
-      setStep("cart");
-    }
-  }, [items.length]);
-
-  if (!isCartOpen) return null;
-
   const handleClose = () => {
     if (isSubmitting) return;
-    resetDrawerState();
     setIsCartOpen(false);
+  };
+
+  const handleProceedToPlacement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // If unauthenticated: open customer auth modal and queue step transition
+    if (!customerUser) {
+      setPendingAction(() => () => {
+        setStep("shipping");
+      });
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    // If authenticated: ensure phone is pre-filled and advance directly
+    if (customerUser.phone) {
+      const cleanPhone = customerUser.phone.replace("+91", "").replace(/\D/g, "");
+      setFormData((prev) => ({
+        ...prev,
+        customer_phone: prev.customer_phone || cleanPhone,
+        customer_email: prev.customer_email || customerUser.email || "",
+      }));
+    }
+    setStep("shipping");
   };
 
   const validateForm = () => {
@@ -154,17 +167,16 @@ export default function CartDrawer() {
       }
 
       // Successful order creation:
-      // 1. Reset all form inputs and step state to Step 1 ('cart')
-      resetDrawerState();
-      // 2. Clear cart
+      // 1. Clear cart
       clearCart();
-      // 3. Close the drawer
+      // 2. Close the drawer
       setIsCartOpen(false);
-      // 4. Navigate to order confirmation
+      // 3. Navigate to order confirmation
       router.push(`/orders/${data.orderNumber}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[KILN STUDIO] Order checkout error:", err);
-      setSubmitError(err.message || "An unexpected error occurred. Please try again.");
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+      setSubmitError(msg);
       setIsSubmitting(false);
     }
   };
@@ -302,7 +314,7 @@ export default function CartDrawer() {
                               +
                             </button>
                           </div>
-                          <span className="font-semibold text-sm text-[#0e0300]">
+                          <span className="font-sans font-semibold text-sm text-[#1A1A1A] tabular-nums">
                             ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                           </span>
                         </div>
@@ -329,7 +341,7 @@ export default function CartDrawer() {
                   <span className="text-[#81746f]">
                     {totalItems} {totalItems === 1 ? "Item" : "Items"} in Commission
                   </span>
-                  <span className="font-display font-semibold text-[#0e0300]">
+                  <span className="font-sans font-semibold text-[#1A1A1A] tabular-nums">
                     Total: ₹{subtotal.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -474,7 +486,7 @@ export default function CartDrawer() {
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-[#4f4540]">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-[#0e0300]">₹{subtotal.toLocaleString("en-IN")}</span>
+                  <span className="font-sans font-semibold text-[#1A1A1A] tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between text-[#4f4540]">
                   <span>Bengaluru White-Glove Installation</span>
@@ -491,12 +503,8 @@ export default function CartDrawer() {
                 <div className="space-y-2 pt-1">
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setStep("shipping");
-                    }}
-                    className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] transition-all rounded-lg font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99]"
+                    onClick={handleProceedToPlacement}
+                    className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] transition-all rounded-lg font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] cursor-pointer"
                   >
                     <span>Proceed to Placement</span>
                     <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -547,4 +555,10 @@ export default function CartDrawer() {
       </div>
     </div>
   );
+}
+
+export default function CartDrawer() {
+  const { isCartOpen } = useCart();
+  if (!isCartOpen) return null;
+  return <CartDrawerContent />;
 }

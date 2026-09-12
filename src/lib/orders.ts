@@ -7,7 +7,6 @@ export interface OrderWithItems extends DbOrder {
 
 // In-memory cache of created orders for development simulation
 declare global {
-  // eslint-disable-next-line no-var
   var __kilnDevOrdersStore: Map<string, OrderWithItems> | undefined;
 }
 

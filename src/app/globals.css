@@ -44,8 +44,8 @@
   --font-playfair: var(--font-serif), "Cormorant Garamond", Georgia, serif;
   --font-jakarta: var(--font-sans), "Plus Jakarta Sans", sans-serif;
 
-  --spacing-container-max: 1360px;
-  --spacing-gutter-desktop: 2rem;
+  --spacing-container-max: 1640px;
+  --spacing-gutter-desktop: 2.5rem;
   --spacing-gutter-mobile: 1rem;
   --spacing-space-2xs: 0.25rem;
   --spacing-space-xs: 0.5rem;

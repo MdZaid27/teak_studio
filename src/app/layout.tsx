@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import CustomerAuthModal from "@/components/auth/CustomerAuthModal";
+import CompleteProfileModal from "@/components/auth/CompleteProfileModal";
 import { siteConfig } from "@/config/site";
 
 const serifFont = Cormorant_Garamond({
@@ -56,13 +59,17 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-[#FAF9F6] text-[#1A1A1A] min-h-screen flex flex-col selection:bg-[#feb383] selection:text-[#311300]">
-        <CartProvider>
-          <AnnouncementBar />
-          <Navbar />
-          <CartDrawer />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </CartProvider>
+        <CustomerAuthProvider>
+          <CartProvider>
+            <AnnouncementBar />
+            <Navbar />
+            <CartDrawer />
+            <CustomerAuthModal />
+            <CompleteProfileModal />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </CartProvider>
+        </CustomerAuthProvider>
       </body>
     </html>
   );

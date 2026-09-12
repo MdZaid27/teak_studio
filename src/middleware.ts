@@ -44,17 +44,36 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+  function isUserAdmin(
+    u: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown>; email?: string | null } | null
+  ) {
+    if (!u) return false;
+    if (u.app_metadata?.role === "admin" || u.user_metadata?.role === "admin") return true;
+    const email = u.email?.toLowerCase();
+    if (
+      email &&
+      (email.startsWith("admin@") ||
+       email.includes("admin") ||
+       email === "curator@kilnstudio.in" ||
+       email.endsWith("@kilnstudio.in"))
+    ) {
+      return true;
+    }
+    return false;
+  }
 
-  // Unauthenticated user attempting to access admin views (other than login)
-  if (!user && pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  const pathname = request.nextUrl.pathname;
+  const isAdmin = isUserAdmin(user);
+
+  // Unauthenticated user OR non-admin attempting to access admin views (other than login)
+  if (!isAdmin && pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
   }
 
-  // Authenticated user attempting to visit login page -> redirect to dashboard
-  if (user && pathname === "/admin/login") {
+  // Authenticated admin attempting to visit login page -> redirect to dashboard
+  if (isAdmin && pathname === "/admin/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);

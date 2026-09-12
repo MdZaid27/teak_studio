@@ -43,13 +43,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          setItems(parsed);
+          queueMicrotask(() => {
+            setItems(parsed);
+          });
         }
       }
     } catch (err) {
       console.error("[KILN STUDIO] Error reading cart from localStorage:", err);
     } finally {
-      setIsHydrated(true);
+      queueMicrotask(() => {
+        setIsHydrated(true);
+      });
     }
   }, []);
 
@@ -63,7 +67,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isHydrated]);
 
-  const addItem = (item: Omit<CartItem, "quantity">, quantity = 1) => {
+  const addItem = React.useCallback((item: Omit<CartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -74,9 +78,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prev, { ...item, quantity }];
     });
     setIsCartOpen(true);
-  };
+  }, []);
 
-  const removeItem = (id: string) => {
+  const removeItem = React.useCallback((id: string) => {
     setItems((prev) => {
       const next = prev.filter((i) => i.id !== id);
       try {
@@ -84,9 +88,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return next;
     });
-  };
+  }, []);
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = React.useCallback((id: string, delta: number) => {
     setItems((prev) => {
       const next = prev
         .map((i) => {
@@ -102,32 +106,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return next;
     });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = React.useCallback(() => {
     setItems([]);
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]));
     } catch {}
-  };
+  }, []);
 
-  const totalItems = items.reduce((acc, i) => acc + i.quantity, 0);
-  const subtotal = items.reduce((acc, i) => acc + i.price * i.quantity, 0);
+  const totalItems = React.useMemo(() => items.reduce((acc, i) => acc + i.quantity, 0), [items]);
+  const subtotal = React.useMemo(() => items.reduce((acc, i) => acc + i.price * i.quantity, 0), [items]);
+
+  const value = React.useMemo(
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      isCartOpen,
+      setIsCartOpen,
+      totalItems,
+      subtotal,
+      clearCart,
+    }),
+    [items, addItem, removeItem, updateQuantity, isCartOpen, totalItems, subtotal, clearCart]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        isCartOpen,
-        setIsCartOpen,
-        totalItems,
-        subtotal,
-        clearCart,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

@@ -234,4 +234,66 @@ export interface CreateNewsletterSubscriberInput {
   email: string;
 }
 
+// ==========================================================
+// Patron Lifecycle Types (Milestone 5)
+// ==========================================================
+export interface DbPatronProfile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  marketing_opt_in?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type AddressTag = "Home" | "Work" | "Others";
+
+export interface DbPatronAddress {
+  id: string;
+  user_id: string;
+  floor_building: string;
+  area_street: string;
+  pincode: string;
+  city: string;
+  state: string;
+  country: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone: string;
+  save_as: AddressTag;
+  is_default: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreatePatronAddressInput {
+  floor_building: string;
+  area_street: string;
+  pincode: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone: string;
+  save_as: AddressTag;
+  is_default?: boolean;
+}
+
+export interface DbPatronWishlist {
+  id: string;
+  user_id: string;
+  product_id: string;
+  selected_timber_id?: string | null;
+  created_at?: string;
+  product?: Product;
+}
+
+export type OrderTimeframeFilter = "all" | "30_days" | "3_months" | "2026" | "2025";
+export type OrderStatusFilter = "all" | OrderStatus;
+
 

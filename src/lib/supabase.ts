@@ -4,6 +4,7 @@ import dns from "dns";
 // Server-side safeguard: Prevent local ISP transparent DNS hijacking of *.supabase.co
 if (typeof window === "undefined" && dns && typeof dns.lookup === "function") {
   const originalLookup = dns.lookup.bind(dns);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dns.lookup = ((hostname: string, options: any, callback: any) => {
     if (typeof options === "function") {
       callback = options;

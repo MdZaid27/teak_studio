@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { siteConfig } from "@/config/site";
 
 export default function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -12,6 +14,11 @@ export default function Footer() {
     message: string;
     alreadySubscribed?: boolean;
   } | null>(null);
+
+  // Hide storefront footer on all curator/admin routes
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +61,7 @@ export default function Footer() {
     <footer className="bg-[#0e0300] text-[#fcf9f4] border-t border-[#311300]">
       {/* Upper Brand & Newsletter Banner */}
       <div className="border-b border-white/10 py-12 md:py-16">
-        <div className="max-w-[1360px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 space-y-3">
             <span className="font-label-caps text-[#feb383] text-[11px] tracking-widest uppercase block">
               The Atelier Journal
@@ -118,7 +125,7 @@ export default function Footer() {
 
       {/* Main Footer Links & Bangalore Studios */}
       <div className="py-16 md:py-20 border-b border-white/10">
-        <div className="max-w-[1360px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+        <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
@@ -205,7 +212,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="py-8 bg-[#090200]">
-        <div className="max-w-[1360px] mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#81746f]">
+        <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#81746f]">
           <div>
             &copy; {new Date().getFullYear()} {siteConfig.name} LLP. Bangalore, India. All rights reserved.
           </div>

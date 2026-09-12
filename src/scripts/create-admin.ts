@@ -6,6 +6,7 @@ import dns from "dns";
 // Server-side safeguard: Prevent local ISP transparent DNS hijacking of *.supabase.co
 if (dns && typeof dns.lookup === "function") {
   const originalLookup = dns.lookup.bind(dns);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dns.lookup = ((hostname: string, options: any, callback: any) => {
     if (typeof options === "function") {
       callback = options;
@@ -68,15 +69,20 @@ async function main() {
 
   if (existing) {
     console.log(`User ${adminEmail} already exists (ID: ${existing.id}). Updating password...`);
-    const { error: updateError } = await supabase.auth.admin.updateUserById(existing.id, {
-      password: adminPassword,
+    const updatePayload: Record<string, unknown> = {
       email_confirm: true,
-    });
+      user_metadata: { ...existing.user_metadata, role: "admin" },
+      app_metadata: { ...existing.app_metadata, role: "admin" },
+    };
+    if (adminPassword.length >= 6) {
+      updatePayload.password = adminPassword;
+    }
+    const { error: updateError } = await supabase.auth.admin.updateUserById(existing.id, updatePayload);
     if (updateError) {
-      console.error("Failed to update password:", updateError.message);
+      console.error("Failed to update user:", updateError.message);
       process.exit(1);
     }
-    console.log(`✓ Admin user password updated successfully!`);
+    console.log(`✓ Admin user metadata updated successfully (role: admin)!`);
   } else {
     console.log(`Creating new admin user: ${adminEmail}...`);
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({

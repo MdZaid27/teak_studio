@@ -79,7 +79,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
   return (
     <div className="w-full bg-[#fcf9f4] pb-24">
       {/* Breadcrumbs */}
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 pt-8 pb-4">
+      <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 pt-8 pb-4">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#81746f]">
           <Link href="/" className="hover:text-[#0e0300] transition-colors">Home</Link>
           <span>/</span>
@@ -94,7 +94,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
       </div>
 
       {/* Main PDP Grid */}
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 pt-4">
+      <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 pt-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* Left Column: Image Gallery (7 Cols) */}

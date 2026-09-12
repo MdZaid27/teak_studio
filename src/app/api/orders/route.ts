@@ -39,10 +39,12 @@ const createOrderSchema = z.object({
   customer_name: z.string().min(2, "Full name is required (min 2 characters)"),
   customer_phone: z
     .string()
-    .trim()
-    .regex(/^[6-9]\d{9}$/, {
-      message: "Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.",
-    }),
+    .transform((val) => val.replace(/\D/g, "").slice(-10))
+    .pipe(
+      z.string().regex(/^[6-9]\d{9}$/, {
+        message: "Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.",
+      })
+    ),
   customer_email: z.string().email("Valid email address is required"),
   delivery_address: z.string().min(5, "Delivery address is required"),
   pincode: z
@@ -290,10 +292,11 @@ export async function POST(request: NextRequest) {
       { error: "Database connection unavailable." },
       { status: 500 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[KILN STUDIO API ERROR] POST /api/orders error:", err);
+    const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
-      { error: err.message || "Internal server error" },
+      { error: message },
       { status: 500 }
     );
   }

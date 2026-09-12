@@ -46,10 +46,11 @@ export async function GET(
       },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[KILN STUDIO API ERROR] GET /api/orders/[id]:", err);
+    const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
-      { success: false, error: err.message || "Internal server error" },
+      { success: false, error: message },
       { status: 500 }
     );
   }
@@ -106,10 +107,11 @@ export async function PATCH(
       },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[KILN STUDIO API ERROR] PATCH /api/orders/[id]:", err);
+    const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
-      { success: false, error: err.message || "Internal server error" },
+      { success: false, error: message },
       { status: 500 }
     );
   }
