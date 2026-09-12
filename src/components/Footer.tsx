@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { siteConfig } from "@/config/site";
@@ -45,7 +46,7 @@ export default function Footer() {
 
       setFeedback({
         type: "success",
-        message: data.message || "Welcome to the KILN STUDIO Patron List.",
+        message: data.message || `Welcome to the ${siteConfig.name} Patron List.`,
         alreadySubscribed: Boolean(data.message?.toLowerCase().includes("already")),
       });
       setEmail("");
@@ -60,7 +61,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#0e0300] text-[#fcf9f4] border-t border-[#311300]">
       {/* Upper Brand & Newsletter Banner */}
-      <div className="border-b border-white/10 py-12 md:py-16">
+      <div className="atelier-journal-section border-b border-white/10 py-12 md:py-16">
         <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 space-y-3">
             <span className="font-label-caps text-[#feb383] text-[11px] tracking-widest uppercase block">
@@ -70,7 +71,7 @@ export default function Footer() {
               Invitations to Timber Unveilings &amp; Private Previews.
             </h3>
             <p className="text-sm text-[#d3c3bd] max-w-xl font-light">
-              Receive quarterly monographs on rare salvage timber logs, Bangalore architectural home tours, and bespoke joinery essays.
+              Receive quarterly monographs on rare salvage timber logs, architectural home tours, and bespoke joinery essays.
             </p>
           </div>
           <div className="lg:col-span-5">
@@ -123,23 +124,32 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Main Footer Links & Bangalore Studios */}
+      {/* Main Footer Links & Flagship Studios */}
       <div className="py-16 md:py-20 border-b border-white/10">
         <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="inline-block">
-              <span className="font-display text-2xl font-medium tracking-[0.2em] uppercase text-white block">
-                {siteConfig.name}
-              </span>
-              <span className="text-[10px] tracking-[0.25em] uppercase text-[#feb383] font-medium">
-                {siteConfig.tagline}
-              </span>
+            <Link href="/" className="flex items-center gap-3.5 group">
+              <Image
+                src="/brand/teak-haus-dark.png"
+                alt="TEAK HAUS"
+                width={36}
+                height={36}
+                className="w-9 h-9 object-contain rounded-lg shadow-sm"
+              />
+              <div className="flex flex-col">
+                <span className="font-display text-2xl font-medium tracking-[0.2em] uppercase text-white block leading-none">
+                  {siteConfig.name}
+                </span>
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#feb383] font-medium mt-1">
+                  {siteConfig.tagline}
+                </span>
+              </div>
             </Link>
 
             <p className="text-xs text-[#d3c3bd] leading-relaxed max-w-sm font-light">
-              Crafting solid Indian hardwood furniture engineered specifically for Bangalore&apos;s ambient weather. Every log is sustainably harvested, naturally seasoned, and joined using authentic mortise-and-tenon interlocking woodwork.
+              Crafting solid Indian hardwood furniture engineered for longevity. Every log is sustainably harvested, naturally seasoned, and joined using authentic mortise-and-tenon woodworking.
             </p>
             <div className="pt-2 flex items-center gap-3 text-xs text-[#feb383]">
               <span className="material-symbols-outlined text-[18px]">verified</span>
@@ -177,10 +187,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Bangalore Studios */}
+          {/* Flagship Studios */}
           <div>
             <h4 className="font-label-caps text-xs tracking-widest text-[#feb383] uppercase mb-4 font-semibold">
-              Bengaluru Studios
+              Flagship Studios
             </h4>
             <div className="space-y-4 text-xs text-[#d3c3bd]">
               <div>
@@ -214,7 +224,7 @@ export default function Footer() {
       <div className="py-8 bg-[#090200]">
         <div className="max-w-[1640px] mx-auto px-6 md:px-10 lg:px-12 xl:px-16 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#81746f]">
           <div>
-            &copy; {new Date().getFullYear()} {siteConfig.name} LLP. Bangalore, India. All rights reserved.
+            &copy; {new Date().getFullYear()} {siteConfig.name} LLP. All rights reserved.
           </div>
 
           <div className="flex items-center gap-6">

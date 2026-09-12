@@ -150,10 +150,11 @@ function AccountDashboardContent() {
   };
 
   // Fetch Orders
-  const fetchOrders = async (phoneOrEmail: string) => {
+  const fetchOrders = async (phoneOrEmail: string, userId?: string) => {
     setLoadingOrders(true);
     try {
-      const res = await fetch(`/api/patron/orders?phone=${encodeURIComponent(phoneOrEmail)}`);
+      const url = `/api/patron/orders?phone=${encodeURIComponent(phoneOrEmail)}${userId ? `&userId=${encodeURIComponent(userId)}` : ""}`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.orders) {
@@ -192,7 +193,7 @@ function AccountDashboardContent() {
       const phone = customerUser.phone;
       queueMicrotask(() => {
         fetchAddresses(id);
-        fetchOrders(phone);
+        fetchOrders(phone, id);
         fetchWishlist(id);
       });
     }
@@ -367,7 +368,7 @@ function AccountDashboardContent() {
           </div>
           <div className="space-y-2">
             <span className="font-sans text-[11px] font-semibold tracking-wider text-[#895029] uppercase">
-              Kiln Studio Atelier
+              TEAK HAUS Atelier
             </span>
             <h1 className="font-serif text-3xl text-[#1A1A1A] font-medium">Patron Account</h1>
             <p className="text-xs text-[#766E65] leading-relaxed">
@@ -422,7 +423,7 @@ function AccountDashboardContent() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="font-sans text-[11px] font-semibold tracking-wider text-[#895029] uppercase">
-                  Atelier Patron
+                  PATRON ACCOUNT PORTAL
                 </span>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
                   <span className="material-symbols-outlined text-[12px]">verified</span>
@@ -433,7 +434,7 @@ function AccountDashboardContent() {
                 Welcome, {displayName}
               </h1>
               <p className="text-xs text-[#766E65] max-w-xl leading-relaxed">
-                Indiranagar &amp; VR Whitefield Studio Patron Privileges. Manage your delivery residences, commissioned timber orders, and held reserves.
+                White-glove unboxing, leveling, and on-site joinery placement. Manage your delivery residences, commissioned timber orders, and held reserves.
               </p>
             </div>
 
@@ -671,7 +672,7 @@ function AccountDashboardContent() {
                   Saved Delivery Residences
                 </h3>
                 <p className="text-xs text-[#766E65] pt-0.5">
-                  Addresses configured for white-glove room-of-choice placement and assembly across Bengaluru.
+                  Addresses configured for white-glove room-of-choice placement and on-site assembly.
                 </p>
               </div>
               <button
@@ -699,7 +700,7 @@ function AccountDashboardContent() {
                 <div className="space-y-1">
                   <h4 className="font-serif text-xl text-[#1A1A1A]">No Delivery Residences Saved</h4>
                   <p className="text-xs text-[#766E65] max-w-sm mx-auto">
-                    Save your Bengaluru home or workspace address for streamlined white-glove checkout and logistics scheduling.
+                    Save your residence or studio address for streamlined white-glove checkout and logistics scheduling.
                   </p>
                 </div>
                 <button
@@ -1011,10 +1012,10 @@ function AccountDashboardContent() {
                             </span>
                           </div>
                           <Link
-                            href={`/orders/${ord.id || ord.order_number}`}
-                            className="px-4 py-2 bg-white border border-[#EAE7E1] hover:border-[#1A1A1A] text-[#1A1A1A] rounded-xl text-xs font-medium transition-all inline-flex items-center gap-1.5"
+                            href={`/orders/${ord.order_number || ord.id}`}
+                            className="px-4 py-2 bg-white border border-[#EAE7E1] hover:border-[#1A1A1A] text-[#1A1A1A] rounded-xl text-xs font-semibold uppercase tracking-wider transition-all inline-flex items-center gap-1.5 shadow-2xs hover:bg-[#FAF9F6]"
                           >
-                            <span>Tracking Receipt</span>
+                            <span>View Tracking Receipt</span>
                             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                           </Link>
                         </div>

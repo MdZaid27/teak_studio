@@ -19,7 +19,7 @@ export default function HomePage() {
             Furniture Made to Last Generations.
           </h1>
 <p className="font-body-lg text-body-lg text-on-surface-variant mb-space-xl leading-relaxed">
-            Timeless solid wood furniture, handcrafted with character and built for Bangalore homes. Ethically harvested timber, seasoned naturally for South India’s distinct microclimates.
+            Timeless solid wood furniture, handcrafted with character and built for enduring residences. Ethically harvested timber, seasoned naturally for South India’s distinct microclimates.
           </p>
 <div className="flex flex-wrap items-center gap-space-md mb-space-2xl">
 <Link className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all duration-150 group active:scale-95 shadow-sm" href="/shop">
@@ -42,14 +42,14 @@ export default function HomePage() {
 </div>
 <div className="flex items-center gap-3 font-body-sm text-body-sm text-on-surface-variant">
 <span className="material-symbols-outlined text-secondary text-[18px]">workspace_premium</span>
-<span className="">Lifetime Structural Guarantee for Bengaluru Residences</span>
+<span className="">Lifetime Structural Guarantee for All Commissioned Pieces</span>
 </div>
 </div>
 </div>
 {/*  Right Column (7 of 12) Photography Showcase  */}
 <div className="col-span-12 lg:col-span-7 relative">
 <div className="relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/40 shadow-sm aspect-[4/3] group">
-<img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Expansive sunlit living room of a modern Bangalore high-rise apartment with floor to ceiling glass windows overlooking lush green canopy trees. A low solid teak wood coffee table and elegant natural fabric sofa rest on a handwoven ivory wool rug. Warm golden afternoon sunlight pours through, casting geometric shadows across polished limestone flooring." src="/images/img_023_stitch.png" />
+<img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Expansive sunlit living room of a modern high-rise apartment with floor to ceiling glass windows overlooking lush green canopy trees. A low solid teak wood coffee table and elegant natural fabric sofa rest on a handwoven ivory wool rug. Warm golden afternoon sunlight pours through, casting geometric shadows across polished limestone flooring." src="/images/img_023_stitch.png" />
 {/*  Floating Architectural Overlay Card  */}
 <div className="absolute bottom-6 left-6 right-6 bg-surface/95 backdrop-blur-md p-space-md rounded-lg border border-outline-variant/50 shadow-lg max-w-md">
 <div className="flex items-start justify-between">
@@ -58,7 +58,7 @@ export default function HomePage() {
 <h2 className="font-title-md text-title-md text-primary">Penthouse Residence, Bellandur</h2>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Hunsur Teak Fluted Low Table &amp; Hand-loomed Linen Lounger</p>
 </div>
-<Link className="p-2 text-primary hover:text-secondary transition-colors" href="/#bangalore-homes" title="View Project">
+<Link className="p-2 text-primary hover:text-secondary transition-colors" href="/#atelier-homes" title="View Project">
 <span className="material-symbols-outlined">north_east</span>
 </Link>
 </div>
@@ -112,7 +112,7 @@ export default function HomePage() {
 {/*  Collection 4: Storage & Credenzas  */}
 <Link className="group flex flex-col bg-surface rounded-lg p-space-sm border border-outline-variant/40 hover:border-primary transition-all duration-300" href="/shop">
 <div className="aspect-[3/4] overflow-hidden rounded bg-surface-container relative mb-space-sm">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Mid-century modern horizontal solid teak credenza with vertically fluted tambour sliding doors and discrete hand-turned brass knob pulls, set in an airy Bangalore apartment with neutral limestone floors." src="/images/img_027_stitch.png" />
+<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Mid-century modern horizontal solid teak credenza with vertically fluted tambour sliding doors and discrete hand-turned brass knob pulls, set in an airy apartment with neutral limestone floors." src="/images/img_027_stitch.png" />
 <span className="absolute top-2 right-2 bg-surface/90 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded">11 Designs</span>
 </div>
 <h3 className="font-display text-title-md text-primary group-hover:text-secondary transition-colors">Storage &amp; Credenzas</h3>
@@ -231,7 +231,7 @@ export default function HomePage() {
 <div className="relative rounded-xl overflow-hidden bg-surface-container border border-outline-variant/40 shadow-sm aspect-[4/3] group">
 <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="An elderly Indian master carpenter with silver hair and weathered hands working diligently in a sunlit timber workshop. He uses a traditional wooden hand plane across a massive slab of solid honey-toned teak wood, causing fine curly wood shavings to fly in the warm morning light." src="/images/img_028_stitch.png" />
 <div className="absolute top-4 left-4 bg-primary-container/90 text-surface-bright px-3 py-1 rounded font-label-caps text-[10px] tracking-widest backdrop-blur-sm">
-              CHANNAPATNA-BANGALORE ATELIER
+              HERITAGE TIMBER ATELIER
             </div>
 </div>
 </div>
@@ -242,7 +242,7 @@ export default function HomePage() {
             Made by Craft. Designed for Life.
           </h2>
 <p className="font-body-lg text-body-lg text-on-surface-variant mb-space-md leading-relaxed">
-            In our atelier near the border of Bangalore and Channapatna, third-generation karigars plane every plank by eye and touch. We completely reject particle board, chemical MDF, and flimsy paper veneers.
+            In our regional atelier near Channapatna, third-generation karigars plane every plank by eye and touch. We completely reject particle board, chemical MDF, and flimsy paper veneers.
           </p>
 <p className="font-body-md text-body-md text-on-surface-variant mb-space-xl leading-relaxed">
             Every dining tabletop, credenza carcass, and bed frame breathes through floating tenon joinery and pure cold-pressed natural linseed oils that deepen into a rich, irreplaceable patina as the decades unfold.
@@ -270,7 +270,7 @@ export default function HomePage() {
 </div>
 </div>
 </section>
-{/*  7. Signature Pieces Available for Bangalore Delivery  */}
+{/*  7. Signature Pieces Available for White-Glove Delivery  */}
 <section className="py-space-5xl bg-surface border-b border-outline-variant/30">
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-3xl">
@@ -279,10 +279,10 @@ export default function HomePage() {
 <span className="w-2 h-2 rounded-full bg-emerald-700 inline-block"></span>
 <span className="font-label-caps text-label-caps text-secondary tracking-widest uppercase">READY FOR DISPATCH</span>
 </div>
-<h2 className="font-display text-headline-lg text-primary">Signature Pieces — In-Stock for Bengaluru Delivery</h2>
+<h2 className="font-display text-headline-lg text-primary">Signature Pieces — In-Stock for White-Glove Placement</h2>
 </div>
 <p className="font-body-md text-body-md text-on-surface-variant max-w-md mt-3 md:mt-0">
-          White-glove room-of-choice delivery and complimentary master installation within 48 hours across all Bangalore PIN codes.
+          White-glove room-of-choice delivery and complimentary master installation within 48 hours across urban dispatch zones.
         </p>
 </div>
 {/*  6 Product Grid  */}
@@ -382,7 +382,7 @@ export default function HomePage() {
 <section className="py-space-5xl bg-surface-container-low border-b border-outline-variant/30">
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="text-center max-w-xl mx-auto mb-space-3xl">
-<span className="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-2 block">THE KILN STUDIO ETHOS</span>
+<span className="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-2 block">THE TEAK HAUS ETHOS</span>
 <h2 className="font-display text-headline-lg text-primary">Four Pillars of Permanence</h2>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-lg">
@@ -421,27 +421,27 @@ export default function HomePage() {
 </div>
 </div>
 </section>
-{/*  9. Harmonizing with Bangalore's Light & Greenery  */}
-<section className="py-space-5xl bg-surface border-b border-outline-variant/30" id="bangalore-homes">
+{/*  9. Harmonizing with Natural Light & Greenery  */}
+<section className="py-space-5xl bg-surface border-b border-outline-variant/30" id="atelier-homes">
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="grid grid-cols-12 gap-space-2xl items-center">
 <div className="col-span-12 lg:col-span-5">
 <span className="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-2 block">CONTEXTUAL ARCHITECTURE</span>
 <h2 className="font-display text-headline-lg text-primary mb-space-md">
-            Harmonizing with Bangalore’s Light &amp; Greenery.
+            Harmonizing with Natural Light &amp; Greenery.
           </h2>
 <p className="font-body-lg text-body-lg text-on-surface-variant mb-space-md leading-relaxed">
-            From high-rise balcony vistas in Bellandur to sunlit heritage verandas in Malleshwaram, our solid woods are engineered to thrive in Bengaluru’s pleasant climate without warping or checking.
+            From high-rise balcony vistas to sunlit heritage verandas, our solid woods are engineered to thrive in tropical microclimates without warping or checking.
           </p>
 <blockquote className="p-space-md bg-surface-container-low rounded-lg border-l-2 border-secondary mb-space-lg">
 <p className="font-display italic text-body-md text-primary mb-2">
-              &ldquo;KILN STUDIO’s teak feels alive in Bangalore daylight. As the sun moves across our living room, the timber grain catches the light with a warmth you can never get from engineered boards.&rdquo;
+              &ldquo;TEAK HAUS’s teak feels alive in natural daylight. As the sun moves across our living room, the timber grain catches the light with a warmth you can never get from engineered boards.&rdquo;
             </p>
 <cite className="font-label-caps text-[10px] text-outline not-italic block">— PRAVEEN &amp; RADHIKA M., SADASHIVANAGAR</cite>
 </blockquote>
 <div className="flex items-center gap-space-md">
 <Link className="inline-flex items-center justify-center h-11 px-6 bg-primary-container text-surface-bright rounded-lg font-title-md text-title-md hover:bg-[#4A2E1B] transition-all" href="/shop">
-              View Bangalore Home Tours
+              View Atelier Home Tours
             </Link>
 </div>
 </div>
@@ -450,7 +450,7 @@ export default function HomePage() {
 <img className="w-full h-full object-cover" alt="A sunlit Malleshwaram heritage bungalow interior featuring an open courtyard with polished kota stone floors, tropical potted plants, and a custom crafted solid teak low dining table with natural woven chairs." src="/images/img_035_stitch.png" />
 </div>
 <div className="rounded-lg overflow-hidden aspect-[4/5] bg-surface-container mt-space-xl">
-<img className="w-full h-full object-cover" alt="An expansive modern open-concept apartment in Indiranagar Bangalore with wide wooden French windows, a custom sheesham wood bookcase filled with architectural monographs, and soft diffused morning light." src="/images/img_036_stitch.png" />
+<img className="w-full h-full object-cover" alt="An expansive modern open-concept apartment with wide wooden French windows, a custom sheesham wood bookcase filled with architectural monographs, and soft diffused morning light." src="/images/img_036_stitch.png" />
 </div>
 </div>
 </div>
@@ -461,7 +461,7 @@ export default function HomePage() {
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="text-center max-w-xl mx-auto mb-space-3xl">
 <span className="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-2 block">PATRON STORIES</span>
-<h2 className="font-display text-headline-lg text-primary">Voices from Bengaluru Homes</h2>
+<h2 className="font-display text-headline-lg text-primary">Voices from Discerning Patrons</h2>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
 {/*  Story 1  */}
@@ -480,7 +480,7 @@ export default function HomePage() {
 </div>
 <div className="pt-space-sm border-t border-outline-variant/30">
 <h4 className="font-title-md text-title-md text-primary">Ananya &amp; Vikram Rao</h4>
-<span className="font-label-sm text-label-sm text-outline">Sadashivanagar, Bangalore</span>
+<span className="font-label-sm text-label-sm text-outline">Sadashivanagar</span>
 </div>
 </div>
 {/*  Story 2  */}
@@ -494,7 +494,7 @@ export default function HomePage() {
 <span className="material-symbols-outlined text-[18px]">star</span>
 </div>
 <p className="font-body-md text-body-md text-on-surface-variant italic mb-space-md leading-relaxed">
-              &ldquo;As an architect, finding honest solid hardwood craftsmen without veneer tricks in Bangalore was near impossible until we met KILN STUDIO. We’ve commissioned custom credenzas for four client projects now.&rdquo;
+              &ldquo;As an architect, finding honest solid hardwood craftsmen without veneer tricks was near impossible until we met TEAK HAUS. We’ve commissioned custom credenzas for four client projects now.&rdquo;
             </p>
 </div>
 <div className="pt-space-sm border-t border-outline-variant/30">
@@ -535,7 +535,7 @@ export default function HomePage() {
           Bring Natural Character Into Your Home.
         </h2>
 <p className="font-body-lg text-body-lg text-surface-container-high mb-space-2xl leading-relaxed">
-          Visit our Bangalore experience studios in Indiranagar &amp; Whitefield, or consult with our master woodworkers for bespoke blueprints tailored to your residential architecture.
+          Visit our flagship experience studios in Indiranagar &amp; Whitefield, or consult with our master woodworkers for bespoke blueprints tailored to your residential architecture.
         </p>
 <div className="flex flex-wrap items-center justify-center gap-space-md mb-space-3xl">
 <Link className="inline-flex items-center justify-center h-12 px-8 bg-surface-bright text-primary rounded-lg font-title-md text-title-md hover:bg-surface-container transition-all active:scale-95 shadow-md" href="/shop">
@@ -549,7 +549,7 @@ export default function HomePage() {
 <div className="pt-space-lg border-t border-on-primary-container/30 grid grid-cols-1 md:grid-cols-3 gap-space-md text-surface-container-high font-body-sm text-body-sm">
 <div className="flex items-center justify-center gap-2">
 <span className="material-symbols-outlined text-secondary-container">local_shipping</span>
-<span className="">White-Glove Delivery Across Bangalore</span>
+<span className="">White-Glove Delivery Nationwide</span>
 </div>
 <div className="flex items-center justify-center gap-2">
 <span className="material-symbols-outlined text-secondary-container">handyman</span>

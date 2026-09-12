@@ -6,8 +6,8 @@ import { OrdersManager } from "@/components/admin/OrdersManager";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Customer Orders | KILN STUDIO Admin",
-  description: "Manage retail furniture acquisitions, status lifecycles, and white-glove placement.",
+  title: "Commissioned Orders | TEAK HAUS Atelier Console",
+  description: "Manage solid wood retail commissions, status lifecycles, and white-glove placement.",
 };
 
 export default async function AdminOrdersPage() {

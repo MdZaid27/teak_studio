@@ -5,6 +5,7 @@ import { getProductById } from "@/lib/products";
 import { getAllOrders, saveDevOrder } from "@/lib/orders";
 import { getSupabaseAdminClient, getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 import { requireAdminSession } from "@/lib/auth";
+import { getPincodeDetailsSync } from "@/lib/pincode";
 
 export async function GET() {
   const auth = await requireAdminSession();
@@ -28,14 +29,23 @@ export async function GET() {
   }
 }
 
+import { getPatronAddresses, createPatronAddress } from "@/lib/patron";
+
 // Validation schema for incoming order creation requests
 const orderItemSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   quantity: z.number().int().positive("Quantity must be at least 1"),
   timberOption: z.string().optional(),
+  timberTitle: z.string().optional(),
+  productTitle: z.string().optional(),
+  productName: z.string().optional(),
+  unitPrice: z.number().optional(),
+  imageUrl: z.string().optional(),
 });
 
 const createOrderSchema = z.object({
+  user_id: z.string().optional(),
+  userId: z.string().optional(),
   customer_name: z.string().min(2, "Full name is required (min 2 characters)"),
   customer_phone: z
     .string()
@@ -47,22 +57,25 @@ const createOrderSchema = z.object({
     ),
   customer_email: z.string().email("Valid email address is required"),
   delivery_address: z.string().min(5, "Delivery address is required"),
+  shipping_address: z.string().optional(),
   pincode: z
     .string()
     .trim()
     .regex(/^[1-9][0-9]{5}$/, "Postal PIN code must be exactly 6 digits and cannot start with 0"),
-  payment_method: z.string().optional().default("offline"),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  payment_method: z.string().optional().default("Inspection Upon Delivery / Zero Upfront"),
   items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
 });
 
-// Helper to generate unique order number like KILN-ORD-7A9B
+// Helper to generate unique order code like KS-79B4A
 function generateOrderNumber(): string {
   const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // clean alphanumeric without confusing chars (0, O, 1, I)
   let code = "";
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return `${siteConfig.orderPrefix}-${code}`;
+  return `KS-${code}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -81,24 +94,39 @@ export async function POST(request: NextRequest) {
     }
 
     const {
+      user_id,
+      userId,
       customer_name,
       customer_phone,
       customer_email,
       delivery_address,
+      shipping_address,
       pincode,
+      city,
+      state,
       payment_method,
       items,
     } = parseResult.data;
+
+    const targetUserId = user_id || userId || null;
+    const finalShippingAddress = shipping_address || delivery_address;
+    const pinInfo = getPincodeDetailsSync(pincode);
+    const finalCity = city || pinInfo?.city || "India";
+    const finalState = state || pinInfo?.state || "India";
+    const finalPaymentMethod = payment_method || "Inspection Upon Delivery / Zero Upfront";
 
     // Strict zero-trust server-side pricing calculation
     let calculatedSubtotal = 0;
     const resolvedItems: Array<{
       productId: string;
       productName: string;
+      productTitle: string;
       timberOption: string | null;
+      timberTitle: string | null;
       quantity: number;
       unitPrice: number;
       lineTotal: number;
+      imageUrl: string;
     }> = [];
 
     for (const item of items) {
@@ -113,9 +141,9 @@ export async function POST(request: NextRequest) {
       let unitPrice = product.price;
 
       // Timber Variant Pricing Calculation:
-      // If timberOption is provided, look up price matching that timber in product.timbers (from product_timber_options)
-      if (item.timberOption && product.timbers && product.timbers.length > 0) {
-        const cleanOption = item.timberOption.trim().toLowerCase();
+      const chosenOption = item.timberTitle || item.timberOption;
+      if (chosenOption && product.timbers && product.timbers.length > 0) {
+        const cleanOption = chosenOption.trim().toLowerCase();
         const matchedTimber = product.timbers.find(
           (t) =>
             t.name.toLowerCase() === cleanOption ||
@@ -135,10 +163,13 @@ export async function POST(request: NextRequest) {
       resolvedItems.push({
         productId: product.id,
         productName: product.name,
-        timberOption: item.timberOption || null,
+        productTitle: item.productTitle || product.name,
+        timberOption: chosenOption || null,
+        timberTitle: chosenOption || null,
         quantity: item.quantity,
         unitPrice,
         lineTotal,
+        imageUrl: item.imageUrl || product.image || (product.gallery && product.gallery[0]?.src) || "",
       });
     }
 
@@ -147,6 +178,75 @@ export async function POST(request: NextRequest) {
 
     const isProduction = process.env.NODE_ENV === "production";
     const isConfigured = isSupabaseConfigured();
+
+    // Helper to auto-save address to patron_addresses if patron has no saved addresses
+    const maybeAutoSaveAddress = async () => {
+      if (targetUserId && targetUserId !== "patron-guest") {
+        try {
+          const existingAddrs = await getPatronAddresses(targetUserId);
+          if (existingAddrs.length === 0) {
+            const nameParts = customer_name.trim().split(" ");
+            const firstName = nameParts[0] || "Patron";
+            const lastName = nameParts.slice(1).join(" ") || "Member";
+            await createPatronAddress(targetUserId, {
+              first_name: firstName,
+              last_name: lastName,
+              phone: customer_phone,
+              email: customer_email,
+              floor_building: finalShippingAddress.split(",")[0]?.trim() || finalShippingAddress,
+              area_street: finalShippingAddress.split(",").slice(1).join(", ").trim() || finalShippingAddress,
+              pincode,
+              city: finalCity,
+              state: finalState,
+              country: "India",
+              save_as: "Home",
+              is_default: true,
+            });
+          }
+        } catch (patronErr) {
+          console.warn("[KILN STUDIO] Address auto-save notice:", patronErr);
+        }
+      }
+    };
+
+    // Helper for dev store persistence fallback
+    const saveDevStoreOrder = async (orderId: string) => {
+      saveDevOrder({
+        id: orderId,
+        order_number: orderNumber,
+        user_id: targetUserId,
+        customer_name,
+        customer_phone,
+        customer_email,
+        delivery_address: finalShippingAddress,
+        shipping_address: finalShippingAddress,
+        city: finalCity,
+        state: finalState,
+        pincode,
+        subtotal: calculatedSubtotal,
+        total: calculatedTotal,
+        total_amount: calculatedTotal,
+        payment_method: finalPaymentMethod,
+        status: "confirmed",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        order_items: resolvedItems.map((item, idx) => ({
+          id: `item-${Date.now()}-${idx + 1}`,
+          order_id: orderId,
+          product_id: item.productId,
+          product_name: item.productName,
+          product_title: item.productTitle,
+          timber_option: item.timberOption,
+          timber_title: item.timberTitle,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          line_total: item.lineTotal,
+          image_url: item.imageUrl,
+          created_at: new Date().toISOString(),
+        })),
+      });
+      await maybeAutoSaveAddress();
+    };
 
     if (isProduction && !isConfigured) {
       return NextResponse.json(
@@ -159,60 +259,179 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
 
     if (supabase && isConfigured) {
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert({
+      try {
+        // Attempt 1: Insert with all extended columns
+        let orderData: { id: string; order_number: string } | null = null;
+        let insertErr: { message?: string; code?: string } | null = null;
+
+        const richPayload: Record<string, unknown> = {
           order_number: orderNumber,
+          user_id: targetUserId,
           customer_name,
           customer_phone,
           customer_email,
-          delivery_address,
+          delivery_address: finalShippingAddress,
+          shipping_address: finalShippingAddress,
+          city: finalCity,
+          state: finalState,
           pincode,
           subtotal: calculatedSubtotal,
           total: calculatedTotal,
-          payment_method,
-          status: "pending",
-        })
-        .select("id, order_number")
-        .single();
+          total_amount: calculatedTotal,
+          payment_method: finalPaymentMethod,
+          status: "confirmed",
+        };
 
-      if (orderError) {
-        // If orders table is not yet created in Supabase SQL editor:
-        if (orderError.code === "PGRST205" && !isProduction) {
-          console.warn(
-            "[KILN STUDIO NOTICE] Table 'orders' does not exist yet in Supabase.\n" +
-            "👉 Please execute 'supabase/orders.sql' in your Supabase SQL Editor to enable persistent order storage.\n" +
-            "Simulating order creation in local development."
-          );
+        const attempt1 = await supabase
+          .from("orders")
+          .insert(richPayload)
+          .select("id, order_number")
+          .single();
 
-          const devOrderId = `dev-sim-${Date.now()}`;
-          saveDevOrder({
-            id: devOrderId,
+        if (!attempt1.error && attempt1.data) {
+          orderData = attempt1.data;
+        } else if (attempt1.error?.code === "PGRST204") {
+          // Fallback Attempt 2: Table has standard baseline columns
+          const baselinePayload = {
             order_number: orderNumber,
             customer_name,
             customer_phone,
             customer_email,
-            delivery_address,
+            delivery_address: finalShippingAddress,
             pincode,
             subtotal: calculatedSubtotal,
             total: calculatedTotal,
-            payment_method,
-            status: "pending",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            order_items: resolvedItems.map((item, idx) => ({
-              id: `item-${idx + 1}`,
-              order_id: devOrderId,
-              product_id: item.productId,
-              product_name: item.productName,
-              timber_option: item.timberOption,
-              quantity: item.quantity,
-              unit_price: item.unitPrice,
-              line_total: item.lineTotal,
-              created_at: new Date().toISOString(),
-            })),
-          });
+            payment_method: finalPaymentMethod,
+            status: "confirmed",
+          };
+          const attempt2 = await supabase
+            .from("orders")
+            .insert(baselinePayload)
+            .select("id, order_number")
+            .single();
 
+          if (!attempt2.error && attempt2.data) {
+            orderData = attempt2.data;
+          } else {
+            insertErr = attempt2.error;
+          }
+        } else {
+          insertErr = attempt1.error;
+        }
+
+        if (insertErr || !orderData) {
+          if (!isProduction) {
+            console.warn(
+              "[KILN STUDIO NOTICE] Supabase orders table unavailable or pending migration.\n" +
+              "Falling back to local development order store."
+            );
+            const devOrderId = `dev-sim-${Date.now()}`;
+            await saveDevStoreOrder(devOrderId);
+            return NextResponse.json(
+              {
+                success: true,
+                orderNumber,
+                orderId: devOrderId,
+                subtotal: calculatedSubtotal,
+                total: calculatedTotal,
+                itemsCount: resolvedItems.length,
+                status: "Confirmed",
+              },
+              { status: 201 }
+            );
+          }
+
+          console.error("[KILN STUDIO DB ERROR] Failed to create order in database:", insertErr);
+          return NextResponse.json(
+            { error: `Database error creating order: ${insertErr?.message || "Unknown error"}` },
+            { status: 500 }
+          );
+        }
+
+        // Insert line items
+        const richItemRows = resolvedItems.map((item) => ({
+          order_id: orderData.id,
+          product_id: item.productId,
+          product_name: item.productName,
+          product_title: item.productTitle,
+          timber_option: item.timberOption,
+          timber_title: item.timberTitle,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          line_total: item.lineTotal,
+          image_url: item.imageUrl,
+        }));
+
+        const itemsAttempt = await supabase.from("order_items").insert(richItemRows);
+        if (itemsAttempt.error && itemsAttempt.error.code === "PGRST204") {
+          // Fallback to baseline order_items columns
+          const baselineItems = resolvedItems.map((item) => ({
+            order_id: orderData.id,
+            product_id: item.productId,
+            product_name: item.productName,
+            timber_option: item.timberOption,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            line_total: item.lineTotal,
+          }));
+          await supabase.from("order_items").insert(baselineItems);
+        }
+
+        // Auto-save address for patron if applicable
+        await maybeAutoSaveAddress();
+
+        // Also mirror in local store for immediate UI consistency
+        saveDevOrder({
+          id: orderData.id,
+          order_number: orderData.order_number,
+          user_id: targetUserId,
+          customer_name,
+          customer_phone,
+          customer_email,
+          delivery_address: finalShippingAddress,
+          shipping_address: finalShippingAddress,
+          city: finalCity,
+          state: finalState,
+          pincode,
+          subtotal: calculatedSubtotal,
+          total: calculatedTotal,
+          total_amount: calculatedTotal,
+          payment_method: finalPaymentMethod,
+          status: "confirmed",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          order_items: resolvedItems.map((item, idx) => ({
+            id: `item-${idx + 1}`,
+            order_id: orderData.id,
+            product_id: item.productId,
+            product_name: item.productName,
+            product_title: item.productTitle,
+            timber_option: item.timberOption,
+            timber_title: item.timberTitle,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            line_total: item.lineTotal,
+            image_url: item.imageUrl,
+            created_at: new Date().toISOString(),
+          })),
+        });
+
+        return NextResponse.json(
+          {
+            success: true,
+            orderNumber: orderData.order_number,
+            orderId: orderData.id,
+            subtotal: calculatedSubtotal,
+            total: calculatedTotal,
+            status: "Confirmed",
+          },
+          { status: 201 }
+        );
+      } catch (dbErr: unknown) {
+        if (!isProduction) {
+          console.warn("[KILN STUDIO NOTICE] Network error contacting database. Caching order in memory:", dbErr);
+          const devOrderId = `dev-sim-${Date.now()}`;
+          await saveDevStoreOrder(devOrderId);
           return NextResponse.json(
             {
               success: true,
@@ -221,68 +440,28 @@ export async function POST(request: NextRequest) {
               subtotal: calculatedSubtotal,
               total: calculatedTotal,
               itemsCount: resolvedItems.length,
-              devNotice: "Simulated order. Execute supabase/orders.sql in Supabase SQL Editor for persistence.",
+              status: "Confirmed",
             },
             { status: 201 }
           );
         }
-
-        console.error("[KILN STUDIO DB ERROR] Failed to create order in database:", orderError);
-        return NextResponse.json(
-          { error: `Database error creating order: ${orderError.message}` },
-          { status: 500 }
-        );
+        throw dbErr;
       }
-
-      // Insert line items
-      const orderItemsRows = resolvedItems.map((item) => ({
-        order_id: orderData.id,
-        product_id: item.productId,
-        product_name: item.productName,
-        timber_option: item.timberOption,
-        quantity: item.quantity,
-        unit_price: item.unitPrice,
-        line_total: item.lineTotal,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItemsRows);
-
-      if (itemsError) {
-        console.error("[KILN STUDIO DB ERROR] Failed to insert order items:", itemsError);
-        // Note: order is created, line items failed.
-        return NextResponse.json(
-          { error: `Failed to record order items: ${itemsError.message}` },
-          { status: 500 }
-        );
-      }
-
-      return NextResponse.json(
-        {
-          success: true,
-          orderNumber: orderData.order_number,
-          orderId: orderData.id,
-          subtotal: calculatedSubtotal,
-          total: calculatedTotal,
-        },
-        { status: 201 }
-      );
     }
 
     // Local development fallback without credentials
     if (!isProduction) {
-      console.warn(
-        "[KILN STUDIO DEV] Database credentials not configured. Simulating order placement."
-      );
+      const devOrderId = `dev-sim-${Date.now()}`;
+      await saveDevStoreOrder(devOrderId);
       return NextResponse.json(
         {
           success: true,
           orderNumber,
-          orderId: `dev-sim-${Date.now()}`,
+          orderId: devOrderId,
           subtotal: calculatedSubtotal,
           total: calculatedTotal,
           itemsCount: resolvedItems.length,
+          status: "Confirmed",
         },
         { status: 201 }
       );

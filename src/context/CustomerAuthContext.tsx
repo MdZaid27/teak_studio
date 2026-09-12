@@ -42,7 +42,7 @@ function isUserAdmin(
 ): boolean {
   if (!u) return false;
   if (u.app_metadata?.role === "admin" || u.user_metadata?.role === "admin") return true;
-  if (u.email && u.email.toLowerCase() === "admin@kilnstudio.in") return true;
+  if (u.email && (u.email.toLowerCase() === "admin@teakhaus.in" || u.email.toLowerCase() === "admin@kilnstudio.in")) return true;
   return false;
 }
 

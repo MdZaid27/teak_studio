@@ -131,7 +131,7 @@ export function SwatchesManager({ initialRequests }: SwatchesManagerProps) {
             </span>
           </div>
           <p className="mt-1 text-xs text-amber-400/60 font-light">
-            Dispatch 5-specimen curated solid wood sample boxes to Bangalore residences and architects.
+            Dispatch 5-specimen curated solid wood sample boxes to patrons and architects nationwide.
           </p>
         </div>
 

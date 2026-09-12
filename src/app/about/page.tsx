@@ -2,8 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
-  title: "Our Story & Craftsmanship — KILN STUDIO Bangalore",
-  description: "The living imperative of genuine solid heartwood. Hand-cut mortise and tenon joinery, master karigars, and Bangalore furniture heritage.",
+  title: "Our Story & Craftsmanship — TEAK HAUS",
+  description: "The living imperative of genuine solid heartwood. Hand-cut mortise and tenon joinery, master karigars, and timeless furniture heritage.",
 };
 
 export default function AboutStoryPage() {
@@ -17,7 +17,7 @@ export default function AboutStoryPage() {
 <div className="lg:col-span-8">
 <div className="inline-flex items-center gap-space-xs px-2.5 py-1 bg-surface-container-low border border-outline-variant/40 rounded-full mb-space-md">
 <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-<span className="font-label-caps text-label-caps tracking-widest uppercase text-on-surface-variant">THE PHILOSOPHY OF KILN STUDIO</span>
+<span className="font-label-caps text-label-caps tracking-widest uppercase text-on-surface-variant">THE PHILOSOPHY OF TEAK HAUS</span>
 </div>
 <h1 className="font-display text-display-mobile md:text-display text-primary leading-[1.08] tracking-tight">
             Born from the Forest. <br className="hidden md:inline" />Shaped by Human Hands.
@@ -26,7 +26,7 @@ export default function AboutStoryPage() {
 <div className="lg:col-span-4 border-l border-outline-variant/40 pl-space-lg pb-1">
 <p className="font-display italic text-headline-sm text-secondary mb-space-2xs">&ldquo;Trees remember the sun.&rdquo;</p>
 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-            In an era obsessed with transient assembly-line particleboard and chemical binders, we stand resolute in the sanctuary of Bangalore timber yards.
+            In an era obsessed with transient assembly-line particleboard and chemical binders, we stand resolute in the sanctuary of heritage timber yards.
           </p>
 </div>
 </div>
@@ -35,7 +35,7 @@ export default function AboutStoryPage() {
 {/*  Large Editorial Image  */}
 <div className="lg:col-span-7">
 <div className="relative overflow-hidden rounded-lg bg-surface-container-low border border-outline-variant/30 group">
-<img className="w-full h-[480px] md:h-[620px] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]" alt="A master Indian artisan inside a sunlit Bangalore woodcraft workshop hand-planing a massive slab of solid Malabar teak with flying wood curls, warm cinematic lighting, natural dust motes in sunbeams, tactile heirloom craftsmanship." src="/images/img_040_stitch.png" />
+<img className="w-full h-[480px] md:h-[620px] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]" alt="A master Indian artisan inside a sunlit woodcraft workshop hand-planing a massive slab of solid Malabar teak with flying wood curls, warm cinematic lighting, natural dust motes in sunbeams, tactile heirloom craftsmanship." src="/images/img_040_stitch.png" />
 <div className="absolute bottom-0 inset-x-0 p-space-lg bg-gradient-to-t from-primary/80 via-primary/30 to-transparent text-surface">
 <span className="font-label-caps text-label-caps uppercase tracking-wider text-secondary-fixed">Documentary Record • 08:30 AM</span>
 <p className="font-body-sm text-body-sm text-surface-bright mt-1">Master Karigar Narayana smoothing seasoned Hunsur Teak heartwood using a traditional hand jack plane.</p>
@@ -99,7 +99,7 @@ export default function AboutStoryPage() {
 <h2 className="font-display text-display-mobile md:text-headline-lg text-primary">The Four Pillars of Permanence</h2>
 </div>
 <p className="font-body-md text-body-md text-on-surface-variant max-w-md mt-space-sm md:mt-0">
-            Every dining refectory, low credenza, and lounge chair produced in our Bangalore bungalow studio satisfies four non-negotiable architectural mandates.
+            Every dining refectory, low credenza, and lounge chair produced in our atelier studio satisfies four non-negotiable architectural mandates.
           </p>
 </div>
 {/*  4-Column Bento Architecture Grid  */}
@@ -126,7 +126,7 @@ export default function AboutStoryPage() {
 <span className="inline-block px-2 py-0.5 bg-surface-container text-secondary font-label-caps text-label-caps uppercase mb-space-sm rounded">Structure</span>
 <h3 className="font-display text-headline-sm text-primary mb-space-sm">Hand-Cut Joinery</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                Blind mortise-and-tenons, sliding dovetails, and pinned through-tenons. Engineered intentionally to accommodate timber movement across monsoon humidity swings and dry Bangalore winters.
+                Blind mortise-and-tenons, sliding dovetails, and pinned through-tenons. Engineered intentionally to accommodate timber movement across monsoon humidity swings and dry seasonal winters.
               </p>
 </div>
 <div className="mt-space-xl pt-space-md border-t border-outline-variant/30 flex items-center justify-between text-on-surface-variant font-label-caps text-label-caps">
@@ -188,7 +188,7 @@ export default function AboutStoryPage() {
             </h2>
 </div>
 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-            Metal fasteners and drywall screws expand and contract at completely different thermal coefficients than natural hardwoods. Over ten Bangalore summers, screws pull loose and chew through fiber channels. Our master joinery relies on mechanical geometry developed across centuries.
+            Metal fasteners and drywall screws expand and contract at completely different thermal coefficients than natural hardwoods. Over the seasons, screws pull loose and chew through fiber channels. Our master joinery relies on mechanical geometry developed across centuries.
           </p>
 {/*  Architectural Accordion/Detail Specs  */}
 <div className="space-y-space-md border-t border-outline-variant/30 pt-space-md">
@@ -223,7 +223,7 @@ export default function AboutStoryPage() {
 </div>
 </div>
 </section>
-{/*  SECTION 4: THE BANGALORE ATELIER & KARIGAR GUILD  */}
+{/*  SECTION 4: THE ATELIER & KARIGAR GUILD  */}
 <section className="bg-primary text-surface py-space-4xl md:py-space-5xl">
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-2xl items-center">
@@ -234,7 +234,7 @@ export default function AboutStoryPage() {
             </h2>
 <div className="h-px w-16 bg-secondary"></div>
 <p className="font-body-md text-body-md text-surface-variant leading-relaxed">
-              In our workshops on the industrial fringe of Bangalore and the traditional timber belt of Channapatna, craft is not an abstract luxury marketing term. It is an inherited language spoken between the eyes, fingertips, and chisel edge.
+              In our workshops along the traditional timber belt of Karnataka, craft is not an abstract luxury marketing term. It is an inherited language spoken between the eyes, fingertips, and chisel edge.
             </p>
 <p className="font-body-md text-body-md text-surface-variant leading-relaxed">
               Our lead carpenters can determine moisture equilibrium simply by resting their cheek against a freshly sliced plank. They read internal fiber tension and know precisely how a plank will behave when monsoon winds arrive from the Arabian Sea.
@@ -258,10 +258,10 @@ export default function AboutStoryPage() {
 {/*  Editorial Workshop Photo using provided asset IMAGE_22  */}
 <div className="lg:col-span-6">
 <div className="relative rounded-lg overflow-hidden border border-outline/30 shadow-2xl">
-<img alt="Master artisans working on a custom oversized solid Hunsur Teak dining table in Bangalore workshop" className="w-full h-[460px] md:h-[540px] object-cover" src="/images/img_042_stitch.png" />
+<img alt="Master artisans working on a custom oversized solid Hunsur Teak dining table in atelier workshop" className="w-full h-[460px] md:h-[540px] object-cover" src="/images/img_042_stitch.png" />
 <div className="p-space-md bg-inverse-surface/90 border-t border-outline/20">
 <div className="flex items-center justify-between">
-<span className="font-label-caps text-label-caps text-secondary-fixed uppercase">Bangalore Atelier Bench 03</span>
+<span className="font-label-caps text-label-caps text-secondary-fixed uppercase">Atelier Bench 03</span>
 <span className="font-body-sm text-body-sm text-surface-dim">Hunsur Teak 12-Seater Dining Commission</span>
 </div>
 </div>
@@ -276,12 +276,12 @@ export default function AboutStoryPage() {
 <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary block mb-space-xs">Private Architectural Commissions</span>
 <h2 className="font-display text-display-mobile md:text-headline-lg text-primary">In-Situ: Objects in Conversation</h2>
 <p className="font-body-md text-body-md text-on-surface-variant mt-space-sm">
-          Witnessing our pieces transition from raw workshop sawdust into sunlit Bangalore limestone residences.
+          Witnessing our pieces transition from raw workshop sawdust into sunlit architectural residences.
         </p>
 </div>
 {/*  Architectural In-Situ Presentation  */}
 <div className="relative rounded-lg overflow-hidden border border-outline-variant/30 bg-surface-container group">
-<img className="w-full h-[520px] md:h-[680px] object-cover transition-transform duration-700 group-hover:scale-[1.01]" alt="Sunlit luxury contemporary Bangalore apartment living room with expansive balcony over lush greenery, featuring hand-crafted solid teak coffee table, credenza, linen sofa, and warm morning light on limestone floors." src="/images/img_043_stitch.png" />
+<img className="w-full h-[520px] md:h-[680px] object-cover transition-transform duration-700 group-hover:scale-[1.01]" alt="Sunlit luxury contemporary apartment living room with expansive balcony over lush greenery, featuring hand-crafted solid teak coffee table, credenza, linen sofa, and warm morning light on limestone floors." src="/images/img_043_stitch.png" />
 {/*  Editorial Overlay Card  */}
 <div className="absolute bottom-space-md left-space-md right-space-md md:right-auto md:max-w-lg bg-surface/95 backdrop-blur-md p-space-xl rounded-lg border border-outline-variant/30 shadow-lg">
 <div className="flex items-center gap-space-xs mb-space-xs">
@@ -292,7 +292,7 @@ export default function AboutStoryPage() {
             &ldquo;It holds the quiet rhythm of the trees.&rdquo;
           </h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-space-md">
-            &ldquo;Furnishing our home with KILN STUDIO was unlike purchasing commercial furniture. Every guest immediately touches the bevel of the teak table. It breathes warmth into our concrete architectural structure.&rdquo;
+            &ldquo;Furnishing our home with TEAK HAUS was unlike purchasing commercial furniture. Every guest immediately touches the bevel of the teak table. It breathes warmth into our concrete architectural structure.&rdquo;
           </p>
 <div className="flex items-center justify-between pt-space-sm border-t border-outline-variant/30">
 <span className="font-label-md text-label-md text-primary font-semibold">Ar. Vikram &amp; Priya Sen</span>
@@ -301,7 +301,7 @@ export default function AboutStoryPage() {
 </div>
 </div>
 </section>
-{/*  SECTION 6: VISIT OUR BANGALORE STUDIOS  */}
+{/*  SECTION 6: VISIT OUR FLAGSHIP STUDIOS  */}
 <section className="bg-surface-container-low border-t border-outline-variant/30 py-space-4xl">
 <div className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop">
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-2xl">
@@ -337,7 +337,7 @@ export default function AboutStoryPage() {
 <h3 className="font-display text-headline-sm text-primary mb-1">Indiranagar Atelier</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
                   742, 100ft Road, Defence Colony,<br />
-                  Indiranagar, Bangalore 560038
+                  Indiranagar, Bengaluru 560038
                 </p>
 <div className="space-y-1 font-body-sm text-body-sm text-outline">
 <p className="">Tuesday – Sunday: 10:30 AM – 7:30 PM</p>
@@ -359,7 +359,7 @@ export default function AboutStoryPage() {
 <h3 className="font-display text-headline-sm text-primary mb-1">Whitefield Millworks</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
                   Plot 18, Inner Circle Road, EPIP Zone,<br />
-                  Whitefield, Bangalore 560066
+                  Whitefield, Bengaluru 560066
                 </p>
 <div className="space-y-1 font-body-sm text-body-sm text-outline">
 <p className="">Monday – Saturday: By Prior Appointment</p>

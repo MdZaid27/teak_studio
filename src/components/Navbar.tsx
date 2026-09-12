@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
@@ -44,16 +45,23 @@ export default function Navbar() {
                 {mobileMenuOpen ? "close" : "menu"}
               </span>
             </button>
-            <Link
-              href="/"
-              className="flex flex-col group shrink-0"
-            >
-              <span className="font-display text-xl md:text-2xl font-medium tracking-[0.18em] text-[#2c1a11] group-hover:text-[#895029] transition-colors uppercase whitespace-nowrap">
-                {siteConfig.name}
-              </span>
-              <span className="text-[9px] tracking-[0.25em] uppercase text-[#895029] font-medium -mt-0.5 whitespace-nowrap">
-                {siteConfig.tagline}
-              </span>
+            <Link className="flex items-center gap-3 group shrink-0" href="/">
+              <Image
+                alt="TEAK HAUS"
+                className="w-8 h-8 md:w-9 md:h-9 object-contain"
+                height={36}
+                priority
+                src="/brand/teak-haus-light.png"
+                width={36}
+              />
+              <div className="flex flex-col">
+                <span className="font-serif text-lg md:text-xl font-medium tracking-wider text-[#1A1A1A] leading-none">
+                  TEAK HAUS
+                </span>
+                <span className="font-sans text-[9px] tracking-[0.2em] text-[#766E65] uppercase mt-0.5">
+                  SOLID HARDWOOD &amp; HEIRLOOM JOINERY
+                </span>
+              </div>
             </Link>
           </div>
 
@@ -286,7 +294,7 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-3 bg-[#2c1a11] text-[#fcf9f4] text-xs uppercase tracking-widest rounded-lg font-semibold"
                 >
-                  Book Bangalore Studio Visit
+                  Book Experience Studio Visit
                 </Link>
                 <div className="text-[11px] text-[#4f4540] text-center pt-2">
                   Indiranagar 100ft Rd &amp; VR Whitefield Studios

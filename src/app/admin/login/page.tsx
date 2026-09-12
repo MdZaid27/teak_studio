@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -53,6 +54,8 @@ export default function AdminLoginPage() {
           (email &&
             (email.startsWith("admin@") ||
              email.includes("admin") ||
+             email.endsWith("@teakhaus.in") ||
+             email === "curator@teakhaus.in" ||
              email === "curator@kilnstudio.in" ||
              email.endsWith("@kilnstudio.in")));
 
@@ -100,14 +103,21 @@ export default function AdminLoginPage() {
 
           {/* Atelier Brand Emblem */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-b from-[#2a170d] to-[#160b06] border border-amber-700/30 text-amber-400 mb-4 shadow-inner">
-              <span className="font-serif text-lg tracking-widest font-semibold">K</span>
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/brand/teak-haus-dark.png"
+                alt="TEAK HAUS"
+                width={56}
+                height={56}
+                priority
+                className="w-14 h-14 object-contain rounded-xl shadow-lg border border-amber-800/30"
+              />
             </div>
             <h1 className="font-serif text-2xl md:text-3xl text-amber-100 tracking-wide font-normal">
               Atelier Curator Portal
             </h1>
             <p className="mt-2 text-xs uppercase tracking-[0.2em] text-amber-400/60 font-light">
-              KILN STUDIO Bangalore
+              TEAK HAUS Atelier
             </p>
           </div>
 
@@ -152,7 +162,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="curator@kilnstudio.in"
+                placeholder="curator@teakhaus.in"
                 disabled={isLoading}
                 className="w-full px-4 py-3 bg-[#1d110b] border border-amber-900/40 rounded text-sm text-amber-50 placeholder:text-amber-800/60 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-600 transition-all disabled:opacity-60"
               />
@@ -234,7 +244,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="px-6 py-6 border-t border-amber-950/40 text-center text-xs text-amber-500/40">
-        © {new Date().getFullYear()} KILN STUDIO · Timber & Heirloom Joinery Atelier · Bangalore
+        © {new Date().getFullYear()} TEAK HAUS · Solid Wood Guild &amp; Heirloom Joinery
       </footer>
     </div>
   );

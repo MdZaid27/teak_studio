@@ -7,6 +7,7 @@ import {
 } from "@/types/database";
 import { getAllOrders, OrderWithItems } from "@/lib/orders";
 import { getProductById } from "@/lib/products";
+import { getPincodeDetailsSync } from "@/lib/pincode";
 
 // Global dev in-memory caches for resilient operation before/during migration
 declare global {
@@ -122,14 +123,15 @@ export async function createPatronAddress(
   const existing = await getPatronAddresses(userId);
   const isDefault = input.is_default !== undefined ? input.is_default : existing.length === 0;
 
+  const pinDetails = getPincodeDetailsSync(input.pincode.trim());
   const newAddress: DbPatronAddress = {
     id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `addr-${Date.now()}`,
     user_id: userId,
     floor_building: input.floor_building.trim(),
     area_street: input.area_street.trim(),
     pincode: input.pincode.trim(),
-    city: input.city?.trim() || "Bengaluru",
-    state: input.state?.trim() || "Karnataka",
+    city: input.city?.trim() || pinDetails?.city || "India",
+    state: input.state?.trim() || pinDetails?.state || "India",
     country: input.country?.trim() || "India",
     first_name: input.first_name.trim(),
     last_name: input.last_name.trim(),
@@ -389,21 +391,32 @@ export async function removeFromWishlist(userId: string, productId: string): Pro
 // Patron Orders
 // -------------------------------------------------------------
 
-export async function getPatronOrders(customerPhoneOrEmail: string): Promise<OrderWithItems[]> {
-  if (!customerPhoneOrEmail) return [];
+export async function getPatronOrders(
+  customerPhoneOrEmail?: string,
+  userId?: string
+): Promise<OrderWithItems[]> {
+  if (!customerPhoneOrEmail && !userId) return [];
 
-  const cleanPhone = customerPhoneOrEmail.replace(/\D/g, "").slice(-10);
+  const cleanPhone = customerPhoneOrEmail ? customerPhoneOrEmail.replace(/\D/g, "").slice(-10) : "";
   const allOrders = await getAllOrders();
 
   return allOrders.filter((order) => {
+    // 1. Direct match on patron user_id
+    if (userId && order.user_id && order.user_id === userId) {
+      return true;
+    }
+
+    if (!customerPhoneOrEmail) return false;
+
+    // 2. Match on customer phone or email
     const orderPhoneClean = (order.customer_phone || "").replace(/\D/g, "").slice(-10);
     const orderEmailClean = (order.customer_email || "").toLowerCase().trim();
     const targetClean = customerPhoneOrEmail.toLowerCase().trim();
 
     return (
       (cleanPhone && orderPhoneClean === cleanPhone) ||
-      orderEmailClean === targetClean ||
-      order.customer_phone.includes(cleanPhone)
+      (targetClean && orderEmailClean === targetClean) ||
+      (cleanPhone && order.customer_phone.includes(cleanPhone))
     );
   });
 }

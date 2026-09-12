@@ -172,7 +172,11 @@ function CustomerAuthModalContent() {
         </button>
 
         {/* Header */}
-        <div className="space-y-1 mb-6">
+        <div className="space-y-1.5 mb-6">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-[#895029] uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#895029]" />
+            TEAK HAUS — Patron Atelier
+          </div>
           <h2 className="font-serif text-2xl md:text-3xl text-[#1A1A1A] font-medium leading-tight">
             {step === "phone" ? "Sign In" : "Verify Mobile Number"}
           </h2>

@@ -129,7 +129,7 @@ export default function BespokePage() {
             Furniture Made for Your Space.
           </h1>
 <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl font-normal leading-relaxed">
-            Every home has unique light, specific sightlines, and distinct proportions. We collaborate directly with Bangalore homeowners, architects, and interior designers to craft one-of-a-kind solid wood furniture built to exact millimeter specifications.
+            Every home has unique light, specific sightlines, and distinct proportions. We collaborate directly with homeowners, architects, and interior designers to craft one-of-a-kind solid wood furniture built to exact millimeter specifications.
           </p>
 <div className="flex flex-wrap items-center gap-space-md pt-space-sm w-full sm:w-auto">
 <a className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-on-primary rounded-lg font-title-md text-title-md hover:bg-tertiary-container transition-all duration-150 ease-out active:scale-95 shadow-sm" href="#commission-form">
@@ -152,7 +152,7 @@ export default function BespokePage() {
 </div>
 <div>
 <div className="font-display text-headline-sm text-primary">White Glove</div>
-<div className="font-label-sm text-label-sm text-outline">Bangalore In-Room Setup</div>
+<div className="font-label-sm text-label-sm text-outline">Atelier In-Room Setup</div>
 </div>
 </div>
 </div>
@@ -160,12 +160,12 @@ export default function BespokePage() {
 <div className="lg:col-span-6 relative">
 <div className="relative overflow-hidden rounded-lg bg-surface-container p-2 border border-outline-variant/40 shadow-xl shadow-primary/5">
 <div className="overflow-hidden rounded aspect-[4/3] relative">
-<img className="w-full h-full object-cover transform hover:scale-[1.02] transition-transform duration-700 ease-out" alt="Bangalore atelier master artisans and senior carpenter sketching full-scale architectural blueprints on a drafting desk while colleagues plane a massive solid timber dining table in an expansive brick workshop filled with warm streaming natural window daylight." src="/images/img_037_stitch.png" />
+<img className="w-full h-full object-cover transform hover:scale-[1.02] transition-transform duration-700 ease-out" alt="Atelier master artisans and senior carpenter sketching full-scale architectural blueprints on a drafting desk while colleagues plane a massive solid timber dining table in an expansive brick workshop filled with warm streaming natural window daylight." src="/images/img_037_stitch.png" />
 <div className="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent"></div>
 </div>
 <div className="p-space-md flex justify-between items-center bg-surface-container-low mt-2 rounded">
 <div>
-<p className="font-title-md text-title-md text-primary">Bangalore Atelier Production Floor</p>
+<p className="font-title-md text-title-md text-primary">Atelier Joinery Production Floor</p>
 <p className="font-body-sm text-body-sm text-outline">Live commission in raw Malabar Teak &amp; hand-planed jointing</p>
 </div>
 <span className="px-2.5 py-1 bg-surface rounded text-primary text-label-caps font-label-caps uppercase border border-outline-variant/40">Atelier Studio</span>
@@ -242,7 +242,7 @@ export default function BespokePage() {
 </div>
 <h3 className="font-title-lg text-title-lg text-primary mb-space-xs">Delivery &amp; installation</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-              Handled exclusively by our own white-glove team. In-room positioning, felt pad installation, and zero-plastic packaging haul-away across all Bangalore pin codes.
+              Handled exclusively by our own white-glove team. In-room positioning, felt pad installation, and zero-plastic packaging haul-away included.
             </p>
 </div>
 </div>
@@ -262,7 +262,7 @@ export default function BespokePage() {
 {/*  Showcase 1: Architectural Dining Tables  */}
 <div className="md:col-span-7 bg-surface-container-low rounded-lg p-space-lg border border-outline-variant/30 flex flex-col justify-between group">
 <div className="overflow-hidden rounded-lg aspect-[16/10] bg-surface relative mb-space-md">
-<img className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]" alt="Editorial design shoot of a bespoke architectural solid teak expandable dining table in an airy modern Bangalore home with warm limestone flooring, clean morning daylight, and minimalist ceramic vases." src="/images/img_038_stitch.png" />
+<img className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]" alt="Editorial design shoot of a bespoke architectural solid teak expandable dining table in an airy modern residence with warm limestone flooring, clean morning daylight, and minimalist ceramic vases." src="/images/img_038_stitch.png" />
 <span className="absolute top-space-md left-space-md px-2.5 py-1 bg-surface-container-lowest/90 backdrop-blur-sm rounded font-label-caps text-label-caps uppercase text-primary border border-outline-variant/40">
               Heritage Spec
             </span>
@@ -384,9 +384,9 @@ export default function BespokePage() {
     </div>
 
     <div className="max-w-md mx-auto bg-surface p-4 rounded-lg border border-outline-variant/30 text-left text-xs text-on-surface-variant space-y-2">
-      <p className="font-semibold text-primary">Next Steps with KILN STUDIO:</p>
+      <p className="font-semibold text-primary">Next Steps with TEAK HAUS:</p>
       <ul className="list-disc list-inside space-y-1">
-        <li>Our Bangalore furniture architect will review your spatial context.</li>
+        <li>Our atelier furniture architect will review your spatial context.</li>
         <li>We will reach out via WhatsApp or phone within 24 hours.</li>
         <li>Complimentary CAD blueprint drafting and wood timber matching.</li>
       </ul>
@@ -488,7 +488,7 @@ export default function BespokePage() {
       />
     </div>
 
-    {/*  Step 4: Contact & Bangalore Pin Details  */}
+    {/*  Step 4: Contact & PIN Details  */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
         <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-2xs tracking-wider">
@@ -533,7 +533,7 @@ export default function BespokePage() {
       <div>
         <div className="flex justify-between items-center mb-space-2xs">
           <label className="font-label-caps text-label-caps uppercase text-outline tracking-wider">
-            Bangalore PIN Code *
+            Postal PIN Code *
           </label>
           <span className="text-[10px] text-outline">6 digits (no 0 start)</span>
         </div>
@@ -597,7 +597,7 @@ export default function BespokePage() {
               Architectural Trade &amp; Designer Support
             </h2>
 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-              We operate as a dedicated manufacturing partner to Bangalore’s premier interior architecture practices and independent designers. We eliminate execution risk with verified joinery standards, transparent workshop access, and predictable timelines.
+              We operate as a dedicated manufacturing partner to premier interior architecture practices and independent designers. We eliminate execution risk with verified joinery standards, transparent workshop access, and predictable timelines.
             </p>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-space-xs">
 <div className="flex items-start gap-3">

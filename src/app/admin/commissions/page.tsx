@@ -6,7 +6,7 @@ import { CommissionsManager } from "@/components/admin/CommissionsManager";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Bespoke Commissions | KILN STUDIO Admin",
+  title: "Bespoke Commissions | TEAK HAUS Admin",
   description: "Curate architectural commissions, timber choices, and client briefs.",
 };
 

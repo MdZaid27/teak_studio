@@ -17,6 +17,8 @@ export function isUserAdmin(
     email &&
     (email.startsWith("admin@") ||
      email.includes("admin") ||
+     email.endsWith("@teakhaus.in") ||
+     email === "curator@teakhaus.in" ||
      email === "curator@kilnstudio.in" ||
      email.endsWith("@kilnstudio.in"))
   ) {

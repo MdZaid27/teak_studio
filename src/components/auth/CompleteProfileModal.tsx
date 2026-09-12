@@ -88,7 +88,7 @@ export default function CompleteProfileModal() {
         <div className="space-y-1.5 mb-6">
           <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-[#895029] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-[#895029]" />
-            Kiln Studio — Atelier Registration
+            TEAK HAUS — ATELIER REGISTRATION
           </div>
           <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-medium leading-tight">
             Complete Your Profile

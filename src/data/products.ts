@@ -52,8 +52,8 @@ export const allProducts: Product[] = [
     description: "Curved woven cane backrest with tapered legs and hand-cut mortise and tenon joinery.",
     isPopular: true,
     link: "/products/malabar-dining-chair",
-    tagline: "Ergonomic rattan backrest sculpted for Bengaluru dinner gatherings.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    tagline: "Ergonomic rattan backrest sculpted for intimate dinner gatherings.",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png",
@@ -72,8 +72,8 @@ export const allProducts: Product[] = [
       },
       {
         src: "/images/stitch_screen_9e6fefca1fcd4a72bece565d08906c86.png",
-        alt: "Malabar Dining Chair in Bangalore dining room setting",
-        title: "In-Situ: Bangalore Penthouse",
+        alt: "Malabar Dining Chair in contemporary dining room setting",
+        title: "In-Situ: Penthouse Residence",
       },
     ],
     timbers: [
@@ -200,7 +200,7 @@ export const allProducts: Product[] = [
     isPopular: true,
     link: "/products/fluted-tambour-credenza",
     tagline: "Precision tactile wood slats sliding silently along curved beech tracks.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_3450da53a7364a12896a5cedc3f366cb.png",
@@ -270,7 +270,7 @@ export const allProducts: Product[] = [
     description: "Floating under-tier shelf with exposed through-tenon joint pins and hand-wax finish.",
     link: "/products/kaveri-coffee-table",
     tagline: "Low-profile centerpiece with dual-tier storage for art books and ceramics.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_7a4f3197cdd546acae59563d24b1dc02.png",
@@ -410,7 +410,7 @@ export const allProducts: Product[] = [
     description: "Oversized solid slab table featured in Architectural Digest India residential installation.",
     link: "/products/penthouse-coffee-table",
     tagline: "Architectural monolithic geometry anchored with solid cylindrical legs.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_237f1c60dc03452ba8e1e49e64d1e647.png",
@@ -478,7 +478,7 @@ export const allProducts: Product[] = [
     description: "Relaxed recline posture with woven side panels and organic cotton cushioned seat.",
     link: "/products/teak-armchair-cane",
     tagline: "Comfortable recline angles with breathable woven wicker sides.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png",
@@ -546,8 +546,8 @@ export const allProducts: Product[] = [
     dimensions: "L 160cm × D 42cm × H 75cm",
     description: "Narrow hallway and living console with twin sliding tambour cabinets.",
     link: "/products/atelier-credenza-alt",
-    tagline: "Compact architectural console designed for Bengaluru entryways and foyer niches.",
-    leadTime: "In Stock — 48hr Bangalore Delivery",
+    tagline: "Compact architectural console designed for entryways and foyer niches.",
+    leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_22974d8e0b504e5381e51d990c411be0.png",

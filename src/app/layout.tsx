@@ -30,13 +30,13 @@ export const metadata: Metadata = {
   title: siteConfig.fullName,
   description: siteConfig.description,
   keywords: [
-    "Bangalore solid wood furniture",
+    "Solid wood furniture",
     "Hunsur teak dining table",
     "Indian Rosewood chair",
-    "Bangalore handcrafted furniture",
+    "Handcrafted heirloom furniture",
     siteConfig.name,
-    "Indiranagar furniture studio",
-    "Bespoke solid wood Bangalore",
+    "Architectural furniture studio",
+    "Bespoke solid wood furniture",
   ],
 };
 

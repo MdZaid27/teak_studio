@@ -331,7 +331,7 @@ export function CommissionsManager({ initialInquiries }: CommissionsManagerProps
                 <span className="font-mono text-amber-200 truncate block">{selectedInquiry.email}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-mono text-amber-500/60 block">Bangalore PIN</span>
+                <span className="text-[10px] uppercase font-mono text-amber-500/60 block">Postal PIN</span>
                 <span className="font-mono text-amber-300">{selectedInquiry.pincode}</span>
               </div>
             </div>

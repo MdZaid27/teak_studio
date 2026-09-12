@@ -33,9 +33,9 @@ function AddressDrawerForm({
 
   const [floorBuilding, setFloorBuilding] = useState(addressToEdit?.floor_building || "");
   const [areaStreet, setAreaStreet] = useState(addressToEdit?.area_street || "");
-  const [pincode, setPincode] = useState(addressToEdit?.pincode || "560038");
-  const [city, setCity] = useState(addressToEdit?.city || "Bengaluru");
-  const [state, setState] = useState(addressToEdit?.state || "Karnataka");
+  const [pincode, setPincode] = useState(addressToEdit?.pincode || "");
+  const [city, setCity] = useState(addressToEdit?.city || "");
+  const [state, setState] = useState(addressToEdit?.state || "");
   const [firstName, setFirstName] = useState(addressToEdit?.first_name || profile?.first_name || "");
   const [lastName, setLastName] = useState(addressToEdit?.last_name || profile?.last_name || "");
   const [email, setEmail] = useState(addressToEdit?.email || profile?.email || customerUser?.email || "");
@@ -45,9 +45,7 @@ function AddressDrawerForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [pincodeLocalityNotice, setPincodeLocalityNotice] = useState<string | null>(
-    addressToEdit ? null : "Indiranagar 100ft Road, Defence Colony"
-  );
+  const [pincodeLocalityNotice, setPincodeLocalityNotice] = useState<string | null>(null);
 
   // Real-time Pincode Auto-population
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,8 +107,8 @@ function AddressDrawerForm({
       floor_building: floorBuilding.trim(),
       area_street: areaStreet.trim(),
       pincode: pincode.trim(),
-      city: city.trim() || "Bengaluru",
-      state: state.trim() || "Karnataka",
+      city: city.trim() || "India",
+      state: state.trim() || "India",
       country: "India",
       first_name: firstName.trim(),
       last_name: lastName.trim(),
@@ -179,7 +177,7 @@ function AddressDrawerForm({
                 01. Delivery Information
               </span>
               <span className="text-[10px] text-[#895029] font-medium">
-                Bengaluru White-Glove Zone
+                White-Glove Delivery Zone
               </span>
             </div>
 
@@ -268,7 +266,7 @@ function AddressDrawerForm({
             {/* Country Locked Indicator */}
             <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F5F4F0] border border-[#EAE7E1] rounded-xl text-xs text-[#4A453E] select-none">
               <span className="flex items-center gap-2 font-medium">
-                <span>🇮🇳</span> India (Domestic Freight Zone A — Tier 1 Express)
+                <span>🇮🇳</span> India (Domestic Freight Zone A)
               </span>
               <span className="material-symbols-outlined text-[16px] text-[#766E65]">lock</span>
             </div>
@@ -442,7 +440,7 @@ export default function AddAddressDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[60] flex justify-end bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
       {/* Backdrop click to dismiss */}
       <div className="flex-1" onClick={onClose} />
 
@@ -455,7 +453,7 @@ export default function AddAddressDrawer({
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <span className="font-sans text-[11px] font-semibold tracking-wider text-[#895029] uppercase block">
-                Kiln Studio — Patron Residences
+                TEAK HAUS — Patron Residences
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-medium leading-none">
                 {addressToEdit ? "Edit Delivery Address" : "Add Delivery Address"}

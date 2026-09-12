@@ -51,9 +51,9 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
       return;
     }
     if (cleanPin.startsWith("560")) {
-      setPincodeMessage(`Pincode ${cleanPin} eligible for complimentary Bengaluru White-Glove installation & assembly.`);
+      setPincodeMessage(`Pincode ${cleanPin} eligible for complimentary White-Glove installation & assembly.`);
     } else {
-      setPincodeMessage(`Outside Bangalore municipal core: Insured wooden crate dispatch in 4–6 business days.`);
+      setPincodeMessage(`Pincode ${cleanPin} eligible for White-Glove wooden crate dispatch in 4–6 business days.`);
     }
   };
 
@@ -156,8 +156,8 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
               <div className="p-3 bg-white rounded-xl border border-[#e5e2dd] flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-[#895029] text-[20px]">local_shipping</span>
                 <div>
-                  <h5 className="text-[11px] font-semibold text-[#0e0300] uppercase tracking-wider">Bengaluru Setup</h5>
-                  <p className="text-[10px] text-[#81746f]">White-glove placement</p>
+                  <h5 className="text-[11px] font-semibold text-[#0e0300] uppercase tracking-wider">White-Glove Setup</h5>
+                  <p className="text-[10px] text-[#81746f]">Room-of-choice placement</p>
                 </div>
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   {product.category} &bull; {currentTimber.name}
                 </span>
                 <span className="text-[10px] bg-[#895029]/10 text-[#895029] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  {product.leadTime || "Bangalore In-Stock"}
+                  {product.leadTime || "Atelier In-Stock"}
                 </span>
               </div>
               <h1 className="font-display text-3xl md:text-4xl text-[#0e0300] font-normal leading-tight">
@@ -188,7 +188,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   ₹{(unitPrice * quantity).toLocaleString("en-IN")}
                 </span>
                 <span className="text-xs text-[#81746f]">
-                  Inclusive of all Bangalore taxes &bull; Lifetime Joinery Guarantee
+                  Inclusive of all taxes &bull; Lifetime Joinery Guarantee
                 </span>
               </div>
             </div>
@@ -289,7 +289,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
             {/* Pincode Check */}
             <div className="p-4 bg-white rounded-2xl border border-[#e5e2dd] space-y-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                Bangalore White-Glove Delivery
+                White-Glove Delivery &amp; Placement
               </span>
               <form onSubmit={checkPincode} className="flex gap-2">
                 <input
@@ -356,14 +356,14 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                 Built for South India&apos;s Atmospheric Cycles.
               </h2>
               <p className="text-sm text-[#4f4540] leading-relaxed">
-                Modern fast furniture relies on industrial screws and toxic MDF adhesives that fail under humidity fluctuations. At KILN STUDIO, our Karigars sculpt each piece using authentic interlocking timber joinery.
+                Modern fast furniture relies on industrial screws and toxic MDF adhesives that fail under humidity fluctuations. At TEAK HAUS, our Karigars sculpt each piece using authentic interlocking timber joinery.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex gap-3">
                   <span className="material-symbols-outlined text-[#895029] shrink-0 mt-0.5">check_circle</span>
                   <div>
                     <h4 className="text-sm font-semibold text-[#0e0300]">Naturally Seasoned for 180 Days</h4>
-                    <p className="text-xs text-[#81746f]">Equilibrated to 8–10% moisture content to eliminate timber warping or cracks in air-conditioned Bangalore homes.</p>
+                    <p className="text-xs text-[#81746f]">Equilibrated to 8–10% moisture content to eliminate timber warping or cracks in climate-controlled residences.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -384,7 +384,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
             {[
               { id: "specs", label: "Dimensions & Architecture" },
               { id: "provenance", label: "Timber Terroir" },
-              { id: "delivery", label: "Bangalore White-Glove" },
+              { id: "delivery", label: "White-Glove Delivery" },
               { id: "care", label: "Care & Maintenance" },
             ].map((tab) => (
               <button
@@ -409,7 +409,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                   <strong className="text-sm font-display text-[#0e0300] block">Dimensions</strong>
                   <p className="text-[#4f4540]">Dimensions: {product.dimensions}</p>
                   <p className="text-[#4f4540]">Scale: Custom architectural sizing available</p>
-                  <p className="text-[#4f4540]">Proportions: Ergonomically tested for urban Bangalore homes</p>
+                  <p className="text-[#4f4540]">Proportions: Ergonomically tested for architectural living spaces</p>
                 </div>
                 <div className="p-5 bg-white rounded-xl border border-[#e5e2dd] space-y-2">
                   <strong className="text-sm font-display text-[#0e0300] block">Joinery &amp; Build</strong>
@@ -440,9 +440,9 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
 
             {activeTab === "delivery" && (
               <div className="p-6 bg-white rounded-xl border border-[#e5e2dd] space-y-3 text-xs text-[#4f4540]">
-                <h3 className="text-sm font-display font-medium text-[#0e0300]">Bengaluru Concierge Fulfillment</h3>
+                <h3 className="text-sm font-display font-medium text-[#0e0300]">White-Glove Concierge Fulfillment</h3>
                 <p>
-                  All orders in Bengaluru are handled directly by our in-house atelier transport. Your furniture arrives padded and handled with utmost care. Our master carpenters will assemble, level, and apply a fresh coat of beeswax upon placement.
+                  All orders are handled directly by our dedicated white-glove transport team. Your furniture arrives blanket-padded and handled with utmost care. Our master carpenters will assemble, level, and apply a fresh coat of organic beeswax upon placement.
                 </p>
               </div>
             )}
@@ -451,7 +451,7 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
               <div className="p-6 bg-white rounded-xl border border-[#e5e2dd] space-y-3 text-xs text-[#4f4540]">
                 <h3 className="text-sm font-display font-medium text-[#0e0300]">Maintaining Solid Timber</h3>
                 <p>
-                  Dust periodically with a clean microfiber cloth. Every 12 to 18 months, apply a small amount of KILN STUDIO Organic Beeswax balm to nourish the timber grain and preserve natural oils.
+                  Dust periodically with a clean microfiber cloth. Every 12 to 18 months, apply a small amount of TEAK HAUS Organic Beeswax balm to nourish the timber grain and preserve natural oils.
                 </p>
               </div>
             )}

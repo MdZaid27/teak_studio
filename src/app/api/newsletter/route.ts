@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         subscriberId: result.subscriberId,
-        message: "Welcome to the KILN STUDIO Patron List.",
+        message: "Welcome to the TEAK HAUS Patron List.",
       },
       { status: 201 }
     );

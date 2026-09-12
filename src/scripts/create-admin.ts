@@ -52,8 +52,8 @@ if (!supabaseUrl || !serviceKey) {
 const supabase = createClient(supabaseUrl, serviceKey);
 
 async function main() {
-  const adminEmail = process.argv[2] || "admin@kilnstudio.in";
-  const adminPassword = process.argv[3] || "Admin@KilnStudio2026!";
+  const adminEmail = process.argv[2] || "admin@teakhaus.in";
+  const adminPassword = process.argv[3] || "Admin@TeakHaus2026!";
 
   console.log(`Configuring admin user: ${adminEmail}...`);
 

@@ -254,7 +254,7 @@ export function SwatchRequestModal({
                 <textarea
                   required
                   rows={2}
-                  placeholder="Apartment, building, street, area in Bangalore"
+                  placeholder="Apartment, building, street, area"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full px-3.5 py-2 bg-white border border-[#d6c5b9] rounded-lg text-sm text-[#2c1a11] placeholder:text-[#a09085] focus:outline-none focus:border-[#895029] transition-colors"
@@ -265,7 +265,7 @@ export function SwatchRequestModal({
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-[11px] font-semibold tracking-wider uppercase text-[#52443c]">
-                    PIN Code (Bangalore / India) *
+                    PIN Code (All-India Dispatch) *
                   </label>
                   <span className="text-[10px] text-[#8a7a70]">6 digits (non-zero start)</span>
                 </div>

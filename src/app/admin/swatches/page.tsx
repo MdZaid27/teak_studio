@@ -6,7 +6,7 @@ import { SwatchesManager } from "@/components/admin/SwatchesManager";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Swatch Box Requests | KILN STUDIO Admin",
+  title: "Swatch Box Requests | TEAK HAUS Admin",
   description: "Curate and dispatch solid wood material sample boxes to patrons.",
 };
 

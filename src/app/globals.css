@@ -138,3 +138,55 @@
   background: #d3c3bd;
   border-radius: 2px;
 }
+
+/* Print Utilities */
+@media print {
+  /* Hide Global Navigation, Top Banner, Stepper Graphics, and Storefront Footer */
+  nav,
+  header,
+  footer,
+  .announcement-bar,
+  .timeline-stepper,
+  .atelier-journal-section,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset Page Background & Typography */
+  body {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Restrict to Single A4 Page */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  .print-receipt-container {
+    display: block !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-invoice-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Prevent awkward page breaks inside items or summaries */
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+

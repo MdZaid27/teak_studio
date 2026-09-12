@@ -6,8 +6,8 @@ import { OrdersManager } from "@/components/admin/OrdersManager";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Curator Console | KILN STUDIO Admin",
-  description: "Operational back-office console for KILN STUDIO.",
+  title: "Atelier Console | TEAK HAUS Admin",
+  description: "Operational back-office console for TEAK HAUS.",
 };
 
 export default async function AdminDashboardPage() {

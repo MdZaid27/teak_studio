@@ -1,15 +1,26 @@
 "use client";
 
-export default function PrintReceiptButton() {
+interface PrintReceiptButtonProps {
+  className?: string;
+  label?: string;
+}
+
+export default function PrintReceiptButton({
+  className,
+  label = "Download Tax Invoice",
+}: PrintReceiptButtonProps) {
   return (
     <button
       type="button"
       onClick={() => window.print()}
-      className="w-full sm:w-auto px-6 py-3.5 bg-white border border-[#d3c3bd] hover:border-[#0e0300] text-[#0e0300] rounded-xl text-xs uppercase tracking-widest font-semibold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-      title="Print or save PDF receipt"
+      className={
+        className ||
+        "px-4 py-2.5 bg-white border border-[#EAE7E1] hover:border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF9F6] rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer print:hidden"
+      }
+      title="Download and print official tax invoice receipt"
     >
-      <span className="material-symbols-outlined text-[18px]">print</span>
-      <span>Print Receipt</span>
+      <span className="material-symbols-outlined text-[17px] text-[#895029]">receipt_long</span>
+      <span>{label}</span>
     </button>
   );
 }

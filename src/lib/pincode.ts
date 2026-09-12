@@ -1,5 +1,5 @@
 // ==========================================================
-// KILN STUDIO — Bengaluru & All-India Pincode Directory Service
+// TEAK HAUS — Pincode & Delivery Directory Service
 // Auto-populates locality, city, and state for White-Glove Logistics
 // ==========================================================
 

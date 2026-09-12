@@ -103,7 +103,7 @@ export function NewsletterManager({
               : "100%"}
           </div>
           <p className="mt-1 text-[11px] text-amber-400/60">
-            Organic Bangalore patron retention
+            Organic patron community retention
           </p>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
             Our Collection
           </h1>
           <p className="text-sm md:text-base text-[#4f4540] max-w-2xl mx-auto font-light leading-relaxed">
-            Ethically sourced Indian heartwood furniture handcrafted by master karigars for Bangalore residences. Ready for white-glove home installation or custom dimensioning.
+            Ethically sourced Indian heartwood furniture handcrafted by master karigars for discerning residences. Ready for white-glove home installation or custom dimensioning.
           </p>
         </div>
       </div>
@@ -109,10 +109,8 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
               </select>
             </div>
           </div>
-
         </div>
 
-        {/* Product Grid */}
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pt-8">
           {filteredProducts.map((product) => (
@@ -128,10 +126,10 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 Custom Joinery &amp; Sizing
               </span>
               <h2 className="font-display text-3xl md:text-4xl text-[#fcf9f4] font-normal leading-tight">
-                Commission Custom Dimensions &amp; Millwork with Our Bengaluru Guild.
+                Commission Custom Dimensions &amp; Millwork with Our Atelier Guild.
               </h2>
               <p className="text-sm text-[#d3c3bd] max-w-2xl font-light leading-relaxed">
-                Need a 10-seater dining table sized for your Bellandur penthouse terrace, or a fluted credenza matched to your specific wall niche? Our master draughtsmen and karigars produce 1-of-1 architectural pieces.
+                Need a 10-seater dining table sized for your penthouse terrace, or a fluted credenza matched to your specific wall niche? Our master draughtsmen and karigars produce 1-of-1 architectural pieces.
               </p>
             </div>
             <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3">
@@ -143,7 +141,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
               <Link
                 href="/bespoke#booking"
                 className="w-full text-center py-3.5 px-6 border border-[#feb383]/40 hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-widest rounded-xl transition-colors">
-                Book Indiranagar Consultation
+                Book Studio Consultation
               </Link>
             </div>
           </div>

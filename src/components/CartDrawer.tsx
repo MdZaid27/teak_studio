@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { DbPatronAddress } from "@/types/database";
+import AddAddressDrawer from "@/components/account/AddAddressDrawer";
+import { getPincodeDetailsSync } from "@/lib/pincode";
 
 const initialFormData = {
   customer_name: "",
@@ -48,6 +51,64 @@ function CartDrawerContent() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Saved addresses state for authenticated patron
+  const [addresses, setAddresses] = useState<DbPatronAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
+
+  const populateFromAddress = useCallback((addr: DbPatronAddress) => {
+    const fullName = [addr.first_name, addr.last_name].filter(Boolean).join(" ");
+    const cleanPhone = addr.phone.replace(/\D/g, "").slice(-10);
+    const streetAddress = [addr.floor_building, addr.area_street].filter(Boolean).join(", ");
+    setFormData((prev) => ({
+      ...prev,
+      customer_name: fullName || prev.customer_name,
+      customer_phone: cleanPhone || prev.customer_phone,
+      customer_email: addr.email || customerUser?.email || prev.customer_email,
+      delivery_address: streetAddress || prev.delivery_address,
+      pincode: addr.pincode || prev.pincode,
+    }));
+    setFormErrors({});
+  }, [customerUser?.email]);
+
+  const handleSelectAddress = (addr: DbPatronAddress) => {
+    setSelectedAddressId(addr.id);
+    populateFromAddress(addr);
+  };
+
+  // Fetch saved addresses whenever customerUser is available and user enters shipping step
+  useEffect(() => {
+    if (step === "shipping" && customerUser?.id) {
+      let isMounted = true;
+      setLoadingAddresses(true);
+      fetch(`/api/patron/addresses?userId=${encodeURIComponent(customerUser.id)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!isMounted) return;
+          if (data.success && Array.isArray(data.addresses)) {
+            setAddresses(data.addresses);
+            if (data.addresses.length > 0) {
+              // Default selected card: address with is_default === true, or first address
+              const defaultAddr =
+                data.addresses.find((a: DbPatronAddress) => a.is_default) ||
+                data.addresses[0];
+              setSelectedAddressId(defaultAddr.id);
+              populateFromAddress(defaultAddr);
+            }
+          }
+        })
+        .catch((err) => console.warn("[KILN STUDIO] Failed fetching patron addresses:", err))
+        .finally(() => {
+          if (isMounted) setLoadingAddresses(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [step, customerUser?.id, populateFromAddress]);
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -140,17 +201,32 @@ function CartDrawerContent() {
     setSubmitError(null);
 
     try {
+      const selectedAddr = addresses.find((a) => a.id === selectedAddressId);
+      const pincodeInfo = getPincodeDetailsSync(formData.pincode.trim());
+      const finalCity = selectedAddr?.city || pincodeInfo?.city || "India";
+      const finalState = selectedAddr?.state || pincodeInfo?.state || "India";
+
       const orderPayload = {
+        user_id: customerUser?.id || "patron-guest",
+        userId: customerUser?.id || "patron-guest",
         customer_name: formData.customer_name.trim(),
         customer_phone: formData.customer_phone.trim(),
         customer_email: formData.customer_email.trim(),
         delivery_address: formData.delivery_address.trim(),
+        shipping_address: formData.delivery_address.trim(),
         pincode: formData.pincode.trim(),
-        payment_method: "offline",
+        city: finalCity,
+        state: finalState,
+        payment_method: "Inspection Upon Delivery / Zero Upfront",
         items: items.map((item) => ({
           productId: item.productId || item.id.split("-")[0],
+          productTitle: item.name,
+          productName: item.name,
           quantity: item.quantity,
           timberOption: item.timberOption || item.timber,
+          timberTitle: item.timberOption || item.timber,
+          unitPrice: item.price,
+          imageUrl: item.image,
         })),
       };
 
@@ -167,12 +243,12 @@ function CartDrawerContent() {
       }
 
       // Successful order creation:
-      // 1. Clear cart
+      // 1. Clear cart bag
       clearCart();
       // 2. Close the drawer
       setIsCartOpen(false);
       // 3. Navigate to order confirmation
-      router.push(`/orders/${data.orderNumber}`);
+      router.push(`/orders/${data.orderNumber || data.orderId}`);
     } catch (err: unknown) {
       console.error("[KILN STUDIO] Order checkout error:", err);
       const msg = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
@@ -204,7 +280,7 @@ function CartDrawerContent() {
                     setStep("cart");
                   }}
                   disabled={isSubmitting}
-                  className="p-1.5 -ml-1 text-[#81746f] hover:text-[#0e0300] hover:bg-[#f0ede9] rounded-full transition-colors"
+                  className="p-1.5 -ml-1 text-[#81746f] hover:text-[#0e0300] hover:bg-[#f0ede9] rounded-full transition-colors cursor-pointer"
                   title="Back to Bag Review"
                 >
                   <span className="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -219,25 +295,25 @@ function CartDrawerContent() {
                 <p className="text-xs text-[#81746f]">
                   {step === "cart"
                     ? `${totalItems} ${totalItems === 1 ? "Heirloom Item" : "Heirloom Items"}`
-                    : `Step 2 of 2 — Bengaluru White-Glove Dispatch`}
+                    : `Step 2 of 2 — White-Glove Dispatch`}
                 </p>
               </div>
             </div>
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="p-2 text-[#81746f] hover:text-[#0e0300] rounded-full hover:bg-[#f0ede9] transition-colors"
+              className="p-2 text-[#81746f] hover:text-[#0e0300] rounded-full hover:bg-[#f0ede9] transition-colors cursor-pointer"
               aria-label="Close cart drawer"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
 
-          {/* Bengaluru Delivery Banner */}
+          {/* White-Glove Delivery Banner */}
           <div className="bg-[#f0ede9] px-6 py-2.5 border-b border-[#e5e2dd] flex items-center gap-2.5 text-xs text-[#2c1a11] shrink-0">
             <span className="material-symbols-outlined text-[#895029] text-[18px]">local_shipping</span>
             <span>
-              <strong>Free Bengaluru White-Glove Delivery</strong> &amp; Master Joinery Setup
+              <strong>Complimentary White-Glove Delivery</strong> &amp; Master Joinery Setup
             </span>
           </div>
 
@@ -283,7 +359,7 @@ function CartDrawerContent() {
                             </h3>
                             <button
                               onClick={() => removeItem(item.id)}
-                              className="text-[#81746f] hover:text-[#ba1a1a] p-1 text-xs"
+                              className="text-[#81746f] hover:text-[#ba1a1a] p-1 text-xs cursor-pointer"
                               title="Remove item"
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -300,7 +376,7 @@ function CartDrawerContent() {
                           <div className="flex items-center border border-[#d3c3bd] rounded-md bg-[#fcf9f4]">
                             <button
                               onClick={() => updateQuantity(item.id, -1)}
-                              className="px-2 py-0.5 text-xs text-[#0e0300] hover:bg-[#f0ede9]"
+                              className="px-2 py-0.5 text-xs text-[#0e0300] hover:bg-[#f0ede9] cursor-pointer"
                               aria-label="Decrease quantity"
                             >
                               -
@@ -308,7 +384,7 @@ function CartDrawerContent() {
                             <span className="px-2 text-xs font-semibold">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.id, 1)}
-                              className="px-2 py-0.5 text-xs text-[#0e0300] hover:bg-[#f0ede9]"
+                              className="px-2 py-0.5 text-xs text-[#0e0300] hover:bg-[#f0ede9] cursor-pointer"
                               aria-label="Increase quantity"
                             >
                               +
@@ -346,125 +422,280 @@ function CartDrawerContent() {
                   </span>
                 </div>
 
-                {/* Full Name */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="customer_name"
-                    value={formData.customer_name}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Ananya Rao"
-                    disabled={isSubmitting}
-                    className={`w-full bg-white border ${
-                      formErrors.customer_name ? "border-red-500" : "border-[#d3c3bd]"
-                    } rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
-                  />
-                  {formErrors.customer_name && (
-                    <p className="text-[10px] text-red-600">{formErrors.customer_name}</p>
-                  )}
-                </div>
+                {/* SAVED RESIDENCES SELECTOR (When patron has saved addresses) */}
+                {loadingAddresses ? (
+                  <div className="p-3.5 bg-white rounded-xl border border-[#e5e2dd] flex items-center justify-between text-xs text-[#81746f] animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px] animate-spin text-[#895029]">
+                        progress_activity
+                      </span>
+                      <span>Retrieving saved residences...</span>
+                    </div>
+                  </div>
+                ) : addresses.length > 0 ? (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px] text-[#895029]">home_pin</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300]">
+                          Saved Residences
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#81746f]">
+                        {addresses.length} {addresses.length === 1 ? "Address" : "Addresses"}
+                      </span>
+                    </div>
 
-                {/* Phone & Email */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      maxLength={10}
-                      name="customer_phone"
-                      value={formData.customer_phone}
-                      onChange={handlePhoneChange}
-                      placeholder="9876543210"
-                      disabled={isSubmitting}
-                      className={`w-full bg-white border ${
-                        formErrors.customer_phone ? "border-red-500" : "border-[#d3c3bd]"
-                      } rounded-lg px-3 py-2 text-xs font-mono text-[#0e0300] focus:outline-none focus:border-[#895029]`}
-                    />
-                    {formErrors.customer_phone && (
-                      <p className="text-[10px] text-red-600">{formErrors.customer_phone}</p>
+                    {/* Compact selector of address cards */}
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-0.5 custom-scrollbar">
+                      {addresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.id;
+                        const tagIcon =
+                          addr.save_as === "Home"
+                            ? "home"
+                            : addr.save_as === "Work"
+                            ? "apartment"
+                            : "roofing";
+
+                        return (
+                          <div
+                            key={addr.id}
+                            onClick={() => handleSelectAddress(addr)}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer select-none text-left relative ${
+                              isSelected
+                                ? "bg-white border-[#1A1A1A] ring-1.5 ring-[#1A1A1A] shadow-xs"
+                                : "bg-white/80 border-[#e5e2dd] hover:border-[#895029]/60 hover:bg-white"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {/* Tag pill */}
+                                <span
+                                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 ${
+                                    isSelected
+                                      ? "bg-[#1A1A1A] text-white"
+                                      : "bg-[#f0ede9] text-[#4f4540]"
+                                  }`}
+                                >
+                                  <span className="material-symbols-outlined text-[12px]">{tagIcon}</span>
+                                  <span>{addr.save_as}</span>
+                                </span>
+
+                                {/* DEFAULT badge */}
+                                {addr.is_default && (
+                                  <span className="px-1.5 py-0.5 rounded-md bg-[#895029]/10 text-[#895029] font-bold text-[9px] uppercase tracking-wider">
+                                    DEFAULT
+                                  </span>
+                                )}
+
+                                {/* Recipient name */}
+                                <span className="text-xs font-semibold text-[#0e0300]">
+                                  {addr.first_name} {addr.last_name}
+                                </span>
+                              </div>
+
+                              {/* Radio indicator */}
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
+                                  isSelected
+                                    ? "border-[#1A1A1A] bg-[#1A1A1A]"
+                                    : "border-[#d3c3bd] bg-white"
+                                }`}
+                              >
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </div>
+
+                            {/* Address snippet */}
+                            <p className="text-[11px] text-[#4f4540] leading-relaxed line-clamp-2">
+                              {addr.floor_building}, {addr.area_street}, {addr.city} —{" "}
+                              <span className="font-mono">{addr.pincode}</span>
+                            </p>
+
+                            {/* Recipient phone */}
+                            <p className="text-[10px] text-[#81746f] mt-1 font-mono">
+                              Phone: +91 {addr.phone.replace(/\D/g, "").slice(-10)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Outline Button: + Add New Address */}
+                    <button
+                      type="button"
+                      onClick={() => setIsAddAddressOpen(true)}
+                      className="w-full py-2.5 px-3 border border-dashed border-[#895029]/60 hover:border-[#895029] bg-transparent hover:bg-[#895029]/5 text-[#895029] rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                      <span>+ Add New Address</span>
+                    </button>
+                  </div>
+                ) : (
+                  // If authenticated but 0 saved addresses, provide outline button as alternative
+                  customerUser && (
+                    <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-[#e5e2dd]">
+                      <span className="text-[11px] text-[#81746f]">
+                        No saved residences found.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddAddressOpen(true)}
+                        className="text-[11px] text-[#895029] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">add</span>
+                        <span>+ Add New Address</span>
+                      </button>
+                    </div>
+                  )
+                )}
+
+                {/* Section Header: Recipient & White-Glove Destination */}
+                <div className="pt-2 border-t border-[#e5e2dd] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300]">
+                      Recipient &amp; White-Glove Destination
+                    </span>
+                    {selectedAddressId && (
+                      <span className="text-[10px] text-[#895029] flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                        Populated
+                      </span>
                     )}
                   </div>
 
+                  {/* Full Name */}
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                      Email Address *
+                    <label className="text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
+                      Full Name <span className="text-[#895029]">*</span>
                     </label>
                     <input
-                      type="email"
-                      name="customer_email"
-                      value={formData.customer_email}
+                      type="text"
+                      name="customer_name"
+                      value={formData.customer_name}
                       onChange={handleInputChange}
-                      placeholder="ananya@example.com"
+                      placeholder="e.g. Ananya Rao"
                       disabled={isSubmitting}
                       className={`w-full bg-white border ${
-                        formErrors.customer_email ? "border-red-500" : "border-[#d3c3bd]"
-                      } rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
+                        formErrors.customer_name ? "border-red-500" : "border-[#d3c3bd]"
+                      } rounded-xl px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
                     />
-                    {formErrors.customer_email && (
-                      <p className="text-[10px] text-red-600">{formErrors.customer_email}</p>
+                    {formErrors.customer_name && (
+                      <p className="text-[10px] text-red-600">{formErrors.customer_name}</p>
+                    )}
+                  </div>
+
+                  {/* Phone & Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
+                        Phone Number <span className="text-[#895029]">*</span>
+                      </label>
+                      <div className={`flex items-center border ${
+                        formErrors.customer_phone ? "border-red-500" : "border-[#d3c3bd]"
+                      } focus-within:border-[#895029] rounded-xl bg-white overflow-hidden`}>
+                        <span className="px-2.5 py-2 bg-[#f0ede9] text-[#0e0300] font-mono text-xs font-medium border-r border-[#d3c3bd] select-none">
+                          +91
+                        </span>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          name="customer_phone"
+                          value={formData.customer_phone}
+                          onChange={handlePhoneChange}
+                          placeholder="9876543210"
+                          disabled={isSubmitting}
+                          className="flex-1 px-3 py-2 text-xs font-mono text-[#0e0300] focus:outline-none bg-transparent"
+                        />
+                      </div>
+                      {formErrors.customer_phone && (
+                        <p className="text-[10px] text-red-600">{formErrors.customer_phone}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
+                        Email Address <span className="text-[#895029]">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        name="customer_email"
+                        value={formData.customer_email}
+                        onChange={handleInputChange}
+                        placeholder="ananya@example.com"
+                        disabled={isSubmitting}
+                        className={`w-full bg-white border ${
+                          formErrors.customer_email ? "border-red-500" : "border-[#d3c3bd]"
+                        } rounded-xl px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
+                      />
+                      {formErrors.customer_email && (
+                        <p className="text-[10px] text-red-600">{formErrors.customer_email}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delivery Address */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
+                      Delivery Address <span className="text-[#895029]">*</span>
+                    </label>
+                    <textarea
+                      name="delivery_address"
+                      rows={2}
+                      value={formData.delivery_address}
+                      onChange={handleInputChange}
+                      placeholder="Apartment, Wing, Street / Locality (e.g., Tower 3, 4th Cross Road)"
+                      disabled={isSubmitting}
+                      className={`w-full bg-white border ${
+                        formErrors.delivery_address ? "border-red-500" : "border-[#d3c3bd]"
+                      } rounded-xl px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029] resize-none`}
+                    />
+                    {formErrors.delivery_address && (
+                      <p className="text-[10px] text-red-600">{formErrors.delivery_address}</p>
+                    )}
+                  </div>
+
+                  {/* Pincode */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
+                      Postal Pincode <span className="text-[#895029]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[1-9][0-9]{5}"
+                      maxLength={6}
+                      name="pincode"
+                      value={formData.pincode}
+                      onChange={(e) => {
+                        const numericOnly = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setFormData((prev) => ({ ...prev, pincode: numericOnly }));
+                        if (formErrors.pincode) {
+                          setFormErrors((prev) => {
+                            const updated = { ...prev };
+                            delete updated.pincode;
+                            return updated;
+                          });
+                        }
+                      }}
+                      placeholder="e.g. 560038"
+                      disabled={isSubmitting}
+                      className={`w-full bg-white border ${
+                        formErrors.pincode ? "border-red-500" : "border-[#d3c3bd]"
+                      } rounded-xl px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
+                    />
+                    {formErrors.pincode && (
+                      <p className="text-[10px] text-red-600">{formErrors.pincode}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Delivery Address */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                    Bangalore Delivery Address *
-                  </label>
-                  <textarea
-                    name="delivery_address"
-                    rows={2}
-                    value={formData.delivery_address}
-                    onChange={handleInputChange}
-                    placeholder="Apartment, Wing, Street / Locality (e.g., Indiranagar, Whitefield, Lavelle Rd)"
-                    disabled={isSubmitting}
-                    className={`w-full bg-white border ${
-                      formErrors.delivery_address ? "border-red-500" : "border-[#d3c3bd]"
-                    } rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029] resize-none`}
-                  />
-                  {formErrors.delivery_address && (
-                    <p className="text-[10px] text-red-600">{formErrors.delivery_address}</p>
-                  )}
-                </div>
-
-                {/* Pincode */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                    Postal Pincode *
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[1-9][0-9]{5}"
-                    maxLength={6}
-                    name="pincode"
-                    value={formData.pincode}
-                    onChange={(e) => {
-                      const numericOnly = e.target.value.replace(/\D/g, "").slice(0, 6);
-                      setFormData((prev) => ({ ...prev, pincode: numericOnly }));
-                      if (formErrors.pincode) {
-                        setFormErrors((prev) => {
-                          const updated = { ...prev };
-                          delete updated.pincode;
-                          return updated;
-                        });
-                      }
-                    }}
-                    placeholder="e.g. 560038"
-                    disabled={isSubmitting}
-                    className={`w-full bg-white border ${
-                      formErrors.pincode ? "border-red-500" : "border-[#d3c3bd]"
-                    } rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]`}
-                  />
-                  {formErrors.pincode && (
-                    <p className="text-[10px] text-red-600">{formErrors.pincode}</p>
-                  )}
-                </div>
+                {/* Auto-save notice for new patrons */}
+                {addresses.length === 0 && (
+                  <p className="text-[10px] text-[#766E65] italic leading-tight">
+                    * This address will be automatically saved to your patron profile for future white-glove commissions.
+                  </p>
+                )}
 
                 {/* Payment & Inspection Notice */}
                 <div className="p-3 bg-[#f0ede9] rounded-xl border border-[#d3c3bd]/50 space-y-1 text-xs text-[#4f4540]">
@@ -486,15 +717,21 @@ function CartDrawerContent() {
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-[#4f4540]">
                   <span>Subtotal</span>
-                  <span className="font-sans font-semibold text-[#1A1A1A] tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
+                  <span className="font-sans font-semibold text-[#1A1A1A] tabular-nums">
+                    ₹{subtotal.toLocaleString("en-IN")}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[#4f4540]">
-                  <span>Bengaluru White-Glove Installation</span>
-                  <span className="text-[#895029] font-semibold uppercase tracking-wider text-[11px]">Free</span>
+                  <span>White-Glove Installation &amp; Placement</span>
+                  <span className="text-[#895029] font-semibold uppercase tracking-wider text-[11px]">
+                    Complimentary
+                  </span>
                 </div>
                 <div className="pt-2 border-t border-[#e5e2dd] flex justify-between text-base font-bold text-[#0e0300]">
                   <span>Total Amount</span>
-                  <span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
+                  <span className="font-sans text-lg font-semibold tracking-tight text-[#1A1A1A] tabular-nums">
+                    ₹{subtotal.toLocaleString("en-IN")}
+                  </span>
                 </div>
               </div>
 
@@ -510,7 +747,7 @@ function CartDrawerContent() {
                     <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                   </button>
                   <p className="text-[10px] text-center text-[#81746f]">
-                    Zero upfront payment · White-glove Bangalore delivery included
+                    Zero upfront payment · Complimentary white-glove delivery included
                   </p>
                 </div>
               ) : (
@@ -520,7 +757,7 @@ function CartDrawerContent() {
                     type="submit"
                     form="checkout-form"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] disabled:bg-[#81746f] disabled:cursor-not-allowed transition-all rounded-lg font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99]"
+                    className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] disabled:bg-[#81746f] disabled:cursor-not-allowed transition-all rounded-lg font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -542,7 +779,7 @@ function CartDrawerContent() {
                       setStep("cart");
                     }}
                     disabled={isSubmitting}
-                    className="w-full py-2 text-xs text-[#81746f] hover:text-[#0e0300] transition-colors"
+                    className="w-full py-2 text-xs text-[#81746f] hover:text-[#0e0300] transition-colors cursor-pointer"
                   >
                     ← Modify Atelier Items
                   </button>
@@ -553,6 +790,18 @@ function CartDrawerContent() {
 
         </div>
       </div>
+
+      {/* Embedded Add Address Drawer */}
+      <AddAddressDrawer
+        isOpen={isAddAddressOpen}
+        onClose={() => setIsAddAddressOpen(false)}
+        onAddressSaved={(newAddr) => {
+          setAddresses((prev) => [newAddr, ...prev.filter((a) => a.id !== newAddr.id)]);
+          setSelectedAddressId(newAddr.id);
+          populateFromAddress(newAddr);
+          setIsAddAddressOpen(false);
+        }}
+      />
     </div>
   );
 }

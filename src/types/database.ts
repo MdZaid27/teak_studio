@@ -128,13 +128,18 @@ export type OrderStatus =
 export interface DbOrder {
   id: string;
   order_number: string;
+  user_id?: string | null;
   customer_name: string;
   customer_phone: string;
   customer_email: string;
   delivery_address: string;
+  shipping_address?: string;
+  city?: string;
+  state?: string;
   pincode: string;
   subtotal: number;
   total: number;
+  total_amount?: number;
   payment_method: string;
   status: OrderStatus;
   created_at?: string;
@@ -146,10 +151,13 @@ export interface DbOrderItem {
   order_id: string;
   product_id: string;
   product_name: string;
+  product_title?: string;
   timber_option: string | null;
+  timber_title?: string | null;
   quantity: number;
   unit_price: number;
   line_total: number;
+  image_url?: string;
   created_at?: string;
 }
 
@@ -157,14 +165,24 @@ export interface CreateOrderItemInput {
   productId: string;
   quantity: number;
   timberOption?: string;
+  timberTitle?: string;
+  productTitle?: string;
+  productName?: string;
+  unitPrice?: number;
+  imageUrl?: string;
 }
 
 export interface CreateOrderInput {
+  user_id?: string;
+  userId?: string;
   customer_name: string;
   customer_phone: string;
   customer_email: string;
   delivery_address: string;
+  shipping_address?: string;
   pincode: string;
+  city?: string;
+  state?: string;
   payment_method?: string;
   items: CreateOrderItemInput[];
 }

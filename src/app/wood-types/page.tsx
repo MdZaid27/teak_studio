@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { SwatchRequestTrigger } from "@/components/SwatchRequestModal";
 
 export const metadata: Metadata = {
-  title: "Noble Hardwoods & Botanical Provenance | KILN STUDIO Bengaluru",
+  title: "Noble Hardwoods & Botanical Provenance | TEAK HAUS",
   description:
     "Explore our single-origin hardwoods: Karnataka Hunsur Teak, Deccan Rosewood, and Assam Teak. Vacuum kiln-dried for South Indian ambient humidity.",
 };
@@ -22,7 +22,7 @@ export default function WoodTypesPage() {
           Three Noble Hardwoods.<br className="hidden sm:inline" /> Hand-Selected for South India&apos;s Atmosphere.
         </h1>
 <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-3xl">
-          At KILN STUDIO, our material philosophy stems from deep architectural deference to tropical climatology. Every timber log is sourced exclusively from regulated government forest auctions and certified private plantations in Karnataka and Assam. Through prolonged solar seasoning and multi-stage dehumidification kilns, we stabilize natural resins and silica matrices—guaranteeing our solid joinery withstands Bangalore monsoons and dry plateau seasons without warp. No veneers, no reconstituted composites, ever.
+          At TEAK HAUS, our material philosophy stems from deep architectural deference to tropical climatology. Every timber log is sourced exclusively from regulated government forest auctions and certified private plantations in Karnataka and Assam. Through prolonged solar seasoning and multi-stage dehumidification kilns, we stabilize natural resins and silica matrices—guaranteeing our solid joinery withstands humid monsoons and dry plateau seasons without warp. No veneers, no reconstituted composites, ever.
         </p>
 </div>
 {/*  Quick-Stat Tactical Bar  */}
