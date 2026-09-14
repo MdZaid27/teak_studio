@@ -46,8 +46,8 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="bg-[#fcf9f4]/95 sticky top-0 z-40 border-b border-[#2c1a11]/10 backdrop-blur-md transition-all">
-        <div className="flex justify-between items-center w-full px-6 md:px-10 lg:px-12 xl:px-16 max-w-[1640px] mx-auto h-20">
+      <header className="bg-[#fcf9f4]/95 sticky top-0 z-40 border-b border-[#2c1a11]/10 backdrop-blur-md">
+        <div className="relative flex justify-between items-center w-full px-6 md:px-10 lg:px-12 xl:px-16 max-w-[1640px] mx-auto h-20">
           {/* Brand Logo */}
           <div className="flex items-center gap-3 shrink-0 mr-6 xl:mr-12">
             <button
@@ -80,8 +80,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center justify-center gap-6 2xl:gap-9 text-xs uppercase tracking-[0.16em] font-medium text-[#2c1a11]/80 flex-1 min-w-0">
+          {/* Desktop Nav Links - Absolutely Centered so layout never shifts */}
+          <nav className="hidden xl:flex items-center justify-center gap-6 2xl:gap-9 text-xs uppercase tracking-[0.16em] font-medium text-[#2c1a11]/80 absolute left-1/2 -translate-x-1/2 pointer-events-auto">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -124,7 +124,7 @@ export default function Navbar() {
               <div className="relative group">
                 <Link
                   href="/account"
-                  className="flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-[#f0ede9] text-[#2c1a11] hover:bg-[#e5e2dd] transition-all text-xs font-mono cursor-pointer"
+                  className="flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-[#f0ede9] text-[#2c1a11] hover:bg-[#e5e2dd] transition-colors duration-150 text-xs font-mono cursor-pointer"
                   title={`Signed in as ${customerUser.phone}`}
                 >
                   <span className="material-symbols-outlined text-[16px] text-[#895029]">person</span>
@@ -197,7 +197,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="p-2 text-[#2c1a11]/80 hover:text-[#2c1a11] hover:bg-[#f0ede9] rounded-full transition-all flex items-center justify-center cursor-pointer"
+                className="p-2 text-[#2c1a11]/80 hover:text-[#2c1a11] hover:bg-[#f0ede9] rounded-full transition-colors duration-150 flex items-center justify-center cursor-pointer"
                 title="Patron Sign In"
                 aria-label="Patron Sign In"
               >

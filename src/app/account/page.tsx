@@ -49,7 +49,7 @@ function AccountDashboardContent() {
 
   const handleTabChange = (newTab: TabType) => {
     setActiveTab(newTab);
-    router.replace(`/account?tab=${newTab}`, { scroll: false });
+    window.history.replaceState(null, "", `/account?tab=${newTab}`);
   };
 
   const [referenceTime] = useState(() => Date.now());
@@ -79,6 +79,36 @@ function AccountDashboardContent() {
       setToastMessage(null);
     }, 3500);
   };
+
+  // Pre-hydrate cached data from localStorage immediately on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const localSaved = localStorage.getItem("kiln_patron_session");
+      if (localSaved) {
+        const parsed = JSON.parse(localSaved);
+        const userId = parsed?.id;
+        const cleanPhone = parsed?.phone ? parsed.phone.replace(/\D/g, "").slice(-10) : "";
+        if (userId) {
+          const cachedAddr = localStorage.getItem(`teak_patron_addresses_${cleanPhone || userId}`);
+          if (cachedAddr) {
+            const a = JSON.parse(cachedAddr);
+            if (Array.isArray(a) && a.length > 0) setAddresses(a);
+          }
+          const cachedOrders = localStorage.getItem(`teak_patron_orders_${userId}`);
+          if (cachedOrders) {
+            const o = JSON.parse(cachedOrders);
+            if (Array.isArray(o) && o.length > 0) setOrders(o);
+          }
+          const cachedWishlist = localStorage.getItem(`teak_patron_wishlist_${userId}`);
+          if (cachedWishlist) {
+            const w = JSON.parse(cachedWishlist);
+            if (Array.isArray(w) && w.length > 0) setWishlistItems(w);
+          }
+        }
+      }
+    } catch {}
+  }, []);
 
   // Fetch Addresses
   const fetchAddresses = async (userId: string, userPhone?: string) => {
@@ -127,6 +157,11 @@ function AccountDashboardContent() {
         const data = await res.json();
         if (data.success && data.orders) {
           setOrders(data.orders);
+          if (userId) {
+            try {
+              localStorage.setItem(`teak_patron_orders_${userId}`, JSON.stringify(data.orders));
+            } catch {}
+          }
         }
       }
     } catch (e) {
@@ -145,6 +180,9 @@ function AccountDashboardContent() {
         const data = await res.json();
         if (data.success && data.wishlist) {
           setWishlistItems(data.wishlist);
+          try {
+            localStorage.setItem(`teak_patron_wishlist_${userId}`, JSON.stringify(data.wishlist));
+          } catch {}
         }
       }
     } catch (e) {
@@ -291,8 +329,49 @@ function AccountDashboardContent() {
     ? `Patron ${customerUser.phone.replace("+91", "")}`
     : "Patron";
 
+  // While auth status is verifying on initial load, render a graceful matching skeleton
+  if (authLoading && !customerUser) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] py-8 sm:py-12 px-4 sm:px-6 lg:px-12 xl:px-16 animate-pulse">
+        <div className="max-w-[1560px] mx-auto space-y-8">
+          {/* Breadcrumb Skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-36 bg-[#EAE7E1] rounded-md" />
+            <div className="h-4 w-16 bg-[#EAE7E1] rounded-md" />
+          </div>
+
+          {/* Header Skeleton */}
+          <div className="bg-white border border-[#EAE7E1] rounded-2xl p-6 sm:p-8 space-y-3">
+            <div className="h-3 w-32 bg-[#EAE7E1] rounded-md" />
+            <div className="h-8 sm:h-9 w-64 bg-[#EAE7E1] rounded-md" />
+            <div className="h-4 w-96 max-w-full bg-[#EAE7E1] rounded-md" />
+          </div>
+
+          {/* Tabs Skeleton */}
+          <div className="flex border-b border-[#EAE7E1] gap-6 pb-3.5">
+            <div className="h-4 w-28 bg-[#EAE7E1] rounded-md" />
+            <div className="h-4 w-36 bg-[#EAE7E1] rounded-md" />
+            <div className="h-4 w-36 bg-[#EAE7E1] rounded-md" />
+            <div className="h-4 w-40 bg-[#EAE7E1] rounded-md" />
+          </div>
+
+          {/* Content Card Skeleton */}
+          <div className="bg-white border border-[#EAE7E1] rounded-2xl p-6 sm:p-8 space-y-6">
+            <div className="h-6 w-56 bg-[#EAE7E1] rounded-md" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+              <div className="h-16 bg-[#FAF9F6] border border-[#EAE7E1] rounded-xl" />
+              <div className="h-16 bg-[#FAF9F6] border border-[#EAE7E1] rounded-xl" />
+              <div className="h-16 bg-[#FAF9F6] border border-[#EAE7E1] rounded-xl" />
+              <div className="h-16 bg-[#FAF9F6] border border-[#EAE7E1] rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Auth gate if user is completely unauthenticated
-  if (!authLoading && !customerUser) {
+  if (!customerUser) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
         <div className="max-w-md w-full text-center space-y-6 bg-white border border-[#EAE7E1] rounded-2xl p-8 sm:p-10 shadow-sm">
@@ -310,7 +389,7 @@ function AccountDashboardContent() {
           </div>
           <button
             onClick={() => setIsAuthModalOpen(true)}
-            className="w-full py-3.5 bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-all rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
+            className="w-full py-3.5 bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors duration-150 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
           >
             <span>Sign In to Atelier</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -388,7 +467,7 @@ function AccountDashboardContent() {
         <div className="flex border-b border-[#EAE7E1] overflow-x-auto no-scrollbar gap-2 sm:gap-6">
           <button
             onClick={() => handleTabChange("personal")}
-            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-colors duration-150 whitespace-nowrap cursor-pointer ${
               activeTab === "personal"
                 ? "border-[#895029] text-[#1A1A1A] font-semibold"
                 : "border-transparent text-[#766E65] hover:text-[#1A1A1A]"
@@ -398,7 +477,7 @@ function AccountDashboardContent() {
           </button>
           <button
             onClick={() => handleTabChange("addresses")}
-            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-colors duration-150 whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
               activeTab === "addresses"
                 ? "border-[#895029] text-[#1A1A1A] font-semibold"
                 : "border-transparent text-[#766E65] hover:text-[#1A1A1A]"
@@ -413,7 +492,7 @@ function AccountDashboardContent() {
           </button>
           <button
             onClick={() => handleTabChange("orders")}
-            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-colors duration-150 whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
               activeTab === "orders"
                 ? "border-[#895029] text-[#1A1A1A] font-semibold"
                 : "border-transparent text-[#766E65] hover:text-[#1A1A1A]"
@@ -428,7 +507,7 @@ function AccountDashboardContent() {
           </button>
           <button
             onClick={() => handleTabChange("wishlist")}
-            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+            className={`pb-3.5 px-2 text-xs sm:text-sm font-medium border-b-2 transition-colors duration-150 whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
               activeTab === "wishlist"
                 ? "border-[#895029] text-[#1A1A1A] font-semibold"
                 : "border-transparent text-[#766E65] hover:text-[#1A1A1A]"

@@ -137,6 +137,14 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             if (parsed && parsed.phone) {
               setCustomerUser(parsed);
               syncSessionCookie(parsed);
+              const cachedProf = localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${parsed.id}`);
+              if (cachedProf) {
+                try {
+                  const profParsed = JSON.parse(cachedProf);
+                  if (profParsed) setProfile(profParsed);
+                } catch {}
+              }
+              if (isMounted) setIsLoading(false);
               loadProfile(parsed.id, parsed.phone);
             }
           } catch {}
