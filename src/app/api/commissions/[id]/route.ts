@@ -5,7 +5,7 @@ import { requireAdminSession } from "@/lib/auth";
 import { BespokeInquiryStatus } from "@/types/database";
 
 const updateInquirySchema = z.object({
-  status: z.enum(["new", "contacted", "in_review", "archived"]),
+  status: z.enum(["new", "contacted", "in_review", "closed", "archived", "pending", "confirmed", "completed"]),
 });
 
 export async function PATCH(

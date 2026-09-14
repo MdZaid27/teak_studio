@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS products (
   link TEXT NOT NULL,
   tagline TEXT,
   lead_time TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  compare_at_price INTEGER,
+  stock_status VARCHAR(50) DEFAULT 'in_stock',
+  wood_options JSONB DEFAULT '[]'::JSONB,
   features JSONB DEFAULT '[]'::JSONB,
   specs JSONB DEFAULT '[]'::JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()

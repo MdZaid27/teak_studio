@@ -44,30 +44,64 @@ export async function createBespokeInquiry(
 
   const supabase = getSupabaseAdminClient() || getSupabaseClient();
 
+  const patronName = (input.patron_name || input.name || "").trim();
+  const phone = (input.phone || (input as unknown as { patron_phone?: string }).patron_phone || "").trim();
+  const email = (input.email || (input as unknown as { patron_email?: string }).patron_email || "").trim().toLowerCase();
+  const timberPref = (input.timber_preference || input.wood_preference || "").trim() || null;
+  const messageText = (input.message || input.dimensions_notes || "").trim();
+  const pincode = (input.pincode || "560001").trim();
+  const projectType = (input.project_type || "Custom Dining").trim();
+
   if (supabase && isConfigured) {
-    const { data, error } = await supabase
+    // Attempt rich insert with new schema columns
+    const richPayload: Record<string, unknown> = {
+      patron_name: patronName,
+      name: patronName,
+      phone,
+      email,
+      pincode,
+      project_type: projectType,
+      timber_preference: timberPref,
+      wood_preference: timberPref,
+      approx_dimensions: input.approx_dimensions?.trim() || null,
+      budget_range: input.budget_range?.trim() || null,
+      reference_file_url: input.reference_file_url?.trim() || null,
+      message: messageText,
+      dimensions_notes: messageText,
+      status: "new",
+    };
+
+    let { data, error } = await supabase
       .from("bespoke_inquiries")
-      .insert({
-        name: input.name.trim(),
-        phone: input.phone.trim(),
-        email: input.email.trim().toLowerCase(),
-        pincode: input.pincode.trim(),
-        wood_preference: input.wood_preference ? input.wood_preference.trim() : null,
-        dimensions_notes: input.dimensions_notes.trim(),
-        status: "new",
-      })
+      .insert(richPayload)
       .select("id")
       .single();
+
+    // If new columns are not yet in Supabase schema cache (PGRST204), fallback to baseline columns
+    if (error && error.code === "PGRST204") {
+      const baselinePayload = {
+        name: patronName,
+        phone,
+        email,
+        pincode,
+        wood_preference: timberPref,
+        dimensions_notes: `[Project: ${projectType}] ${messageText}`,
+        status: "new",
+      };
+      const retry = await supabase.from("bespoke_inquiries").insert(baselinePayload).select("id").single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       if (error.code === "PGRST205" && !isProduction) {
         console.warn(
-          "[KILN STUDIO NOTICE] Table 'bespoke_inquiries' not found in Supabase.\n" +
-          "👉 Execute 'supabase/interactions.sql' in your Supabase SQL Editor.\n" +
+          "[TEAK HAUS NOTICE] Table 'bespoke_inquiries' not found in Supabase.\n" +
+          "Execute 'supabase/migrations/20260913_bookings_and_commissions.sql' in Supabase SQL editor.\n" +
           "Simulating commission inquiry storage in local development."
         );
       } else {
-        console.error("[KILN STUDIO DB ERROR] Failed to save bespoke inquiry:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to save bespoke inquiry:", error);
         if (isProduction) {
           return { success: false, inquiryId: "", error: error.message };
         }
@@ -81,12 +115,19 @@ export async function createBespokeInquiry(
   const devId = crypto.randomUUID();
   const devRecord: DbBespokeInquiry = {
     id: devId,
-    name: input.name.trim(),
-    phone: input.phone.trim(),
-    email: input.email.trim().toLowerCase(),
-    pincode: input.pincode.trim(),
-    wood_preference: input.wood_preference || null,
-    dimensions_notes: input.dimensions_notes.trim(),
+    patron_name: patronName,
+    name: patronName,
+    phone,
+    email,
+    pincode,
+    project_type: projectType,
+    timber_preference: timberPref,
+    wood_preference: timberPref,
+    approx_dimensions: input.approx_dimensions?.trim() || null,
+    budget_range: input.budget_range?.trim() || null,
+    reference_file_url: input.reference_file_url?.trim() || null,
+    message: messageText,
+    dimensions_notes: messageText,
     status: "new",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -310,12 +351,23 @@ export async function updateBespokeInquiryStatus(
   if (isConfigured) {
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from("bespoke_inquiries")
         .update({ status, updated_at: updatedAt })
         .eq("id", cleanId)
         .select("*")
         .maybeSingle();
+
+      if (error && error.code === "PGRST204") {
+        const retry = await supabase
+          .from("bespoke_inquiries")
+          .update({ status })
+          .eq("id", cleanId)
+          .select("*")
+          .maybeSingle();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.error("[KILN STUDIO DB ERROR] Failed to update bespoke inquiry status:", error);

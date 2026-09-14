@@ -115,6 +115,18 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     let isMounted = true;
 
+    const syncSessionCookie = (patron: CustomerUser) => {
+      fetch("/api/patron/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patronId: patron.id,
+          phone: patron.phone,
+          email: patron.email,
+        }),
+      }).catch(() => {});
+    };
+
     async function initAuth() {
       try {
         // 1. Check local patron storage first
@@ -124,6 +136,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             const parsed = JSON.parse(localSaved);
             if (parsed && parsed.phone) {
               setCustomerUser(parsed);
+              syncSessionCookie(parsed);
               loadProfile(parsed.id, parsed.phone);
             }
           } catch {}
@@ -142,6 +155,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
                 email: currentSession.user.email,
               };
               setCustomerUser(patron);
+              syncSessionCookie(patron);
               localStorage.setItem(PATRON_STORAGE_KEY, JSON.stringify(patron));
               loadProfile(patron.id, patron.phone);
             }
@@ -174,6 +188,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             email: newSession.user.email,
           };
           setCustomerUser(patron);
+          syncSessionCookie(patron);
           localStorage.setItem(PATRON_STORAGE_KEY, JSON.stringify(patron));
           loadProfile(patron.id, patron.phone);
         }
@@ -242,6 +257,18 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     setCustomerUser(patron);
     localStorage.setItem(PATRON_STORAGE_KEY, JSON.stringify(patron));
     setIsAuthModalOpen(false);
+
+    // Set a server-side HttpOnly cookie so order receipts can verify
+    // ownership even for dev-mode synthetic patron sessions
+    fetch("/api/patron/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patronId: patron.id,
+        phone: patron.phone,
+        email: patron.email,
+      }),
+    }).catch(() => {}); // fire-and-forget; non-critical
 
     // Check if profile is already complete
     const existingProfile = await loadProfile(patron.id, patron.phone);
@@ -377,6 +404,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       sessionStorage.removeItem(DEV_OTP_STORAGE_KEY);
       setCustomerUser(null);
       setProfile(null);
+      // Clear server-side patron session cookie
+      fetch("/api/patron/session", { method: "DELETE" }).catch(() => {});
       if (session && !isUserAdmin(session.user)) {
         await supabase.auth.signOut();
       }

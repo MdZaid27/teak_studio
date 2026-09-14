@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import StudioCTASection from "@/components/about/StudioCTASection";
 
 export const metadata = {
   title: "Our Story & Craftsmanship — TEAK HAUS",
@@ -314,16 +315,7 @@ export default function AboutStoryPage() {
 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
               We welcome architects, interior designers, and discerning homeowners to experience timber in its physical truth. Come touch seasoned cross-sections, examine joinery mockups, and consult with our master draftsmen.
             </p>
-<div className="pt-space-md space-y-space-sm">
-<button className="w-full sm:w-auto px-space-xl h-12 bg-primary text-surface font-title-md text-title-md rounded-lg hover:bg-primary-container transition-colors duration-150 flex items-center justify-center gap-space-xs">
-<span className="">Schedule an Atelier Walkthrough</span>
-<span className="material-symbols-outlined text-[20px]">calendar_month</span>
-</button>
-<button className="w-full sm:w-auto px-space-xl h-12 border border-primary text-primary font-title-md text-title-md rounded-full hover:bg-primary hover:text-surface transition-colors duration-150 flex items-center justify-center gap-space-xs">
-<span className="">Download Provenance Whitepaper</span>
-<span className="material-symbols-outlined text-[20px]">download</span>
-</button>
-</div>
+        <StudioCTASection />
 </div>
 {/*  Right Column: Studio Locations  */}
 <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-space-lg">

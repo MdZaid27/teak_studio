@@ -134,11 +134,11 @@ export default function Footer() {
               <Image
                 src="/brand/teak-haus-dark.png"
                 alt="TEAK HAUS"
-                width={36}
-                height={36}
-                className="w-9 h-9 object-contain rounded-lg shadow-sm"
+                width={48}
+                height={48}
+                className="w-11 h-11 md:w-12 md:h-12 object-contain rounded-lg shadow-sm"
               />
-              <div className="flex flex-col">
+              <div className="flex flex-col justify-center">
                 <span className="font-display text-2xl font-medium tracking-[0.2em] uppercase text-white block leading-none">
                   {siteConfig.name}
                 </span>
@@ -198,21 +198,66 @@ export default function Footer() {
                 <span className="text-[11px] leading-relaxed block text-white/70">
                   100ft Road, Defence Colony, Indiranagar, Bengaluru 560038
                 </span>
-                <span className="text-[10px] text-[#feb383] block mt-0.5">Mon – Sun: 11:00 AM – 8:00 PM</span>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-[#feb383] block">Mon – Sun: 11am – 8pm</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(
+                          new CustomEvent("open-studio-booking", { detail: { location: "Indiranagar Atelier" } })
+                        );
+                      }
+                    }}
+                    className="text-[11px] text-[#ffdbc7] hover:text-white underline uppercase tracking-wider font-semibold cursor-pointer"
+                  >
+                    Book Visit &rarr;
+                  </button>
+                </div>
               </div>
               <div>
                 <strong className="text-white block font-medium">VR Whitefield Studio:</strong>
                 <span className="text-[11px] leading-relaxed block text-white/70">
                   Sky Level, VR Bengaluru, Whitefield Main Road, Bengaluru 560048
                 </span>
-                <span className="text-[10px] text-[#feb383] block mt-0.5">Mon – Sun: 11:00 AM – 8:00 PM</span>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-[#feb383] block">Mon – Sun: 11am – 8pm</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(
+                          new CustomEvent("open-studio-booking", { detail: { location: "VR Whitefield Studio" } })
+                        );
+                      }
+                    }}
+                    className="text-[11px] text-[#ffdbc7] hover:text-white underline uppercase tracking-wider font-semibold cursor-pointer"
+                  >
+                    Book Visit &rarr;
+                  </button>
+                </div>
               </div>
               <div>
                 <strong className="text-white block font-medium">Joinery Workshop:</strong>
                 <span className="text-[11px] leading-relaxed block text-white/70">
                   Timber Yard Layout, Off Mysore Road, Bengaluru
                 </span>
-                <span className="text-[10px] text-white/50 block mt-0.5">By Private Appointment</span>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-white/50 block">By Private Appointment</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(
+                          new CustomEvent("open-studio-booking", { detail: { location: "Indiranagar Atelier" } })
+                        );
+                      }
+                    }}
+                    className="text-[11px] text-[#feb383] hover:text-white underline uppercase tracking-wider font-semibold cursor-pointer"
+                  >
+                    Schedule &rarr;
+                  </button>
+                </div>
               </div>
             </div>
           </div>

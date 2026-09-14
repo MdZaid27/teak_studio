@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  sanitizePhone,
+  validateIndianPhone,
+  sanitizePincode,
+  validateIndianPincode,
+  validateName,
+} from "@/lib/validation";
 
 interface SwatchRequestModalProps {
   isOpen: boolean;
@@ -13,6 +21,7 @@ export function SwatchRequestModal({
   onClose,
   defaultWoodType = "Complete Atelier Swatch Box",
 }: SwatchRequestModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -23,6 +32,10 @@ export function SwatchRequestModal({
     requestId: string;
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape key
   useEffect(() => {
@@ -47,20 +60,20 @@ export function SwatchRequestModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const sanitized = sanitizePhone(e.target.value);
     setPhone(sanitized);
-    if (errorMessage && sanitized.length === 10 && /^[6-9]\d{9}$/.test(sanitized)) {
+    if (errorMessage && !validateIndianPhone(sanitized)) {
       setErrorMessage(null);
     }
   };
 
   const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
+    const raw = sanitizePincode(e.target.value);
     setPincode(raw);
-    if (errorMessage && (raw.length === 6 && !raw.startsWith("0"))) {
+    if (errorMessage && !validateIndianPincode(raw)) {
       setErrorMessage(null);
     }
   };
@@ -69,20 +82,21 @@ export function SwatchRequestModal({
     e.preventDefault();
     setErrorMessage(null);
 
-    // Validation
-    if (!name.trim() || name.trim().length < 2) {
+    const nameErr = validateName(name, 2);
+    if (nameErr) {
       setErrorMessage("Please enter your full name (minimum 2 characters).");
       return;
     }
 
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
-      setErrorMessage("Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.");
+    const phoneErr = validateIndianPhone(phone);
+    if (phoneErr) {
+      setErrorMessage(phoneErr);
       return;
     }
 
-    if (!/^[1-9][0-9]{5}$/.test(pincode.trim())) {
-      setErrorMessage("Indian Postal PIN code must be exactly 6 digits and cannot start with 0.");
+    const pinErr = validateIndianPincode(pincode);
+    if (pinErr) {
+      setErrorMessage(pinErr);
       return;
     }
 
@@ -94,6 +108,7 @@ export function SwatchRequestModal({
     setIsSubmitting(true);
 
     try {
+      const cleanPhone = sanitizePhone(phone);
       const response = await fetch("/api/swatch-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,9 +148,9 @@ export function SwatchRequestModal({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isSubmitting) {
           handleResetAndClose();
@@ -307,7 +322,8 @@ export function SwatchRequestModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

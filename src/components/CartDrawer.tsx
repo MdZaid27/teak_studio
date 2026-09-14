@@ -82,15 +82,39 @@ function CartDrawerContent() {
   useEffect(() => {
     if (step === "shipping" && customerUser?.id) {
       let isMounted = true;
+      const cleanPhone = customerUser.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
+      const storageKey = `teak_patron_addresses_${cleanPhone || customerUser.id}`;
+
+      // 1. Instantly hydrate from local storage so address appears with 0 delay
+      try {
+        const cached = localStorage.getItem(storageKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAddresses(parsed);
+            const defaultAddr = parsed.find((a: DbPatronAddress) => a.is_default) || parsed[0];
+            setSelectedAddressId(defaultAddr.id);
+            populateFromAddress(defaultAddr);
+          }
+        }
+      } catch {}
+
       setLoadingAddresses(true);
-      fetch(`/api/patron/addresses?userId=${encodeURIComponent(customerUser.id)}`)
+      const url = `/api/patron/addresses?userId=${encodeURIComponent(customerUser.id)}${
+        customerUser.phone ? `&phone=${encodeURIComponent(customerUser.phone)}` : ""
+      }`;
+
+      fetch(url)
         .then((res) => res.json())
         .then((data) => {
           if (!isMounted) return;
           if (data.success && Array.isArray(data.addresses)) {
             setAddresses(data.addresses);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(data.addresses));
+            } catch {}
+
             if (data.addresses.length > 0) {
-              // Default selected card: address with is_default === true, or first address
               const defaultAddr =
                 data.addresses.find((a: DbPatronAddress) => a.is_default) ||
                 data.addresses[0];
@@ -99,7 +123,7 @@ function CartDrawerContent() {
             }
           }
         })
-        .catch((err) => console.warn("[KILN STUDIO] Failed fetching patron addresses:", err))
+        .catch((err) => console.warn("[TEAK HAUS] Failed fetching patron addresses:", err))
         .finally(() => {
           if (isMounted) setLoadingAddresses(false);
         });
@@ -108,7 +132,7 @@ function CartDrawerContent() {
         isMounted = false;
       };
     }
-  }, [step, customerUser?.id, populateFromAddress]);
+  }, [step, customerUser?.id, customerUser?.phone, populateFromAddress]);
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -243,11 +267,64 @@ function CartDrawerContent() {
       }
 
       // Successful order creation:
-      // 1. Clear cart bag
+      // 1. Auto-save delivery address to patron local store so it is remembered upon future logins
+      if (customerUser) {
+        try {
+          const cleanPhone = customerUser.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
+          const storageKey = `teak_patron_addresses_${cleanPhone || customerUser.id}`;
+          const current = localStorage.getItem(storageKey);
+          const list: DbPatronAddress[] = current ? JSON.parse(current) : [];
+          const exists = list.some(
+            (a) =>
+              a.pincode === formData.pincode.trim() &&
+              (a.floor_building.toLowerCase().includes(formData.delivery_address.toLowerCase()) ||
+                formData.delivery_address.toLowerCase().includes(a.floor_building.toLowerCase()))
+          );
+          if (!exists) {
+            const nameParts = formData.customer_name.trim().split(" ");
+            const newLocalAddr: DbPatronAddress = {
+              id: `addr-${Date.now()}`,
+              user_id: customerUser.id,
+              floor_building: formData.delivery_address.trim().split(",")[0]?.trim() || formData.delivery_address.trim(),
+              area_street: formData.delivery_address.trim().split(",").slice(1).join(", ").trim() || formData.delivery_address.trim(),
+              pincode: formData.pincode.trim(),
+              city: finalCity,
+              state: finalState,
+              country: "India",
+              first_name: nameParts[0] || "Patron",
+              last_name: nameParts.slice(1).join(" ") || "Member",
+              email: formData.customer_email.trim() || undefined,
+              phone: customerUser.phone || formData.customer_phone.trim(),
+              save_as: "Home",
+              is_default: list.length === 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            localStorage.setItem(storageKey, JSON.stringify([newLocalAddr, ...list]));
+          }
+        } catch {}
+      }
+
+      // 2. Ensure server-side session cookie is synced for seamless order viewing
+      if (customerUser || formData.customer_phone) {
+        try {
+          await fetch("/api/patron/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              patronId: customerUser?.id || `patron-${formData.customer_phone.trim()}`,
+              phone: formData.customer_phone.trim() || customerUser?.phone,
+              email: formData.customer_email.trim() || customerUser?.email,
+            }),
+          });
+        } catch {}
+      }
+
+      // 3. Clear cart bag
       clearCart();
-      // 2. Close the drawer
+      // 4. Close the drawer
       setIsCartOpen(false);
-      // 3. Navigate to order confirmation
+      // 5. Navigate to order confirmation
       router.push(`/orders/${data.orderNumber || data.orderId}`);
     } catch (err: unknown) {
       console.error("[KILN STUDIO] Order checkout error:", err);
@@ -796,7 +873,15 @@ function CartDrawerContent() {
         isOpen={isAddAddressOpen}
         onClose={() => setIsAddAddressOpen(false)}
         onAddressSaved={(newAddr) => {
-          setAddresses((prev) => [newAddr, ...prev.filter((a) => a.id !== newAddr.id)]);
+          setAddresses((prev) => {
+            const updated = [newAddr, ...prev.filter((a) => a.id !== newAddr.id)];
+            try {
+              const cleanPhone = customerUser?.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
+              const storageKey = `teak_patron_addresses_${cleanPhone || customerUser?.id}`;
+              localStorage.setItem(storageKey, JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
           setSelectedAddressId(newAddr.id);
           populateFromAddress(newAddr);
           setIsAddAddressOpen(false);

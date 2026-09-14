@@ -25,6 +25,12 @@ const INQUIRY_STATUS_CONFIG: Record<
     text: "text-purple-300",
     border: "border-purple-700/50",
   },
+  closed: {
+    label: "Inquiry Closed",
+    bg: "bg-emerald-950/40",
+    text: "text-emerald-300",
+    border: "border-emerald-700/50",
+  },
   archived: {
     label: "Archived",
     bg: "bg-zinc-900/60",
@@ -37,6 +43,7 @@ const INQUIRY_STATUS_OPTIONS: BespokeInquiryStatus[] = [
   "new",
   "contacted",
   "in_review",
+  "closed",
   "archived",
 ];
 

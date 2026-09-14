@@ -11,6 +11,9 @@ export interface Product {
   link: string;
   tagline?: string;
   leadTime?: string;
+  isActive?: boolean;
+  compareAtPrice?: number | null;
+  stockStatus?: string;
   gallery?: { src: string; alt: string; title: string }[];
   timbers?: {
     id: string;

@@ -17,10 +17,8 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
   const [selectedTimberIndex, setSelectedTimberIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"specs" | "provenance" | "delivery" | "care">("specs");
-  const [pincode, setPincode] = useState("560038");
-  const [pincodeMessage, setPincodeMessage] = useState<string | null>(
-    "Pincode 560038 (Indiranagar) is eligible for priority 48-Hour White-Glove Assembly."
-  );
+  const [pincode, setPincode] = useState("");
+  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
   const [addedToast, setAddedToast] = useState(false);
 
   const gallery = product.gallery && product.gallery.length > 0

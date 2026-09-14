@@ -5,6 +5,7 @@ import { getOrderByNumberOrId } from "@/lib/orders";
 import { getProductById } from "@/lib/products";
 import { getPatronAddresses } from "@/lib/patron";
 import PrintReceiptButton from "@/components/PrintReceiptButton";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { siteConfig } from "@/config/site";
 
 export const dynamic = "force-dynamic";
@@ -45,43 +46,6 @@ const TRACKING_STEPS = [
   },
 ];
 
-function getStatusBadgeDetails(status: string) {
-  const norm = status?.toLowerCase() || "confirmed";
-  switch (norm) {
-    case "delivered":
-      return {
-        label: "Delivered",
-        className: "bg-[#EAF3EC] text-[#2D6A4F] border border-[#2D6A4F]/20",
-        hasPulse: false,
-      };
-    case "dispatched":
-      return {
-        label: "In White-Glove Transit",
-        className: "bg-[#FDF4E7] text-[#B45309] border border-[#B45309]/20",
-        hasPulse: true,
-      };
-    case "production":
-      return {
-        label: "Production",
-        className: "bg-[#FEF3C7] text-[#92400E] border border-[#92400E]/20",
-        hasPulse: false,
-      };
-    case "cancelled":
-      return {
-        label: "Cancelled",
-        className: "bg-[#FEE2E2] text-[#991B1B] border border-[#991B1B]/20",
-        hasPulse: false,
-      };
-    case "confirmed":
-    case "pending":
-    default:
-      return {
-        label: "Confirmed",
-        className: "bg-[#F5F4F0] text-[#766E65] border border-[#EAE7E1]",
-        hasPulse: false,
-      };
-  }
-}
 
 export default async function OrderDetailPage({ params }: OrderPageProps) {
   const { id } = await params;
@@ -90,11 +54,75 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
     return renderNotFound("Unknown");
   }
 
+  // ── Auth guard ──────────────────────────────────────────────────────────────
+  // Resolve the current session-authenticated user from cookies (server-side).
+  // We do this BEFORE fetching the order so we can gate access immediately.
+  let currentUserId: string | null = null;
+  let currentUserEmail: string | null = null;
+  let currentUserPhone: string | null = null;
+  let cookiePatronId: string | null = null;
+  let cookiePatronPhone: string | null = null;
+  let cookiePatronEmail: string | null = null;
+
+  try {
+    const { createSupabaseServerClient } = await import("@/lib/supabase-server");
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      currentUserId = user.id;
+      currentUserEmail = user.email ?? null;
+      currentUserPhone = user.phone ? user.phone.replace(/\D/g, "").slice(-10) : null;
+    }
+  } catch {
+    // If the server client fails to init (e.g. missing env), fall through
+  }
+
+  // Also read the patron session cookies set by /api/patron/session on login
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    cookiePatronId = cookieStore.get("teak_patron_id")?.value ?? null;
+    cookiePatronPhone = cookieStore.get("teak_patron_phone")?.value ?? null;
+    cookiePatronEmail = cookieStore.get("teak_patron_email")?.value ?? null;
+  } catch {
+    // Non-critical; fall through
+  }
+
   const order = await getOrderByNumberOrId(id);
 
   if (!order) {
     return renderNotFound(id);
   }
+
+  // ── Ownership check ─────────────────────────────────────────────────────────
+  // A commission belongs to the viewing patron if ANY of these match:
+  //   1. User ID match (Supabase UUID or patron session ID)
+  //   2. Phone number match (10-digit clean phone between order and patron session)
+  //   3. Email match (case-insensitive email between order and patron session)
+  const effectiveUserId = currentUserId || cookiePatronId;
+  const effectiveEmail = (currentUserEmail || cookiePatronEmail)?.toLowerCase().trim();
+  const effectivePhone = currentUserPhone || cookiePatronPhone;
+
+  const orderPhone = (order.customer_phone || "").replace(/\D/g, "").slice(-10);
+  const orderEmail = (order.customer_email || "").toLowerCase().trim();
+
+  const isUserAuthenticated = !!(effectiveUserId || effectiveEmail || effectivePhone);
+
+  const ownsOrder =
+    (effectiveUserId && order.user_id && (order.user_id === effectiveUserId || (effectivePhone && order.user_id.includes(effectivePhone)))) ||
+    (effectivePhone && orderPhone && orderPhone === effectivePhone) ||
+    (effectiveEmail && orderEmail && orderEmail === effectiveEmail);
+
+  if (!ownsOrder) {
+    // Not logged in at all → they should sign in first
+    if (!isUserAuthenticated) {
+      return renderUnauthorized(id, "unauthenticated");
+    }
+    // Logged in but wrong account → hard block (IDOR prevention)
+    return renderUnauthorized(id, "forbidden");
+  }
+  // ── End auth guard ──────────────────────────────────────────────────────────
+
 
   // Determine normalized order code
   const displayOrderCode = order.order_number.startsWith("KS-")
@@ -124,7 +152,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
   let addressTag: "Home" | "Work" | "Others" = "Home";
   if (order.user_id && order.user_id !== "patron-guest") {
     try {
-      const patronAddrs = await getPatronAddresses(order.user_id);
+      const patronAddrs = await getPatronAddresses(order.user_id, order.customer_phone);
       const matched = patronAddrs.find(
         (a) =>
           (order.pincode && a.pincode === order.pincode) ||
@@ -175,7 +203,6 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
     activeStepIndex = -1;
   }
 
-  const badgeDetails = getStatusBadgeDetails(order.status);
   const cleanPhone = (order.customer_phone || "").replace(/\D/g, "").slice(-10);
 
   // Financial calculations
@@ -238,14 +265,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                 </span>
 
                 {/* Status Badge */}
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wide flex items-center gap-1.5 ${badgeDetails.className}`}
-                >
-                  {badgeDetails.hasPulse && (
-                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                  )}
-                  <span>{badgeDetails.label}</span>
-                </div>
+                <StatusBadge status={order.status} className="px-3 py-1 text-xs font-semibold" />
               </div>
 
               <h1 className="font-serif text-3xl md:text-4xl text-[#1A1A1A] font-medium tracking-tight">
@@ -700,3 +720,63 @@ function renderNotFound(reference: string) {
     </div>
   );
 }
+
+function renderUnauthorized(reference: string, reason: "unauthenticated" | "forbidden") {
+  const isUnauthenticated = reason === "unauthenticated";
+
+  return (
+    <div className="w-full bg-[#FAF9F6] min-h-[80vh] flex items-center justify-center py-20 px-6 font-sans">
+      <div className="max-w-md w-full bg-white rounded-3xl border border-[#EAE7E1] p-8 md:p-12 text-center space-y-6 shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-[#FEF3C7] text-[#92400E] flex items-center justify-center mx-auto">
+          <span className="material-symbols-outlined text-[32px]">
+            {isUnauthenticated ? "lock" : "gpp_bad"}
+          </span>
+        </div>
+        <div className="space-y-2">
+          <span className="font-sans text-xs text-[#ba1a1a] uppercase tracking-widest font-semibold block">
+            {isUnauthenticated ? "Authentication Required" : "Access Denied"}
+          </span>
+          <h1 className="font-serif text-2xl md:text-3xl text-[#1A1A1A] font-medium">
+            {isUnauthenticated
+              ? "Please Sign In to View This Order"
+              : "This Commission Belongs to Another Patron"}
+          </h1>
+          <p className="text-xs md:text-sm text-[#766E65] leading-relaxed">
+            {isUnauthenticated
+              ? "Commission receipts are private. Sign in to the account associated with this order to view tracking and receipt details."
+              : "You do not have permission to view this commission. Please ensure you are signed in with the correct patron account."}
+          </p>
+          {!isUnauthenticated && (
+            <p className="font-mono text-xs bg-[#FAF9F6] text-[#1A1A1A] py-1.5 px-3 rounded-lg border border-[#EAE7E1] inline-block max-w-full break-all">
+              Reference: {reference}
+            </p>
+          )}
+        </div>
+        <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+          {isUnauthenticated ? (
+            <Link
+              href={`/account?redirect=/orders/${encodeURIComponent(reference)}`}
+              className="px-6 py-3 bg-[#1A1A1A] hover:bg-[#895029] text-white rounded-xl text-xs uppercase tracking-widest font-semibold transition-all shadow-xs text-center"
+            >
+              Sign In to Continue
+            </Link>
+          ) : (
+            <Link
+              href="/account?tab=orders"
+              className="px-6 py-3 bg-[#1A1A1A] hover:bg-[#895029] text-white rounded-xl text-xs uppercase tracking-widest font-semibold transition-all shadow-xs text-center"
+            >
+              My Commissions
+            </Link>
+          )}
+          <Link
+            href="/"
+            className="px-6 py-3 bg-white border border-[#EAE7E1] hover:border-[#1A1A1A] text-[#1A1A1A] rounded-xl text-xs uppercase tracking-widest font-semibold transition-all text-center"
+          >
+            Return to Atelier
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+

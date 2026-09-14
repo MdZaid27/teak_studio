@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 import { siteConfig } from "@/config/site";
+import { StudioBookingModal } from "@/components/StudioBookingModal";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -16,6 +17,20 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [bookingLocation, setBookingLocation] = useState("Indiranagar Atelier");
+
+  useEffect(() => {
+    const handleOpenBooking = (e: Event) => {
+      const customEvent = e as CustomEvent<{ location?: string }>;
+      if (customEvent?.detail?.location) {
+        setBookingLocation(customEvent.detail.location);
+      }
+      setBookingModalOpen(true);
+    };
+    window.addEventListener("open-studio-booking", handleOpenBooking);
+    return () => window.removeEventListener("open-studio-booking", handleOpenBooking);
+  }, []);
 
   // Hide storefront navbar on all curator/admin routes
   if (pathname?.startsWith("/admin")) {
@@ -45,20 +60,20 @@ export default function Navbar() {
                 {mobileMenuOpen ? "close" : "menu"}
               </span>
             </button>
-            <Link className="flex items-center gap-3 group shrink-0" href="/">
+            <Link className="flex items-center gap-3.5 group shrink-0" href="/">
               <Image
                 alt="TEAK HAUS"
-                className="w-8 h-8 md:w-9 md:h-9 object-contain"
-                height={36}
+                className="w-10 h-10 md:w-12 md:h-12 object-contain"
+                height={48}
                 priority
                 src="/brand/teak-haus-light.png"
-                width={36}
+                width={48}
               />
-              <div className="flex flex-col">
+              <div className="flex flex-col justify-center">
                 <span className="font-serif text-lg md:text-xl font-medium tracking-wider text-[#1A1A1A] leading-none">
                   TEAK HAUS
                 </span>
-                <span className="font-sans text-[9px] tracking-[0.2em] text-[#766E65] uppercase mt-0.5">
+                <span className="font-sans text-[9px] tracking-[0.2em] text-[#766E65] uppercase mt-1">
                   SOLID HARDWOOD &amp; HEIRLOOM JOINERY
                 </span>
               </div>
@@ -96,13 +111,14 @@ export default function Navbar() {
               <span className="material-symbols-outlined text-[22px]">search</span>
             </button>
 
-            <Link
-              href="/bespoke#booking"
-              className="hidden 2xl:inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-[#2c1a11]/20 rounded-full text-[11px] font-semibold tracking-wider uppercase text-[#2c1a11] hover:bg-[#2c1a11] hover:text-white transition-all whitespace-nowrap"
+            <button
+              type="button"
+              onClick={() => setBookingModalOpen(true)}
+              className="hidden 2xl:inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-[#2c1a11]/20 rounded-full text-[11px] font-semibold tracking-wider uppercase text-[#2c1a11] hover:bg-[#2c1a11] hover:text-white transition-all whitespace-nowrap cursor-pointer"
             >
               <span className="material-symbols-outlined text-[15px] text-[#895029]">storefront</span>
               Studio Visit
-            </Link>
+            </button>
 
             {customerUser ? (
               <div className="relative group">
@@ -230,6 +246,19 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setBookingModalOpen(true);
+                }}
+                className="w-full text-left py-2.5 px-3 rounded-lg bg-[#2c1a11] text-white flex items-center justify-between font-semibold text-xs uppercase tracking-wider my-2 cursor-pointer"
+              >
+                <span>Book Atelier Walkthrough</span>
+                <span className="material-symbols-outlined text-[18px] text-[#feb383]">storefront</span>
+              </button>
+
               <div className="pt-2 pb-2 border-t border-[#e5e2dd]">
                 {customerUser ? (
                   <div className="space-y-3 py-1">
@@ -366,6 +395,13 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Studio Walkthrough Booking Modal */}
+      <StudioBookingModal
+        isOpen={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        defaultLocation={bookingLocation}
+      />
     </>
   );
 }

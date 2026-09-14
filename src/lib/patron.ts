@@ -7,6 +7,8 @@ import {
 } from "@/types/database";
 import { getAllOrders, OrderWithItems } from "@/lib/orders";
 import { getProductById } from "@/lib/products";
+import * as fs from "fs";
+import * as path from "path";
 import { getPincodeDetailsSync } from "@/lib/pincode";
 
 // Global dev in-memory caches for resilient operation before/during migration
@@ -26,23 +28,81 @@ if (!global.__kilnDevPatronWishlists) {
   global.__kilnDevPatronWishlists = new Map<string, DbPatronWishlist[]>();
 }
 
+// File-based persistence paths for surviving server reloads & logouts
+const ADDRESSES_FILE = path.resolve(process.cwd(), "src/data/patron_addresses.json");
+const PROFILES_FILE = path.resolve(process.cwd(), "src/data/patron_profiles.json");
+
+function loadAddressesFromDisk(): DbPatronAddress[] {
+  try {
+    if (fs.existsSync(ADDRESSES_FILE)) {
+      const content = fs.readFileSync(ADDRESSES_FILE, "utf-8");
+      if (content.trim()) {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("[KILN PATRON] Could not read addresses from disk:", e);
+  }
+  return [];
+}
+
+function saveAddressesToDisk(addresses: DbPatronAddress[]) {
+  try {
+    fs.writeFileSync(ADDRESSES_FILE, JSON.stringify(addresses, null, 2), "utf-8");
+  } catch (e) {
+    console.warn("[KILN PATRON] Could not write addresses to disk:", e);
+  }
+}
+
+function loadProfilesFromDisk(): DbPatronProfile[] {
+  try {
+    if (fs.existsSync(PROFILES_FILE)) {
+      const content = fs.readFileSync(PROFILES_FILE, "utf-8");
+      if (content.trim()) {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("[KILN PATRON] Could not read profiles from disk:", e);
+  }
+  return [];
+}
+
+function saveProfilesToDisk(profiles: DbPatronProfile[]) {
+  try {
+    fs.writeFileSync(PROFILES_FILE, JSON.stringify(profiles, null, 2), "utf-8");
+  } catch (e) {
+    console.warn("[KILN PATRON] Could not write profiles to disk:", e);
+  }
+}
+
 // -------------------------------------------------------------
 // Patron Profile
 // -------------------------------------------------------------
 
-export async function getPatronProfile(userId: string): Promise<DbPatronProfile | null> {
-  if (!userId) return null;
+export async function getPatronProfile(userId: string, phone?: string): Promise<DbPatronProfile | null> {
+  if (!userId && !phone) return null;
+
+  const cleanPhone = (phone || "").replace(/\D/g, "").slice(-10);
+  const cleanUserPhone = userId && userId.startsWith("patron-") ? userId.replace(/\D/g, "").slice(-10) : "";
+  const targetPhone = cleanPhone || cleanUserPhone;
 
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
     if (supabase) {
       try {
-        const { data, error } = await supabase
-          .from("patron_profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle();
+        let query = supabase.from("patron_profiles").select("*");
+        if (userId && targetPhone) {
+          query = query.or(`id.eq.${userId},phone.ilike.%${targetPhone}`);
+        } else if (userId) {
+          query = query.eq("id", userId);
+        } else if (targetPhone) {
+          query = query.ilike("phone", `%${targetPhone}`);
+        }
 
+        const { data, error } = await query.maybeSingle();
         if (!error && data) {
           return data as DbPatronProfile;
         }
@@ -52,8 +112,15 @@ export async function getPatronProfile(userId: string): Promise<DbPatronProfile 
     }
   }
 
-  // Fallback to in-memory store
-  return global.__kilnDevPatronProfiles?.get(userId) || null;
+  // Fallback to disk storage & memory
+  const allProfiles = loadProfilesFromDisk();
+  const found = allProfiles.find((p) => {
+    if (userId && p.id === userId) return true;
+    if (targetPhone && p.phone.replace(/\D/g, "").slice(-10) === targetPhone) return true;
+    return false;
+  });
+
+  return found || global.__kilnDevPatronProfiles?.get(userId) || null;
 }
 
 export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbPatronProfile> {
@@ -73,6 +140,9 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
           .maybeSingle();
 
         if (!error && data) {
+          const allProfiles = loadProfilesFromDisk().filter((p) => p.id !== profile.id);
+          allProfiles.push(data as DbPatronProfile);
+          saveProfilesToDisk(allProfiles);
           global.__kilnDevPatronProfiles?.set(profile.id, data as DbPatronProfile);
           return data as DbPatronProfile;
         }
@@ -82,6 +152,10 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
     }
   }
 
+  const allProfiles = loadProfilesFromDisk().filter((p) => p.id !== profile.id);
+  allProfiles.push(updated);
+  saveProfilesToDisk(allProfiles);
+
   global.__kilnDevPatronProfiles?.set(profile.id, updated);
   return updated;
 }
@@ -90,21 +164,34 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
 // Patron Addresses
 // -------------------------------------------------------------
 
-export async function getPatronAddresses(userId: string): Promise<DbPatronAddress[]> {
-  if (!userId) return [];
+export async function getPatronAddresses(userId: string, phone?: string): Promise<DbPatronAddress[]> {
+  if (!userId && !phone) return [];
+
+  const cleanPhone = (phone || "").replace(/\D/g, "").slice(-10);
+  const cleanUserPhone = userId && userId.startsWith("patron-") ? userId.replace(/\D/g, "").slice(-10) : "";
+  const targetPhone = cleanPhone || cleanUserPhone;
 
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
     if (supabase) {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from("patron_addresses")
           .select("*")
-          .eq("user_id", userId)
           .order("is_default", { ascending: false })
           .order("created_at", { ascending: false });
 
-        if (!error && data) {
+        if (userId && targetPhone) {
+          query = query.or(`user_id.eq.${userId},phone.ilike.%${targetPhone}`);
+        } else if (userId) {
+          query = query.eq("user_id", userId);
+        } else if (targetPhone) {
+          query = query.ilike("phone", `%${targetPhone}`);
+        }
+
+        const { data, error } = await query;
+
+        if (!error && data && data.length > 0) {
           return data as DbPatronAddress[];
         }
       } catch (e) {
@@ -113,15 +200,38 @@ export async function getPatronAddresses(userId: string): Promise<DbPatronAddres
     }
   }
 
-  return global.__kilnDevPatronAddresses?.get(userId) || [];
+  // Load from persistent disk storage + memory
+  const diskAddrs = loadAddressesFromDisk();
+  const matched = diskAddrs.filter((a) => {
+    const addrPhone = a.phone ? a.phone.replace(/\D/g, "").slice(-10) : "";
+    if (userId && a.user_id === userId) return true;
+    if (targetPhone && addrPhone && addrPhone === targetPhone) return true;
+    return false;
+  });
+
+  return matched;
 }
 
 export async function createPatronAddress(
   userId: string,
   input: CreatePatronAddressInput
 ): Promise<DbPatronAddress> {
-  const existing = await getPatronAddresses(userId);
+  const existing = await getPatronAddresses(userId, input.phone);
   const isDefault = input.is_default !== undefined ? input.is_default : existing.length === 0;
+
+  // Check if identical address already exists to avoid redundant cards
+  const existingDuplicate = existing.find(
+    (a) =>
+      a.pincode === input.pincode.trim() &&
+      a.floor_building.trim().toLowerCase() === input.floor_building.trim().toLowerCase() &&
+      a.area_street.trim().toLowerCase() === input.area_street.trim().toLowerCase()
+  );
+  if (existingDuplicate) {
+    if (isDefault && !existingDuplicate.is_default) {
+      return (await updatePatronAddress(userId, existingDuplicate.id, { is_default: true })) || existingDuplicate;
+    }
+    return existingDuplicate;
+  }
 
   const pinDetails = getPincodeDetailsSync(input.pincode.trim());
   const newAddress: DbPatronAddress = {
@@ -150,7 +260,6 @@ export async function createPatronAddress(
     if (supabase) {
       try {
         if (isDefault) {
-          // Reset other defaults if trigger isn't executed
           await supabase
             .from("patron_addresses")
             .update({ is_default: false })
@@ -164,6 +273,9 @@ export async function createPatronAddress(
           .single();
 
         if (!error && data) {
+          const allDisk = loadAddressesFromDisk();
+          allDisk.unshift(data as DbPatronAddress);
+          saveAddressesToDisk(allDisk);
           return data as DbPatronAddress;
         }
       } catch (e) {
@@ -172,7 +284,20 @@ export async function createPatronAddress(
     }
   }
 
-  // Update in-memory
+  // Update persistent disk storage
+  let allDisk = loadAddressesFromDisk();
+  if (isDefault) {
+    allDisk = allDisk.map((a) => {
+      const match =
+        a.user_id === userId ||
+        (input.phone && a.phone.replace(/\D/g, "").slice(-10) === input.phone.replace(/\D/g, "").slice(-10));
+      return match ? { ...a, is_default: false } : a;
+    });
+  }
+  allDisk.unshift(newAddress);
+  saveAddressesToDisk(allDisk);
+
+  // Also update in-memory
   let userAddrs = global.__kilnDevPatronAddresses?.get(userId) || [];
   if (isDefault) {
     userAddrs = userAddrs.map((a) => ({ ...a, is_default: false }));
@@ -213,11 +338,16 @@ export async function updatePatronAddress(
             updated_at: new Date().toISOString(),
           })
           .eq("id", addressId)
-          .eq("user_id", userId)
           .select()
           .single();
 
         if (!error && data) {
+          const allDisk = loadAddressesFromDisk();
+          const idx = allDisk.findIndex((a) => a.id === addressId);
+          if (idx !== -1) {
+            allDisk[idx] = data as DbPatronAddress;
+            saveAddressesToDisk(allDisk);
+          }
           return data as DbPatronAddress;
         }
       } catch (e) {
@@ -226,22 +356,25 @@ export async function updatePatronAddress(
     }
   }
 
-  // In-memory update
-  const userAddrs = global.__kilnDevPatronAddresses?.get(userId) || [];
-  const idx = userAddrs.findIndex((a) => a.id === addressId);
+  // Update persistent disk storage
+  const allDisk = loadAddressesFromDisk();
+  const idx = allDisk.findIndex((a) => a.id === addressId);
   if (idx === -1) return null;
 
   if (input.is_default) {
-    userAddrs.forEach((a) => (a.is_default = false));
+    allDisk.forEach((a) => {
+      if (a.user_id === userId) a.is_default = false;
+    });
   }
 
-  userAddrs[idx] = {
-    ...userAddrs[idx],
+  allDisk[idx] = {
+    ...allDisk[idx],
     ...normalizedInput,
     updated_at: new Date().toISOString(),
   };
-  global.__kilnDevPatronAddresses?.set(userId, [...userAddrs]);
-  return userAddrs[idx];
+  saveAddressesToDisk(allDisk);
+
+  return allDisk[idx];
 }
 
 export async function deletePatronAddress(userId: string, addressId: string): Promise<boolean> {
@@ -252,19 +385,21 @@ export async function deletePatronAddress(userId: string, addressId: string): Pr
         const { error } = await supabase
           .from("patron_addresses")
           .delete()
-          .eq("id", addressId)
-          .eq("user_id", userId);
+          .eq("id", addressId);
 
-        if (!error) return true;
+        if (!error) {
+          const allDisk = loadAddressesFromDisk().filter((a) => a.id !== addressId);
+          saveAddressesToDisk(allDisk);
+          return true;
+        }
       } catch (e) {
         console.warn("[KILN PATRON] Failed deleting address in DB:", e);
       }
     }
   }
 
-  const userAddrs = global.__kilnDevPatronAddresses?.get(userId) || [];
-  const filtered = userAddrs.filter((a) => a.id !== addressId);
-  global.__kilnDevPatronAddresses?.set(userId, filtered);
+  const allDisk = loadAddressesFromDisk().filter((a) => a.id !== addressId);
+  saveAddressesToDisk(allDisk);
   return true;
 }
 

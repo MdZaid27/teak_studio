@@ -3,10 +3,16 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
+import CustomSelect from "@/components/ui/CustomSelect";
 import type { Product } from "@/types/database";
 
-const categories = ["All Pieces", "Dining", "Living", "Storage", "Bedroom"];
-const timberFilters = ["All Timbers", "Hunsur Teak", "Indian Rosewood", "Assam Teak"];
+const categories = ["All Pieces", "Dining", "Living", "Seating", "Storage", "Bedroom"];
+
+const sortOptions = [
+  { value: "curated", label: "Curated & Popular" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+];
 
 interface ShopClientProps {
   initialProducts: Product[];
@@ -14,29 +20,28 @@ interface ShopClientProps {
 
 export default function ShopClient({ initialProducts }: ShopClientProps) {
   const [selectedCategory, setSelectedCategory] = useState("All Pieces");
-  const [selectedTimber, setSelectedTimber] = useState("All Timbers");
   const [sortBy, setSortBy] = useState("curated");
 
   // Filter and sort products in-memory from server-provided initialProducts
   const filteredProducts = useMemo(() => {
     return initialProducts
       .filter((product) => {
+        const prodCat = (product.category || "").toLowerCase();
+        const selCat = selectedCategory.toLowerCase();
         const matchCategory =
           selectedCategory === "All Pieces" ||
-          product.category.toLowerCase() === selectedCategory.toLowerCase();
+          prodCat === selCat ||
+          prodCat.includes(selCat) ||
+          selCat.includes(prodCat);
 
-        const matchTimber =
-          selectedTimber === "All Timbers" ||
-          product.timber.toLowerCase().includes(selectedTimber.toLowerCase());
-
-        return matchCategory && matchTimber;
+        return matchCategory;
       })
       .sort((a, b) => {
         if (sortBy === "price-low") return a.price - b.price;
         if (sortBy === "price-high") return b.price - a.price;
         return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
       });
-  }, [initialProducts, selectedCategory, selectedTimber, sortBy]);
+  }, [initialProducts, selectedCategory, sortBy]);
 
   return (
     <div className="w-full bg-[#fcf9f4] pb-24">
@@ -79,35 +84,16 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
             ))}
           </div>
 
-          {/* Timber Filters & Sorting */}
-          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-[#81746f] hidden sm:inline">Timber:</span>
-              <select
-                value={selectedTimber}
-                onChange={(e) => setSelectedTimber(e.target.value)}
-                className="bg-white border border-[#d3c3bd] rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]"
-              >
-                {timberFilters.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-[#81746f] hidden sm:inline">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white border border-[#d3c3bd] rounded-lg px-3 py-2 text-xs text-[#0e0300] focus:outline-none focus:border-[#895029]"
-              >
-                <option value="curated">Curated &amp; Popular</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
+          {/* Sorting */}
+          <div className="flex items-center gap-2 text-xs w-full lg:w-auto justify-end">
+            <span className="text-[#81746f] hidden sm:inline font-medium">Sort:</span>
+            <CustomSelect
+              value={sortBy}
+              onChange={setSortBy}
+              options={sortOptions}
+              variant="light"
+              align="right"
+            />
           </div>
         </div>
 

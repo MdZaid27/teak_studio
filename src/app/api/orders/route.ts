@@ -6,6 +6,7 @@ import { getAllOrders, saveDevOrder } from "@/lib/orders";
 import { getSupabaseAdminClient, getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 import { requireAdminSession } from "@/lib/auth";
 import { getPincodeDetailsSync } from "@/lib/pincode";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 export async function GET() {
   const auth = await requireAdminSession();
@@ -179,12 +180,18 @@ export async function POST(request: NextRequest) {
     const isProduction = process.env.NODE_ENV === "production";
     const isConfigured = isSupabaseConfigured();
 
-    // Helper to auto-save address to patron_addresses if patron has no saved addresses
+    // Helper to auto-save address to patron_addresses if patron has not saved this address yet
     const maybeAutoSaveAddress = async () => {
       if (targetUserId && targetUserId !== "patron-guest") {
         try {
-          const existingAddrs = await getPatronAddresses(targetUserId);
-          if (existingAddrs.length === 0) {
+          const existingAddrs = await getPatronAddresses(targetUserId, customer_phone);
+          const hasMatch = existingAddrs.some(
+            (a) =>
+              a.pincode === pincode.trim() &&
+              (finalShippingAddress.toLowerCase().includes(a.floor_building.toLowerCase()) ||
+                a.floor_building.toLowerCase().includes(finalShippingAddress.toLowerCase()))
+          );
+          if (!hasMatch) {
             const nameParts = customer_name.trim().split(" ");
             const firstName = nameParts[0] || "Patron";
             const lastName = nameParts.slice(1).join(" ") || "Member";
@@ -200,7 +207,7 @@ export async function POST(request: NextRequest) {
               state: finalState,
               country: "India",
               save_as: "Home",
-              is_default: true,
+              is_default: existingAddrs.length === 0,
             });
           }
         } catch (patronErr) {
@@ -416,6 +423,21 @@ export async function POST(request: NextRequest) {
           })),
         });
 
+        // Trigger order confirmation email
+        try {
+          await sendOrderConfirmationEmail({
+            orderNumber: orderData.order_number,
+            customerName: customer_name,
+            customerEmail: customer_email,
+            items: resolvedItems,
+            total: calculatedTotal,
+            address: finalShippingAddress,
+            paymentMethod: finalPaymentMethod,
+          });
+        } catch (emailErr) {
+          console.warn("[TEAK HAUS EMAIL] Failed to send order confirmation email:", emailErr);
+        }
+
         return NextResponse.json(
           {
             success: true,
@@ -432,6 +454,21 @@ export async function POST(request: NextRequest) {
           console.warn("[KILN STUDIO NOTICE] Network error contacting database. Caching order in memory:", dbErr);
           const devOrderId = `dev-sim-${Date.now()}`;
           await saveDevStoreOrder(devOrderId);
+
+          try {
+            await sendOrderConfirmationEmail({
+              orderNumber,
+              customerName: customer_name,
+              customerEmail: customer_email,
+              items: resolvedItems,
+              total: calculatedTotal,
+              address: finalShippingAddress,
+              paymentMethod: finalPaymentMethod,
+            });
+          } catch (emailErr) {
+            console.warn("[TEAK HAUS EMAIL] Failed to send dev order email:", emailErr);
+          }
+
           return NextResponse.json(
             {
               success: true,
@@ -453,6 +490,22 @@ export async function POST(request: NextRequest) {
     if (!isProduction) {
       const devOrderId = `dev-sim-${Date.now()}`;
       await saveDevStoreOrder(devOrderId);
+
+      // Send order confirmation email even in no-Supabase dev mode
+      try {
+        await sendOrderConfirmationEmail({
+          orderNumber,
+          customerName: customer_name,
+          customerEmail: customer_email,
+          items: resolvedItems,
+          total: calculatedTotal,
+          address: finalShippingAddress,
+          paymentMethod: finalPaymentMethod,
+        });
+      } catch (emailErr) {
+        console.warn("[TEAK HAUS EMAIL] Failed to send dev order email:", emailErr);
+      }
+
       return NextResponse.json(
         {
           success: true,

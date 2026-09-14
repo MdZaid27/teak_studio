@@ -3,114 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { StudioBookingModal } from "@/components/StudioBookingModal";
+import { BespokeInquiryModal } from "@/components/modals/BespokeInquiryModal";
+import BespokeInquiryForm from "@/components/bespoke/BespokeInquiryForm";
 
 export default function BespokePage() {
-  const [typology, setTypology] = useState("dining");
-  const [woodPreference, setWoodPreference] = useState("Hunsur Teak");
-  const [dimensionsNotes, setDimensionsNotes] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [pincode, setPincode] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successData, setSuccessData] = useState<{ inquiryId: string; message: string } | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingLocation, setBookingLocation] = useState("Indiranagar Flagship Atelier");
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
-    setPhone(sanitized);
-    if (errorMessage && sanitized.length === 10 && /^[6-9]\d{9}$/.test(sanitized)) {
-      setErrorMessage(null);
-    }
-  };
+  // Bespoke Inquiry Modal state
+  const [isBespokeInquiryOpen, setIsBespokeInquiryOpen] = useState(false);
+  const [selectedBespokeType, setSelectedBespokeType] = useState("Custom Dining Statement");
+  const [selectedBespokeTimber, setSelectedBespokeTimber] = useState("Hunsur Teak");
 
-  const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
-    setPincode(clean);
-    if (errorMessage && clean.length === 6 && !clean.startsWith("0")) {
-      setErrorMessage(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    if (!name.trim() || name.trim().length < 2) {
-      setErrorMessage("Please enter your full name (at least 2 characters).");
-      return;
-    }
-
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
-      setErrorMessage("Invalid phone number. Must be a 10-digit Indian mobile number starting with 6, 7, 8, or 9.");
-      return;
-    }
-
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
-    }
-
-    if (!/^[1-9][0-9]{5}$/.test(pincode.trim())) {
-      setErrorMessage("Indian Postal PIN code must be exactly 6 digits and cannot start with 0.");
-      return;
-    }
-
-    if (!dimensionsNotes.trim() || dimensionsNotes.trim().length < 5) {
-      setErrorMessage("Please share approximate dimensions and space context (at least 5 characters).");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const typologyNames: Record<string, string> = {
-        dining: "Architectural Dining Table",
-        storage: "Credenza / Storage",
-        seating: "Seating / Chairs",
-        bed: "Platform Bed",
-        full: "Full Residence Commission",
-      };
-
-      const notesPayload = `[Typology: ${typologyNames[typology] || typology}]\n${dimensionsNotes.trim()}`;
-
-      const res = await fetch("/api/commissions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          phone: cleanPhone,
-          email: email.trim().toLowerCase(),
-          pincode: pincode.trim(),
-          wood_preference: woodPreference,
-          dimensions_notes: notesPayload,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Unable to register your commission. Please try again.");
-      }
-
-      setSuccessData({
-        inquiryId: data.inquiryId || "RECEIVED",
-        message: data.message || "Your bespoke inquiry has been received.",
-      });
-
-      // Clear form inputs
-      setDimensionsNotes("");
-      setName("");
-      setPhone("");
-      setEmail("");
-      setPincode("");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      setErrorMessage(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const openBespokeModal = (type: string, timber: string = "Hunsur Teak") => {
+    setSelectedBespokeType(type);
+    setSelectedBespokeTimber(timber);
+    setIsBespokeInquiryOpen(true);
   };
 
   return (
@@ -132,13 +41,17 @@ export default function BespokePage() {
             Every home has unique light, specific sightlines, and distinct proportions. We collaborate directly with homeowners, architects, and interior designers to craft one-of-a-kind solid wood furniture built to exact millimeter specifications.
           </p>
 <div className="flex flex-wrap items-center gap-space-md pt-space-sm w-full sm:w-auto">
-<a className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-on-primary rounded-lg font-title-md text-title-md hover:bg-tertiary-container transition-all duration-150 ease-out active:scale-95 shadow-sm" href="#commission-form">
-              Start Your Custom Order
-            </a>
+<button
+  type="button"
+  onClick={() => openBespokeModal("Custom Dining Statement", "Hunsur Teak")}
+  className="inline-flex items-center justify-center h-12 px-7 bg-primary-container text-on-primary rounded-lg font-title-md text-title-md hover:bg-tertiary-container transition-all duration-150 ease-out active:scale-95 shadow-sm cursor-pointer"
+>
+  Start Your Custom Order
+</button>
 <a className="inline-flex items-center justify-center gap-2 h-12 px-6 border border-primary text-primary rounded-full font-title-md text-title-md hover:bg-primary hover:text-surface transition-all duration-150 active:scale-95" href="https://wa.me/918041238900" rel="noopener" target="_blank">
 <span className="material-symbols-outlined text-lg">chat</span>
-              Talk to Us on WhatsApp
-            </a>
+  Talk to Us on WhatsApp
+</a>
 </div>
 {/*  Micro proof-points  */}
 <div className="pt-space-md grid grid-cols-3 gap-space-lg border-t border-outline-variant/30 w-full mt-space-md">
@@ -275,10 +188,15 @@ export default function BespokePage() {
 <p className="font-body-md text-body-md text-on-surface-variant mb-space-sm">
               Single-slab tops up to 14 feet, hidden butterfly leaf extensions, and integrated wire channels for work-dining hybrids. Hand-planed edge profiles and mortise-and-tenon structural undercarriages.
             </p>
-<div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
-<span className="">Hunsur Teak / Deccan Rosewood</span>
-<span className="">•</span>
-<span className="">Custom seating for 6 to 16 persons</span>
+<div className="flex items-center justify-between gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
+  <span>Hunsur Teak / Deccan Rosewood • 6 to 16 seats</span>
+  <button
+    type="button"
+    onClick={() => openBespokeModal("Custom Dining Statement", "Hunsur Teak")}
+    className="text-secondary hover:text-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1 cursor-pointer"
+  >
+    Commission Table &rarr;
+  </button>
 </div>
 </div>
 </div>
@@ -298,10 +216,15 @@ export default function BespokePage() {
 <p className="font-body-md text-body-md text-on-surface-variant mb-space-sm">
               Precision milled timber slats, smooth glide tambour tracks, custom acoustics for vinyl record storage, vented media component bays, and solid milled brass hardware.
             </p>
-<div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
-<span className="">Acoustic Damped Interior</span>
-<span className="">•</span>
-<span className="">Integrated Cable Ports</span>
+<div className="flex items-center justify-between gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
+  <span>Integrated Cable Ports</span>
+  <button
+    type="button"
+    onClick={() => openBespokeModal("Architectural Joinery", "Hunsur Teak")}
+    className="text-secondary hover:text-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1 cursor-pointer"
+  >
+    Commission Credenza &rarr;
+  </button>
 </div>
 </div>
 </div>
@@ -321,10 +244,15 @@ export default function BespokePage() {
 <p className="font-body-md text-body-md text-on-surface-variant mb-space-sm">
               Ergonomic steam-bent lumbar rails, hand-woven Malabar cane octagonal webbing, and upholstery in organic Belgian linen or handloomed Indian textured cottons.
             </p>
-<div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
-<span className="">Steam-Bent Curves</span>
-<span className="">•</span>
-<span className="">Natural Malabar Cane</span>
+<div className="flex items-center justify-between gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
+  <span>Natural Malabar Cane</span>
+  <button
+    type="button"
+    onClick={() => openBespokeModal("Architectural Joinery", "Malabar Rosewood")}
+    className="text-secondary hover:text-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1 cursor-pointer"
+  >
+    Commission Seating &rarr;
+  </button>
 </div>
 </div>
 </div>
@@ -344,10 +272,15 @@ export default function BespokePage() {
 <p className="font-body-md text-body-md text-on-surface-variant mb-space-sm">
               Floating nightstand cantilever modules, integrated soft ambient warm-LED floor wash channels, acoustic cane headboards, and solid slatted mattress suspension systems.
             </p>
-<div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
-<span className="">Concealed Cable Passages</span>
-<span className="">•</span>
-<span className="">Zero-Creak Joinery</span>
+<div className="flex items-center justify-between gap-space-sm text-outline font-label-sm text-label-sm border-t border-outline-variant/30 pt-space-sm">
+  <span>Zero-Creak Joinery</span>
+  <button
+    type="button"
+    onClick={() => openBespokeModal("Residential Residence", "Assam Teak")}
+    className="text-secondary hover:text-primary font-semibold text-xs tracking-wider uppercase flex items-center gap-1 cursor-pointer"
+  >
+    Commission Bed Suite &rarr;
+  </button>
 </div>
 </div>
 </div>
@@ -365,225 +298,7 @@ export default function BespokePage() {
             </p>
 </div>
 
-{successData ? (
-  <div className="py-8 px-6 bg-surface-container-low rounded-xl border border-secondary/30 text-center space-y-6 animate-fade-in">
-    <div className="w-16 h-16 rounded-full bg-secondary/15 text-secondary flex items-center justify-center mx-auto">
-      <span className="material-symbols-outlined text-3xl">task_alt</span>
-    </div>
-    <div className="space-y-2">
-      <h3 className="font-display text-2xl md:text-3xl text-primary font-medium">
-        Commission Brief Received
-      </h3>
-      <p className="font-body-md text-on-surface-variant max-w-lg mx-auto">
-        {successData.message}
-      </p>
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface rounded-full border border-outline-variant/50 text-xs font-mono text-primary">
-        <span>Inquiry Reference:</span>
-        <span className="font-semibold text-secondary">{successData.inquiryId.slice(0, 13)}</span>
-      </div>
-    </div>
-
-    <div className="max-w-md mx-auto bg-surface p-4 rounded-lg border border-outline-variant/30 text-left text-xs text-on-surface-variant space-y-2">
-      <p className="font-semibold text-primary">Next Steps with TEAK HAUS:</p>
-      <ul className="list-disc list-inside space-y-1">
-        <li>Our atelier furniture architect will review your spatial context.</li>
-        <li>We will reach out via WhatsApp or phone within 24 hours.</li>
-        <li>Complimentary CAD blueprint drafting and wood timber matching.</li>
-      </ul>
-    </div>
-
-    <div className="pt-2">
-      <button
-        type="button"
-        onClick={() => setSuccessData(null)}
-        className="px-8 py-3 bg-primary text-surface rounded-lg font-title-md text-title-md hover:bg-tertiary-container transition-all"
-      >
-        Submit Another Commission Brief
-      </button>
-    </div>
-  </div>
-) : (
-  <form className="space-y-space-xl" id="bespokeForm" onSubmit={handleSubmit}>
-    {/* Error Banner */}
-    {errorMessage && (
-      <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2 animate-shake">
-        <span className="material-symbols-outlined text-base mt-0.5 shrink-0">error</span>
-        <span>{errorMessage}</span>
-      </div>
-    )}
-
-    {/*  Step 1: Category Selection  */}
-    <div>
-      <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-xs tracking-wider">
-        1. Select Furniture Typology
-      </label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-space-xs">
-        {[
-          { id: "dining", label: "Dining Table" },
-          { id: "storage", label: "Credenza / Storage" },
-          { id: "seating", label: "Seating / Chairs" },
-          { id: "bed", label: "Platform Bed" },
-          { id: "full", label: "Full Residence" },
-        ].map((cat) => (
-          <label key={cat.id} className="cursor-pointer">
-            <input
-              className="peer sr-only"
-              name="furniture_category"
-              type="radio"
-              value={cat.id}
-              checked={typology === cat.id}
-              onChange={() => setTypology(cat.id)}
-            />
-            <div className="h-12 flex items-center justify-center text-center px-3 border border-outline-variant/40 rounded bg-surface peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary font-body-sm text-body-sm transition-all duration-150">
-              {cat.label}
-            </div>
-          </label>
-        ))}
-      </div>
-    </div>
-
-    {/*  Step 2: Preferred Timber  */}
-    <div>
-      <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-xs tracking-wider">
-        2. Preferred Timber Species
-      </label>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
-        {[
-          { id: "Hunsur Teak", title: "Hunsur Teak", desc: "Golden Amber, Dense Grain" },
-          { id: "Indian Rosewood", title: "Indian Rosewood", desc: "Deep Espresso, High Lustre" },
-          { id: "Assam Teak", title: "Assam Teak", desc: "Light Honey, Linear Figure" },
-          { id: "Recommend Based on Space", title: "Recommend Based on Space", desc: "Studio Consultation" },
-        ].map((wood) => (
-          <label key={wood.id} className="cursor-pointer">
-            <input
-              className="peer sr-only"
-              name="wood_preference"
-              type="radio"
-              value={wood.id}
-              checked={woodPreference === wood.id}
-              onChange={() => setWoodPreference(wood.id)}
-            />
-            <div className="p-3 border border-outline-variant/40 rounded bg-surface peer-checked:border-primary peer-checked:bg-surface-container transition-all h-full">
-              <div className="font-title-md text-title-md text-primary">{wood.title}</div>
-              <div className="text-outline text-label-sm font-label-sm">{wood.desc}</div>
-            </div>
-          </label>
-        ))}
-      </div>
-    </div>
-
-    {/*  Step 3: Dimensions and Brief Notes  */}
-    <div>
-      <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-2xs tracking-wider" htmlFor="dimensions">
-        3. Approximate Dimensions &amp; Spatial Context *
-      </label>
-      <textarea
-        className="w-full bg-surface border border-outline-variant/50 rounded-lg p-space-md font-body-md text-body-md text-primary focus:border-primary focus:ring-0 placeholder:text-outline/60 transition-colors"
-        id="dimensions"
-        placeholder="E.g., 8-seater dining table, approx 240cm x 100cm, for Indiranagar apartment with direct western sunlight and beige travertine floors."
-        required
-        rows={3}
-        value={dimensionsNotes}
-        onChange={(e) => setDimensionsNotes(e.target.value)}
-      />
-    </div>
-
-    {/*  Step 4: Contact & PIN Details  */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-      <div>
-        <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-2xs tracking-wider">
-          Full Name *
-        </label>
-        <input
-          className="h-12 w-full bg-surface border border-outline-variant/50 rounded-lg px-space-md font-body-md text-body-md text-primary focus:border-primary focus:ring-0"
-          placeholder="e.g. Vikramaditya Rao"
-          required
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-2xs tracking-wider">
-          Phone / WhatsApp *
-        </label>
-        <input
-          className="h-12 w-full bg-surface border border-outline-variant/50 rounded-lg px-space-md font-body-md text-body-md font-mono text-primary focus:border-primary focus:ring-0"
-          placeholder="9876543210"
-          maxLength={10}
-          required
-          type="tel"
-          value={phone}
-          onChange={handlePhoneChange}
-        />
-      </div>
-      <div>
-        <label className="block font-label-caps text-label-caps uppercase text-outline mb-space-2xs tracking-wider">
-          Email Address *
-        </label>
-        <input
-          className="h-12 w-full bg-surface border border-outline-variant/50 rounded-lg px-space-md font-body-md text-body-md text-primary focus:border-primary focus:ring-0"
-          placeholder="vikram@designstudio.in"
-          required
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div>
-        <div className="flex justify-between items-center mb-space-2xs">
-          <label className="font-label-caps text-label-caps uppercase text-outline tracking-wider">
-            Postal PIN Code *
-          </label>
-          <span className="text-[10px] text-outline">6 digits (no 0 start)</span>
-        </div>
-        <input
-          className="h-12 w-full bg-surface border border-outline-variant/50 rounded-lg px-space-md font-body-md text-body-md font-mono text-primary focus:border-primary focus:ring-0"
-          placeholder="e.g. 560038"
-          maxLength={6}
-          required
-          type="text"
-          value={pincode}
-          onChange={handlePincodeChange}
-        />
-      </div>
-    </div>
-
-    {/*  File Upload Notice  */}
-    <div className="p-space-lg border border-dashed border-outline-variant rounded-lg bg-surface-container-low text-center hover:bg-surface-container transition-colors">
-      <span className="material-symbols-outlined text-outline text-3xl mb-2">cloud_upload</span>
-      <p className="font-title-md text-title-md text-primary">Architectural floor plan or sketch</p>
-      <p className="font-body-sm text-body-sm text-outline mt-1">Share via WhatsApp or during architectural consultation (DWG, CAD, PDF)</p>
-    </div>
-
-    {/*  Submission Actions  */}
-    <div className="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-md border-t border-outline-variant/30">
-      <button
-        className="w-full sm:w-auto h-12 px-8 bg-primary text-surface rounded-lg font-title-md text-title-md hover:bg-tertiary-container transition-all active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2"
-        type="submit"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? (
-          <>
-            <span className="w-4 h-4 border-2 border-surface/30 border-t-surface rounded-full animate-spin shrink-0"></span>
-            <span>Transmitting Brief to Atelier...</span>
-          </>
-        ) : (
-          <span>Start Your Custom Order</span>
-        )}
-      </button>
-      <a
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 px-6 border border-primary text-primary rounded-full font-title-md text-title-md hover:bg-primary hover:text-surface transition-all active:scale-95"
-        href="https://wa.me/918041238900"
-        rel="noopener"
-        target="_blank"
-      >
-        <span className="material-symbols-outlined text-lg">chat</span>
-        <span>Talk to Us on WhatsApp (+91 80 4123 8900)</span>
-      </a>
-    </div>
-  </form>
-)}
+      <BespokeInquiryForm />
 </div>
 </div>
 </section>
@@ -651,6 +366,78 @@ export default function BespokePage() {
 </div>
 </div>
 </section>
+
+{/* SECTION 6: PRIVATE ATELIER WALKTHROUGH BOOKING (#booking) */}
+<section id="booking" className="max-w-container-max mx-auto px-space-md md:px-gutter-desktop py-space-4xl border-t border-outline-variant/30">
+  <div className="bg-[#161514] text-[#FAF9F6] rounded-2xl p-8 sm:p-12 border border-[#2A2724] relative overflow-hidden">
+    <div className="max-w-3xl space-y-4">
+      <span className="font-mono text-xs text-[#D4A373] uppercase tracking-widest block">
+        Private Atelier Visits
+      </span>
+      <h2 className="font-serif text-3xl sm:text-4xl text-[#FAF9F6] font-medium leading-tight">
+        Experience Raw Slabs &amp; Heirloom Joinery in Person
+      </h2>
+      <p className="text-sm sm:text-base text-[#9B9287] leading-relaxed">
+        Step inside our Bangalore flagship studios. Inspect live wood seasoning racks, run your hands across hand-pegged mortise joinery, and consult with our master furniture architects over curated pour-over coffee.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 pb-6">
+        <div className="p-5 rounded-xl bg-[#1C1A18] border border-[#2A2724] space-y-2">
+          <div className="flex items-center gap-2 text-[#D4A373]">
+            <span className="material-symbols-outlined text-[20px]">storefront</span>
+            <span className="font-serif text-base font-medium text-[#FAF9F6]">Indiranagar Flagship Atelier</span>
+          </div>
+          <p className="text-xs text-[#9B9287]">100ft Road, Defence Colony, Indiranagar, Bengaluru — 560038</p>
+          <div className="text-[11px] font-mono text-[#706860]">Tue – Sun: 11:00 AM – 8:00 PM • Valet Parking Available</div>
+          <button
+            type="button"
+            onClick={() => {
+              setBookingLocation("Indiranagar Flagship Atelier");
+              setIsBookingModalOpen(true);
+            }}
+            className="mt-2 w-full py-2.5 px-4 rounded-lg bg-[#24211E] hover:bg-[#D4A373] text-[#FAF9F6] hover:text-[#121110] text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            Schedule Indiranagar Visit →
+          </button>
+        </div>
+
+        <div className="p-5 rounded-xl bg-[#1C1A18] border border-[#2A2724] space-y-2">
+          <div className="flex items-center gap-2 text-[#D4A373]">
+            <span className="material-symbols-outlined text-[20px]">storefront</span>
+            <span className="font-serif text-base font-medium text-[#FAF9F6]">VR Whitefield Studio</span>
+          </div>
+          <p className="text-xs text-[#9B9287]">Whitefield Main Road, Devasandra Industrial Estate, Bengaluru — 560066</p>
+          <div className="text-[11px] font-mono text-[#706860]">Mon – Sun: 11:00 AM – 8:00 PM • Dedicated Patron Lounge</div>
+          <button
+            type="button"
+            onClick={() => {
+              setBookingLocation("VR Whitefield Studio");
+              setIsBookingModalOpen(true);
+            }}
+            className="mt-2 w-full py-2.5 px-4 rounded-lg bg-[#24211E] hover:bg-[#D4A373] text-[#FAF9F6] hover:text-[#121110] text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            Schedule Whitefield Visit →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* Studio Booking Modal */}
+<StudioBookingModal
+  isOpen={isBookingModalOpen}
+  onClose={() => setIsBookingModalOpen(false)}
+  defaultLocation={bookingLocation}
+/>
+
+{/* Bespoke Architectural Commission Modal */}
+<BespokeInquiryModal
+  isOpen={isBespokeInquiryOpen}
+  onClose={() => setIsBespokeInquiryOpen(false)}
+  defaultProjectType={selectedBespokeType}
+  defaultTimber={selectedBespokeTimber}
+/>
 
     </div>
   );

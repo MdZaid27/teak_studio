@@ -25,9 +25,15 @@ const tabs: TabItem[] = [
   },
   {
     name: "Bespoke Inquiries",
-    href: "/admin/commissions",
-    matchPrefix: "/admin/commissions",
+    href: "/admin/bespoke",
+    matchPrefix: "/admin/bespoke",
     icon: "handyman",
+  },
+  {
+    name: "Bookings",
+    href: "/admin/bookings",
+    matchPrefix: "/admin/bookings",
+    icon: "storefront",
   },
   {
     name: "Swatch Requests",
@@ -50,7 +56,10 @@ export function AdminNavTabs() {
     if (tab.href === "/admin/orders" && (pathname === "/admin" || pathname === "/admin/orders")) {
       return true;
     }
-    if (tab.matchPrefix && pathname.startsWith(tab.matchPrefix)) {
+    if (tab.name === "Bespoke Inquiries" && (pathname?.startsWith("/admin/bespoke") || pathname?.startsWith("/admin/commissions"))) {
+      return true;
+    }
+    if (tab.matchPrefix && pathname?.startsWith(tab.matchPrefix)) {
       return true;
     }
     return false;

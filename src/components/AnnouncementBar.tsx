@@ -21,13 +21,18 @@ export default function AnnouncementBar() {
         </div>
         <div className="flex items-center gap-4 text-[#9c8073]">
           <span className="hidden lg:inline text-white/90">White-Glove Assembly &amp; Placement Guarantee</span>
-          <Link
-            href="/bespoke#booking"
-            className="text-[#ffdbc7] hover:text-white flex items-center gap-1 font-semibold tracking-wider uppercase text-[11px] transition-colors"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("open-studio-booking", { detail: { location: "Indiranagar Atelier" } }));
+              }
+            }}
+            className="text-[#ffdbc7] hover:text-white flex items-center gap-1 font-semibold tracking-wider uppercase text-[11px] transition-colors cursor-pointer bg-transparent border-none p-0"
           >
             Private Walkthrough Booking
             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>

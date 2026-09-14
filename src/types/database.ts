@@ -35,6 +35,10 @@ export interface DbProduct {
   link: string;
   tagline: string | null;
   lead_time: string | null;
+  is_active?: boolean;
+  compare_at_price?: number | null;
+  stock_status?: string | null;
+  wood_options?: unknown[];
   features: string[];
   specs: DbProductSpec[];
   created_at?: string;
@@ -94,6 +98,9 @@ export interface Product {
   slug?: string;
   tagline?: string;
   leadTime?: string;
+  isActive?: boolean;
+  compareAtPrice?: number | null;
+  stockStatus?: "in_stock" | "made_to_order" | "out_of_stock" | "archived" | string;
   gallery?: ProductGalleryItem[];
   timbers?: ProductTimberVariation[];
   woodOptions?: ProductTimberVariation[];
@@ -112,6 +119,7 @@ export interface ApiResponse<T> {
 export interface ProductFilters {
   category?: string;
   timber?: string;
+  includeHidden?: boolean;
 }
 
 // ==========================================================
@@ -197,28 +205,68 @@ export interface CreateOrderResponse {
 // ==========================================================
 // Customer Interaction Types (Milestone 4)
 // ==========================================================
-export type BespokeInquiryStatus = "new" | "contacted" | "in_review" | "archived";
+export type BespokeInquiryStatus = "new" | "in_review" | "contacted" | "closed" | "archived";
 
 export interface DbBespokeInquiry {
   id: string;
+  patron_name?: string;
   name: string;
   phone: string;
   email: string;
-  pincode: string;
+  pincode?: string;
+  project_type?: string;
+  timber_preference?: string | null;
   wood_preference?: string | null;
-  dimensions_notes: string;
+  approx_dimensions?: string | null;
+  dimensions_notes?: string;
+  budget_range?: string | null;
+  reference_file_url?: string | null;
+  message?: string;
   status: BespokeInquiryStatus;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface CreateBespokeInquiryInput {
-  name: string;
+  patron_name?: string;
+  name?: string;
   phone: string;
   email: string;
-  pincode: string;
+  pincode?: string;
+  project_type?: string;
+  timber_preference?: string;
   wood_preference?: string;
-  dimensions_notes: string;
+  approx_dimensions?: string;
+  dimensions_notes?: string;
+  budget_range?: string;
+  reference_file_url?: string;
+  message?: string;
+}
+
+export type StudioBookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
+
+export interface DbStudioBooking {
+  id: string;
+  patron_name: string;
+  email: string;
+  phone: string;
+  studio_location: string;
+  preferred_date: string;
+  preferred_time_slot: string;
+  notes?: string | null;
+  status: StudioBookingStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateStudioBookingInput {
+  patron_name: string;
+  email: string;
+  phone: string;
+  studio_location: string;
+  preferred_date: string;
+  preferred_time_slot: string;
+  notes?: string;
 }
 
 export type SwatchRequestStatus = "requested" | "dispatched" | "delivered";
