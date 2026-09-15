@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSwatchRequest, getAllSwatchRequests } from "@/lib/interactions";
 import { requireAdminSession } from "@/lib/auth";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   const auth = await requireAdminSession();
@@ -41,6 +42,11 @@ const swatchRequestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, "swatch-request", 5, 15 * 60 * 1000);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const rawBody = await request.json();
     const parseResult = swatchRequestSchema.safeParse(rawBody);

@@ -38,11 +38,12 @@ const DEV_OTP_STORAGE_KEY = "kiln_dev_otp";
 const PATRON_PROFILE_STORAGE_KEY = "kiln_patron_profile";
 
 function isUserAdmin(
-  u: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown>; email?: string | null } | null
+  u: { app_metadata?: Record<string, unknown>; email?: string | null } | null
 ): boolean {
   if (!u) return false;
-  if (u.app_metadata?.role === "admin" || u.user_metadata?.role === "admin") return true;
-  if (u.email && (u.email.toLowerCase() === "admin@teakhaus.in" || u.email.toLowerCase() === "admin@kilnstudio.in")) return true;
+  if (u.app_metadata?.role === "admin") return true;
+  const email = u.email?.toLowerCase().trim();
+  if (email && (email === "curator@teakhaus.in" || email === "admin@teakhaus.in")) return true;
   return false;
 }
 

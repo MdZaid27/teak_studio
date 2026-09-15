@@ -492,7 +492,6 @@ export default function ProductDetailClient({ product, companions }: ProductDeta
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <span className="text-[10px] text-[#895029] font-bold uppercase tracking-wider">{comp.timber}</span>
                   <h4 className="font-display text-base text-[#0e0300] group-hover:text-[#895029] transition-colors">
                     {comp.name}
                   </h4>

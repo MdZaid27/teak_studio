@@ -10,7 +10,6 @@ import {
   Heading,
   Text,
   Link,
-  Hr,
   Preview,
 } from "@react-email/components";
 import { OrderStatus } from "@/types/database";
@@ -42,6 +41,8 @@ const STATUS_DETAILS: Record<
     headline: string;
     description: string;
     accentColor: string;
+    badgeBg: string;
+    badgeBorder: string;
     stepIndex: number;
   }
 > = {
@@ -49,31 +50,39 @@ const STATUS_DETAILS: Record<
     badge: "PAYMENT VERIFICATION",
     headline: "Order Placed — Pending Verification",
     description: "Your order has been recorded and is undergoing payment and timber stock verification.",
-    accentColor: "#D4A373",
+    accentColor: "#B45309",
+    badgeBg: "#FEF3C7",
+    badgeBorder: "#FDE68A",
     stepIndex: 0,
   },
   confirmed: {
     badge: "GRAIN ALLOCATED",
     headline: "Acquisition Confirmed & Timber Reserved",
     description:
-      "Our timber curators have inspected and reserved the heartwood planks for your order. Your piece is now queued for precision joinery.",
-    accentColor: "#38BDF8",
+      "Our timber curators have inspected and reserved the seasoned heartwood planks for your order. Your piece is now queued for artisan joinery.",
+    accentColor: "#895029",
+    badgeBg: "#F7F2EB",
+    badgeBorder: "#E4D8C8",
     stepIndex: 1,
   },
   production: {
     badge: "WORKSHOP CRAFTING",
-    headline: "Hand-Pegged Joinery in Progress",
+    headline: "Artisan Joinery in Progress",
     description:
-      "Master joiners are currently hand-cutting mortise-and-tenon joints, planing solid teak surfaces, and applying deep organic oil finishes to your piece.",
-    accentColor: "#F59E0B",
+      "Master craftsmen are currently hand-cutting mortise-and-tenon joints, planing solid teak surfaces, and applying organic plant-based oil finishes to your piece.",
+    accentColor: "#B45309",
+    badgeBg: "#FFFBEB",
+    badgeBorder: "#FCD34D",
     stepIndex: 2,
   },
   dispatched: {
     badge: "WHITE-GLOVE TRANSIT",
     headline: "En Route via Climate-Controlled Transit",
     description:
-      "Your piece has departed our Bangalore atelier. A specialized two-person white-glove logistics team will contact you prior to delivery for room placement.",
-    accentColor: "#818CF8",
+      "Your piece has departed our Bangalore atelier. A specialized two-person white-glove logistics team will contact you prior to arrival for room placement and leveling.",
+    accentColor: "#1E40AF",
+    badgeBg: "#EFF6FF",
+    badgeBorder: "#BFDBFE",
     stepIndex: 3,
   },
   delivered: {
@@ -81,7 +90,9 @@ const STATUS_DETAILS: Record<
     headline: "Delivered to Your Residence",
     description:
       "White-glove placement and leveling has been concluded. Your heirloom solid hardwood piece is now home, ready to age with natural patina for generations.",
-    accentColor: "#10B981",
+    accentColor: "#15803D",
+    badgeBg: "#F0FDF4",
+    badgeBorder: "#BBF7D0",
     stepIndex: 4,
   },
   cancelled: {
@@ -89,7 +100,9 @@ const STATUS_DETAILS: Record<
     headline: "Order Cancellation Notice",
     description:
       "Your order has been cancelled and timber allocations have been released back to our studio reserves.",
-    accentColor: "#EF4444",
+    accentColor: "#B91C1C",
+    badgeBg: "#FEF2F2",
+    badgeBorder: "#FECACA",
     stepIndex: -1,
   },
 };
@@ -137,7 +150,8 @@ export function OrderStatusUpdateEmail({
               <span
                 style={{
                   ...badgeStyle,
-                  borderColor: currentStatusInfo.accentColor,
+                  borderColor: currentStatusInfo.badgeBorder,
+                  backgroundColor: currentStatusInfo.badgeBg,
                   color: currentStatusInfo.accentColor,
                 }}
               >
@@ -174,24 +188,24 @@ export function OrderStatusUpdateEmail({
                             backgroundColor: isCurrent
                               ? currentStatusInfo.accentColor
                               : isCompleted
-                              ? "#D4A373"
-                              : "#2E2B27",
+                              ? "#895029"
+                              : "#EAE4DC",
                             borderRadius: "2px",
-                            marginBottom: "6px",
+                            marginBottom: "8px",
                           }}
                         />
                         <Text
                           style={{
                             fontSize: "9px",
                             fontFamily: "monospace",
-                            letterSpacing: "0.05em",
+                            letterSpacing: "0.08em",
                             textTransform: "uppercase",
                             color: isCurrent
                               ? currentStatusInfo.accentColor
                               : isCompleted
-                              ? "#FAF9F6"
-                              : "#706860",
-                            fontWeight: isCurrent ? "bold" : "normal",
+                              ? "#2C1A11"
+                              : "#A0948A",
+                            fontWeight: isCurrent ? "bold" : isCompleted ? "600" : "normal",
                             margin: "0",
                           }}
                         >
@@ -293,36 +307,37 @@ export function OrderStatusUpdateEmail({
   );
 }
 
-// ---------------- STYLES ----------------
+// ---------------- STYLES (#FAF9F6 LUXURY PALETTE) ----------------
 const mainStyle: React.CSSProperties = {
-  backgroundColor: "#121110",
+  backgroundColor: "#FAF9F6",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   margin: "0 auto",
-  padding: "32px 0",
+  padding: "40px 0",
 };
 
 const containerStyle: React.CSSProperties = {
-  backgroundColor: "#171615",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FFFFFF",
+  border: "1px solid #EAE4DC",
   borderRadius: "8px",
   maxWidth: "600px",
   margin: "0 auto",
   overflow: "hidden",
+  boxShadow: "0 4px 24px rgba(44, 26, 17, 0.04)",
 };
 
 const headerSectionStyle: React.CSSProperties = {
-  backgroundColor: "#131211",
-  borderBottom: "1px solid #2A2724",
-  padding: "32px 24px",
+  backgroundColor: "#2C1A11",
+  borderBottom: "1px solid #3D261A",
+  padding: "36px 24px",
   textAlign: "center",
 };
 
 const brandHeadingStyle: React.CSSProperties = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Georgia, 'Cormorant Garamond', serif",
   fontSize: "24px",
   fontWeight: "normal",
-  letterSpacing: "0.15em",
+  letterSpacing: "0.2em",
   color: "#FAF9F6",
   margin: "0",
 };
@@ -330,14 +345,15 @@ const brandHeadingStyle: React.CSSProperties = {
 const brandSubtitleStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "9px",
-  letterSpacing: "0.2em",
+  letterSpacing: "0.22em",
   color: "#D4A373",
   margin: "8px 0 0 0",
   textTransform: "uppercase",
 };
 
 const contentSectionStyle: React.CSSProperties = {
-  padding: "32px 28px",
+  padding: "36px 32px",
+  backgroundColor: "#FFFFFF",
 };
 
 const badgeWrapperStyle: React.CSSProperties = {
@@ -347,20 +363,20 @@ const badgeWrapperStyle: React.CSSProperties = {
 
 const badgeStyle: React.CSSProperties = {
   display: "inline-block",
-  padding: "5px 12px",
-  backgroundColor: "#22201D",
-  border: "1px solid #3E3A35",
+  padding: "6px 14px",
   borderRadius: "4px",
   fontFamily: "monospace",
   fontSize: "10px",
-  letterSpacing: "0.1em",
+  letterSpacing: "0.12em",
   textTransform: "uppercase",
+  fontWeight: "bold",
+  border: "1px solid transparent",
 };
 
 const greetingHeadingStyle: React.CSSProperties = {
-  fontFamily: "Georgia, serif",
-  fontSize: "22px",
-  color: "#FAF9F6",
+  fontFamily: "Georgia, 'Cormorant Garamond', serif",
+  fontSize: "24px",
+  color: "#2C1A11",
   textAlign: "center",
   margin: "0 0 16px 0",
   fontWeight: "normal",
@@ -368,39 +384,39 @@ const greetingHeadingStyle: React.CSSProperties = {
 
 const introTextStyle: React.CSSProperties = {
   fontSize: "14px",
-  color: "#FAF9F6",
-  margin: "0 0 8px 0",
   fontWeight: "bold",
+  color: "#2C1A11",
+  margin: "0 0 8px 0",
 };
 
 const bodyTextStyle: React.CSSProperties = {
   fontSize: "13px",
   lineHeight: "1.6",
-  color: "#9B9287",
+  color: "#5C5248",
   margin: "0 0 24px 0",
 };
 
 const pipelineSectionStyle: React.CSSProperties = {
-  backgroundColor: "#1B1A18",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FAF7F2",
+  border: "1px solid #EAE4DC",
   borderRadius: "6px",
-  padding: "16px 12px",
+  padding: "16px 14px",
   marginBottom: "24px",
 };
 
 const metaBoxStyle: React.CSSProperties = {
-  backgroundColor: "#1B1A18",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FAF7F2",
+  border: "1px solid #EAE4DC",
   borderRadius: "6px",
-  padding: "12px 16px",
-  marginBottom: "20px",
+  padding: "14px 18px",
+  marginBottom: "24px",
 };
 
 const metaLabelStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "9px",
-  color: "#706860",
-  letterSpacing: "0.1em",
+  color: "#8C7E74",
+  letterSpacing: "0.12em",
   margin: "0 0 4px 0",
   textTransform: "uppercase",
 };
@@ -408,7 +424,7 @@ const metaLabelStyle: React.CSSProperties = {
 const metaValueStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "12px",
-  color: "#FAF9F6",
+  color: "#2C1A11",
   margin: "0",
   fontWeight: "bold",
 };
@@ -417,57 +433,57 @@ const sectionTitleStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "10px",
   letterSpacing: "0.15em",
-  color: "#706860",
+  color: "#8C7E74",
   textTransform: "uppercase",
-  margin: "20px 0 8px 0",
+  margin: "24px 0 8px 0",
 };
 
 const cardStyle: React.CSSProperties = {
-  backgroundColor: "#1B1A18",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FAF7F2",
+  border: "1px solid #EAE4DC",
   borderRadius: "6px",
-  padding: "16px",
+  padding: "18px",
   marginBottom: "16px",
 };
 
 const itemRowStyle = (isLast: boolean): React.CSSProperties => ({
-  paddingBottom: isLast ? "0" : "12px",
-  marginBottom: isLast ? "0" : "12px",
-  borderBottom: isLast ? "none" : "1px solid #262421",
+  paddingBottom: isLast ? "0" : "14px",
+  marginBottom: isLast ? "0" : "14px",
+  borderBottom: isLast ? "none" : "1px solid #EAE4DC",
 });
 
 const itemTitleStyle: React.CSSProperties = {
-  fontSize: "13px",
+  fontSize: "14px",
   fontWeight: "bold",
-  color: "#FAF9F6",
-  margin: "0 0 2px 0",
+  color: "#2C1A11",
+  margin: "0 0 4px 0",
 };
 
 const itemTimberStyle: React.CSSProperties = {
-  fontSize: "11px",
+  fontSize: "12px",
   fontFamily: "monospace",
-  color: "#9B9287",
+  color: "#6B5E55",
   margin: "0 0 2px 0",
 };
 
 const itemQtyStyle: React.CSSProperties = {
   fontSize: "11px",
   fontFamily: "monospace",
-  color: "#706860",
+  color: "#8C7E74",
   margin: "0",
 };
 
 const itemPriceStyle: React.CSSProperties = {
   fontFamily: "monospace",
-  fontSize: "12px",
-  color: "#D4A373",
+  fontSize: "14px",
+  color: "#895029",
   fontWeight: "bold",
   margin: "0",
 };
 
 const addressTextStyle: React.CSSProperties = {
   fontSize: "13px",
-  color: "#FAF9F6",
+  color: "#2C1A11",
   lineHeight: "1.5",
   margin: "4px 0 0 0",
 };
@@ -479,51 +495,52 @@ const ctaSectionStyle: React.CSSProperties = {
 
 const buttonStyle: React.CSSProperties = {
   display: "inline-block",
-  backgroundColor: "#D4A373",
-  color: "#121110",
+  backgroundColor: "#2C1A11",
+  color: "#FAF9F6",
   fontSize: "11px",
   fontFamily: "monospace",
   fontWeight: "bold",
-  letterSpacing: "0.12em",
+  letterSpacing: "0.14em",
   textTransform: "uppercase",
   textDecoration: "none",
-  padding: "12px 28px",
+  padding: "14px 32px",
   borderRadius: "4px",
 };
 
 const craftsmanshipNoticeStyle: React.CSSProperties = {
   fontSize: "11px",
   lineHeight: "1.5",
-  color: "#706860",
+  color: "#8C7E74",
   textAlign: "center",
   margin: "16px 0 0 0",
+  fontStyle: "italic",
 };
 
 const footerSectionStyle: React.CSSProperties = {
-  backgroundColor: "#131211",
-  borderTop: "1px solid #2A2724",
-  padding: "24px 20px",
+  backgroundColor: "#F4EFEA",
+  borderTop: "1px solid #EAE4DC",
+  padding: "28px 24px",
   textAlign: "center",
 };
 
 const footerTextStyle: React.CSSProperties = {
   fontSize: "10px",
   fontFamily: "monospace",
-  color: "#706860",
+  color: "#7A6C62",
   margin: "0 0 4px 0",
 };
 
 const footerSubTextStyle: React.CSSProperties = {
   fontSize: "10px",
   fontFamily: "monospace",
-  color: "#9B9287",
+  color: "#8C7E74",
   margin: "0 0 8px 0",
 };
 
 const footerLegalStyle: React.CSSProperties = {
   fontSize: "9px",
   fontFamily: "monospace",
-  color: "#524C46",
+  color: "#A0948A",
   margin: "0",
 };
 

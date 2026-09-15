@@ -28,7 +28,7 @@ function getSenderEmail(): string {
  */
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || apiKey === "invalid" || apiKey.trim() === "") return null;
   return new Resend(apiKey);
 }
 
@@ -53,6 +53,35 @@ async function dispatchEmail(payload: {
       });
 
       if (error) {
+        // Handle Resend free-tier sandbox restrictions in development only:
+        const isProduction = process.env.NODE_ENV === "production";
+        const isSandboxBlock =
+          !isProduction &&
+          (error.message?.includes("You can only send testing emails to your own email address") ||
+           error.message?.includes("Invalid `to` field") ||
+           error.message?.includes("testing email address"));
+
+        if (isSandboxBlock) {
+          const match = error.message?.match(/\(([^)]+)\)/);
+          const ownerEmail = match ? match[1] : "mzaid6048@gmail.com";
+          console.warn(
+            `[TEAK HAUS EMAIL NOTICE] Resend sandbox restriction in development: Recipient "${payload.to}" cannot receive emails on free onboarding domain. Re-routing test email to verified account owner (${ownerEmail}).`
+          );
+          const retry = await resend.emails.send({
+            from,
+            to: ownerEmail,
+            subject: `[TEST FOR: ${payload.to}] ${payload.subject}`,
+            html: payload.html,
+          });
+
+          if (retry.data?.id) {
+            console.log(
+              `[TEAK HAUS EMAIL] Dispatched re-routed sandbox email to ${ownerEmail}, id: ${retry.data.id}`
+            );
+            return { success: true, messageId: retry.data.id };
+          }
+        }
+
         console.warn("[TEAK HAUS EMAIL] Resend returned error:", error);
         return { success: false, error: error.message };
       }

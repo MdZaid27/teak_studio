@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createBespokeInquiry, getAllBespokeInquiries } from "@/lib/interactions";
 import { requireAdminSession } from "@/lib/auth";
 import { sendBespokeCommissionEmail, sendBespokeInquiryEmail } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,11 @@ export async function GET() {
  * Patron submission of bespoke architectural commission brief.
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, "bespoke-create", 5, 15 * 60 * 1000);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const rawBody = await request.json();
     const parseResult = bespokeInquirySchema.safeParse(rawBody);

@@ -1,14 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isUserAdmin } from "@/lib/auth";
 
 /**
- * Next.js Middleware / Proxy for KILN STUDIO.
+ * Next.js 16 Proxy for TEAK HAUS.
  * 1. Synchronizes Supabase Auth session cookies with Next.js App Router request/response.
  * 2. Enforces access control for /admin and subroutes:
- *    - Unauthenticated requests to /admin/* (except /admin/login) redirect to /admin/login.
- *    - Authenticated users visiting /admin/login redirect directly to /admin.
+ *    - Unauthenticated requests or non-admin users to /admin/* (except /admin/login) redirect to /admin/login.
+ *    - Authenticated admin users visiting /admin/login redirect directly to /admin.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -37,32 +38,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // Strict session check with Supabase Auth server
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  function isUserAdmin(
-    u: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown>; email?: string | null } | null
-  ) {
-    if (!u) return false;
-    if (u.app_metadata?.role === "admin" || u.user_metadata?.role === "admin") return true;
-    const email = u.email?.toLowerCase();
-    if (
-      email &&
-      (email.startsWith("admin@") ||
-       email.includes("admin") ||
-       email.endsWith("@teakhaus.in") ||
-       email === "curator@teakhaus.in" ||
-       email === "curator@kilnstudio.in" ||
-       email.endsWith("@kilnstudio.in"))
-    ) {
-      return true;
-    }
-    return false;
-  }
 
   const pathname = request.nextUrl.pathname;
   const isAdmin = isUserAdmin(user);
@@ -87,6 +66,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/admin/:path*"],
 };
-
-// Next.js 16 supports both `middleware` and `proxy` conventions
-export { middleware as proxy };

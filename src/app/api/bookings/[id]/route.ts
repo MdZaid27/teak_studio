@@ -50,21 +50,23 @@ export async function PATCH(
       );
     }
 
-    // Dispatch status update email to patron asynchronously
+    // Dispatch status update email to patron
     if (result.booking && result.booking.email) {
-      sendStudioBookingEmail({
-        bookingId: result.booking.id,
-        patronName: result.booking.patron_name,
-        email: result.booking.email,
-        phone: result.booking.phone,
-        location: result.booking.studio_location,
-        date: result.booking.preferred_date,
-        timeSlot: result.booking.preferred_time_slot,
-        notes: result.booking.notes,
-        status: parseResult.data.status,
-      }).catch((emailErr) => {
+      try {
+        await sendStudioBookingEmail({
+          bookingId: result.booking.id,
+          patronName: result.booking.patron_name,
+          email: result.booking.email,
+          phone: result.booking.phone,
+          location: result.booking.studio_location,
+          date: result.booking.preferred_date,
+          timeSlot: result.booking.preferred_time_slot,
+          notes: result.booking.notes,
+          status: parseResult.data.status,
+        });
+      } catch (emailErr) {
         console.error("[TEAK HAUS EMAIL ERROR] Failed to dispatch studio booking update email:", emailErr);
-      });
+      }
     }
 
     return NextResponse.json(

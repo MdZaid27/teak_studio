@@ -135,16 +135,7 @@ export default function ProductCard({
           className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
         />
 
-        {product.isPopular && (
-          <span className="absolute top-3 left-3 bg-[#0e0300]/80 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full">
-            Atelier Highlight
-          </span>
-        )}
 
-        {/* Timber Provenance Badge */}
-        <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-[#895029] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-[#d3c3bd]/30">
-          {product.timber}
-        </span>
 
         {/* Luxury Heart Wishlist Trigger */}
         <button

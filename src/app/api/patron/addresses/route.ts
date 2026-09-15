@@ -6,6 +6,7 @@ import {
   updatePatronAddress,
   deletePatronAddress,
 } from "@/lib/patron";
+import { verifyPatronAccess } from "@/lib/auth";
 
 const addressSchema = z.object({
   userId: z.string().min(1, "userId is required"),
@@ -40,6 +41,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "userId or phone is required" }, { status: 400 });
     }
 
+    const auth = await verifyPatronAccess({ userId: userId || undefined, phone });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
+
     const addresses = await getPatronAddresses(userId, phone);
     return NextResponse.json({ success: true, addresses }, { status: 200 });
   } catch (err: unknown) {
@@ -52,6 +58,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const validated = addressSchema.parse(body);
+
+    const auth = await verifyPatronAccess({ userId: validated.userId, phone: validated.phone });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
 
     const address = await createPatronAddress(validated.userId, {
       floor_building: validated.floor_building,
@@ -87,6 +98,11 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: "userId and addressId are required" }, { status: 400 });
     }
 
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
+
     const updated = await updatePatronAddress(userId, addressId, updates);
     if (!updated) {
       return NextResponse.json({ success: false, error: "Address not found" }, { status: 404 });
@@ -107,6 +123,11 @@ export async function DELETE(req: NextRequest) {
 
     if (!userId || !addressId) {
       return NextResponse.json({ success: false, error: "userId and addressId are required" }, { status: 400 });
+    }
+
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
 
     await deletePatronAddress(userId, addressId);

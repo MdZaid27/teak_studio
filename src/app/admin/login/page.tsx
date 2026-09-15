@@ -47,17 +47,10 @@ export default function AdminLoginPage() {
       if (data?.session && data?.user) {
         // Verify user has admin privileges
         const user = data.user;
-        const email = user.email?.toLowerCase();
+        const email = user.email?.toLowerCase().trim();
         const isAdmin =
           user.app_metadata?.role === "admin" ||
-          user.user_metadata?.role === "admin" ||
-          (email &&
-            (email.startsWith("admin@") ||
-             email.includes("admin") ||
-             email.endsWith("@teakhaus.in") ||
-             email === "curator@teakhaus.in" ||
-             email === "curator@kilnstudio.in" ||
-             email.endsWith("@kilnstudio.in")));
+          (email && (email === "curator@teakhaus.in" || email === "admin@teakhaus.in"));
 
         if (!isAdmin) {
           await supabase.auth.signOut();

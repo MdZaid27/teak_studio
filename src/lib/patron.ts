@@ -48,6 +48,7 @@ function loadAddressesFromDisk(): DbPatronAddress[] {
 }
 
 function saveAddressesToDisk(addresses: DbPatronAddress[]) {
+  if (process.env.NODE_ENV === "production") return;
   try {
     fs.writeFileSync(ADDRESSES_FILE, JSON.stringify(addresses, null, 2), "utf-8");
   } catch (e) {
@@ -71,6 +72,7 @@ function loadProfilesFromDisk(): DbPatronProfile[] {
 }
 
 function saveProfilesToDisk(profiles: DbPatronProfile[]) {
+  if (process.env.NODE_ENV === "production") return;
   try {
     fs.writeFileSync(PROFILES_FILE, JSON.stringify(profiles, null, 2), "utf-8");
   } catch (e) {

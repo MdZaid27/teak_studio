@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getPatronProfile, upsertPatronProfile } from "@/lib/patron";
+import { verifyPatronAccess } from "@/lib/auth";
 
 const profileSchema = z.object({
   id: z.string().min(1, "User ID is required"),
@@ -20,6 +21,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "userId is required" }, { status: 400 });
     }
 
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
+
     const profile = await getPatronProfile(userId);
     return NextResponse.json({ success: true, profile }, { status: 200 });
   } catch (err: unknown) {
@@ -32,6 +38,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const validated = profileSchema.parse(body);
+
+    const auth = await verifyPatronAccess({ userId: validated.id, phone: validated.phone, email: validated.email });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
 
     const saved = await upsertPatronProfile({
       id: validated.id,

@@ -7,6 +7,7 @@ import { getSupabaseAdminClient, getSupabaseClient, isSupabaseConfigured } from 
 import { requireAdminSession } from "@/lib/auth";
 import { getPincodeDetailsSync } from "@/lib/pincode";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   const auth = await requireAdminSession();
@@ -80,6 +81,11 @@ function generateOrderNumber(): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, "orders-create", 10, 15 * 60 * 1000);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const rawBody = await request.json();
     const parseResult = createOrderSchema.safeParse(rawBody);
@@ -334,6 +340,22 @@ export async function POST(request: NextRequest) {
             );
             const devOrderId = `dev-sim-${Date.now()}`;
             await saveDevStoreOrder(devOrderId);
+
+            // Trigger order confirmation email
+            try {
+              await sendOrderConfirmationEmail({
+                orderNumber,
+                customerName: customer_name,
+                customerEmail: customer_email,
+                items: resolvedItems,
+                total: calculatedTotal,
+                address: finalShippingAddress,
+                paymentMethod: finalPaymentMethod,
+              });
+            } catch (emailErr) {
+              console.warn("[TEAK HAUS EMAIL] Failed to send fallback order email:", emailErr);
+            }
+
             return NextResponse.json(
               {
                 success: true,
@@ -381,47 +403,66 @@ export async function POST(request: NextRequest) {
             unit_price: item.unitPrice,
             line_total: item.lineTotal,
           }));
-          await supabase.from("order_items").insert(baselineItems);
+          const fallbackAttempt = await supabase.from("order_items").insert(baselineItems);
+          if (fallbackAttempt.error) {
+            console.error("[TEAK HAUS DB ERROR] Failed to insert order items (fallback):", fallbackAttempt.error);
+            if (isProduction) {
+              return NextResponse.json(
+                { error: "Database error recording order items." },
+                { status: 500 }
+              );
+            }
+          }
+        } else if (itemsAttempt.error) {
+          console.error("[TEAK HAUS DB ERROR] Failed to insert order items:", itemsAttempt.error);
+          if (isProduction) {
+            return NextResponse.json(
+              { error: "Database error recording order items." },
+              { status: 500 }
+            );
+          }
         }
 
         // Auto-save address for patron if applicable
         await maybeAutoSaveAddress();
 
-        // Also mirror in local store for immediate UI consistency
-        saveDevOrder({
-          id: orderData.id,
-          order_number: orderData.order_number,
-          user_id: targetUserId,
-          customer_name,
-          customer_phone,
-          customer_email,
-          delivery_address: finalShippingAddress,
-          shipping_address: finalShippingAddress,
-          city: finalCity,
-          state: finalState,
-          pincode,
-          subtotal: calculatedSubtotal,
-          total: calculatedTotal,
-          total_amount: calculatedTotal,
-          payment_method: finalPaymentMethod,
-          status: "confirmed",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          order_items: resolvedItems.map((item, idx) => ({
-            id: `item-${idx + 1}`,
-            order_id: orderData.id,
-            product_id: item.productId,
-            product_name: item.productName,
-            product_title: item.productTitle,
-            timber_option: item.timberOption,
-            timber_title: item.timberTitle,
-            quantity: item.quantity,
-            unit_price: item.unitPrice,
-            line_total: item.lineTotal,
-            image_url: item.imageUrl,
+        // Only mirror in local store during non-production development
+        if (!isProduction) {
+          saveDevOrder({
+            id: orderData.id,
+            order_number: orderData.order_number,
+            user_id: targetUserId,
+            customer_name,
+            customer_phone,
+            customer_email,
+            delivery_address: finalShippingAddress,
+            shipping_address: finalShippingAddress,
+            city: finalCity,
+            state: finalState,
+            pincode,
+            subtotal: calculatedSubtotal,
+            total: calculatedTotal,
+            total_amount: calculatedTotal,
+            payment_method: finalPaymentMethod,
+            status: "confirmed",
             created_at: new Date().toISOString(),
-          })),
-        });
+            updated_at: new Date().toISOString(),
+            order_items: resolvedItems.map((item, idx) => ({
+              id: `item-${idx + 1}`,
+              order_id: orderData.id,
+              product_id: item.productId,
+              product_name: item.productName,
+              product_title: item.productTitle,
+              timber_option: item.timberOption,
+              timber_title: item.timberTitle,
+              quantity: item.quantity,
+              unit_price: item.unitPrice,
+              line_total: item.lineTotal,
+              image_url: item.imageUrl,
+              created_at: new Date().toISOString(),
+            })),
+          });
+        }
 
         // Trigger order confirmation email
         try {

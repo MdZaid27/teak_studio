@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPatronOrders } from "@/lib/patron";
+import { verifyPatronAccess } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,6 +12,17 @@ export async function GET(req: NextRequest) {
     const identifier = phone || email;
     if (!identifier && !userId) {
       return NextResponse.json({ success: false, error: "phone, email, or userId is required" }, { status: 400 });
+    }
+
+    // Strict authorization guard: Ensure caller owns the requested phone, email, or userId
+    const auth = await verifyPatronAccess({
+      userId: userId || undefined,
+      phone: phone || undefined,
+      email: email || undefined,
+    });
+
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
 
     const orders = await getPatronOrders(identifier, userId);

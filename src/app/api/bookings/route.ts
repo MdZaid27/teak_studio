@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createStudioBooking, getAllStudioBookings } from "@/lib/bookings";
 import { requireAdminSession } from "@/lib/auth";
 import { sendStudioBookingEmail } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,11 @@ export async function GET() {
  * Patron booking creation for atelier walkthrough.
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, "bookings-create", 5, 15 * 60 * 1000);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const rawBody = await request.json();
     const parseResult = bookingSchema.safeParse(rawBody);

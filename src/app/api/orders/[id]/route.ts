@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getOrderByNumberOrId, updateOrderStatus } from "@/lib/orders";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession, verifyPatronAccess } from "@/lib/auth";
 import { OrderStatus } from "@/types/database";
 import { sendOrderStatusUpdateEmail } from "@/lib/email";
 
@@ -37,6 +37,17 @@ export async function GET(
         { success: false, error: "Order not found" },
         { status: 404 }
       );
+    }
+
+    // Strict ownership verification: Only order owner or admin can retrieve order details
+    const auth = await verifyPatronAccess({
+      userId: order.user_id,
+      phone: order.customer_phone,
+      email: order.customer_email,
+    });
+
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
 
     // Return safe customer order details with items
@@ -101,23 +112,25 @@ export async function PATCH(
     }
 
     if (updatedOrder.customer_email) {
-      sendOrderStatusUpdateEmail({
-        orderNumber: updatedOrder.order_number,
-        customerName: updatedOrder.customer_name,
-        customerEmail: updatedOrder.customer_email,
-        status: updatedOrder.status,
-        items: updatedOrder.order_items?.map((item) => ({
-          productTitle: item.product_title || item.product_name,
-          timberTitle: item.timber_title || item.timber_option,
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-          lineTotal: item.line_total,
-        })),
-        total: updatedOrder.total,
-        address: updatedOrder.delivery_address,
-      }).catch((emailErr) => {
+      try {
+        await sendOrderStatusUpdateEmail({
+          orderNumber: updatedOrder.order_number,
+          customerName: updatedOrder.customer_name,
+          customerEmail: updatedOrder.customer_email,
+          status: updatedOrder.status,
+          items: updatedOrder.order_items?.map((item) => ({
+            productTitle: item.product_title || item.product_name,
+            timberTitle: item.timber_title || item.timber_option,
+            quantity: item.quantity,
+            unitPrice: item.unit_price,
+            lineTotal: item.line_total,
+          })),
+          total: updatedOrder.total,
+          address: updatedOrder.delivery_address,
+        });
+      } catch (emailErr) {
         console.error("[TEAK HAUS EMAIL ERROR] Failed to dispatch order status email:", emailErr);
-      });
+      }
     }
 
     return NextResponse.json(

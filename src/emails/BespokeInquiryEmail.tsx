@@ -59,24 +59,24 @@ export function BespokeInquiryEmail({
               Brief Received, {patronName}
             </Heading>
             <Text style={introTextStyle}>
-              Our workshop design architects have received your architectural specifications for reference ref #{inquiryId.slice(0, 8)}.
+              Our workshop design architects have received your architectural specifications for commission ref #{inquiryId.slice(0, 8)}.
             </Text>
 
             {/* Inquiry Specifications Card */}
             <Section style={cardStyle}>
-              <Row style={{ marginBottom: "12px" }}>
+              <Row style={{ marginBottom: "14px" }}>
                 <Column style={{ width: "50%" }}>
                   <Text style={metaLabelStyle}>TYPOLOGY</Text>
                   <Text style={metaValueStyle}>{projectType}</Text>
                 </Column>
                 <Column style={{ width: "50%" }}>
                   <Text style={metaLabelStyle}>TIMBER CHOICE</Text>
-                  <Text style={{ ...metaValueStyle, color: "#D4A373" }}>{timberPreference}</Text>
+                  <Text style={{ ...metaValueStyle, color: "#895029" }}>{timberPreference}</Text>
                 </Column>
               </Row>
 
               {approxDimensions && (
-                <Row style={{ marginBottom: "12px" }}>
+                <Row style={{ marginBottom: "14px" }}>
                   <Column>
                     <Text style={metaLabelStyle}>DIMENSIONS &amp; SPATIAL SCALE</Text>
                     <Text style={specTextStyle}>{approxDimensions}</Text>
@@ -85,15 +85,15 @@ export function BespokeInquiryEmail({
               )}
 
               {budgetRange && (
-                <Row style={{ marginBottom: "12px" }}>
+                <Row style={{ marginBottom: "14px" }}>
                   <Column>
                     <Text style={metaLabelStyle}>ANTICIPATED INVESTMENT RANGE</Text>
-                    <Text style={{ ...metaValueStyle, color: "#D4A373" }}>{budgetRange}</Text>
+                    <Text style={{ ...metaValueStyle, color: "#895029" }}>{budgetRange}</Text>
                   </Column>
                 </Row>
               )}
 
-              <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #282522" }}>
+              <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid #EAE4DC" }}>
                 <Text style={metaLabelStyle}>CRAFTSMANSHIP SPECIFICATIONS</Text>
                 <Text style={messageTextStyle}>{message}</Text>
               </div>
@@ -103,13 +103,13 @@ export function BespokeInquiryEmail({
             <Text style={sectionTitleStyle}>WHAT HAPPENS NEXT</Text>
             <Section style={cardStyle}>
               <Text style={guidelineItemStyle}>
-                • <strong>Timber Sourcing Assessment:</strong> Our timber master reviews our current seasoning reserves for heartwood matching your scale.
+                • <strong>Timber Sourcing Assessment:</strong> Our timber master reviews our seasoning reserves for heartwood matching your scale.
               </Text>
               <Text style={guidelineItemStyle}>
-                • <strong>Structural Feasibility:</strong> We inspect grain stress points and calculate internal steel or butterfly key stabilization.
+                • <strong>Structural Feasibility:</strong> We inspect grain stress points and calculate internal timber butterfly key stabilization.
               </Text>
               <Text style={guidelineItemStyle}>
-                • <strong>Architect Connect:</strong> A senior bespoke architect will reach out within 24 hours with rough schematics and timber swatches.
+                • <strong>Architect Connect:</strong> A senior bespoke architect will reach out within 24 hours with conceptual sketches and timber recommendations.
               </Text>
             </Section>
 
@@ -136,36 +136,37 @@ export function BespokeInquiryEmail({
   );
 }
 
-// ---------------- STYLES ----------------
+// ---------------- STYLES (#FAF9F6 LUXURY PALETTE) ----------------
 const mainStyle: React.CSSProperties = {
-  backgroundColor: "#121110",
+  backgroundColor: "#FAF9F6",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   margin: "0 auto",
-  padding: "32px 0",
+  padding: "40px 0",
 };
 
 const containerStyle: React.CSSProperties = {
-  backgroundColor: "#171615",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FFFFFF",
+  border: "1px solid #EAE4DC",
   borderRadius: "8px",
   maxWidth: "600px",
   margin: "0 auto",
   overflow: "hidden",
+  boxShadow: "0 4px 24px rgba(44, 26, 17, 0.04)",
 };
 
 const headerSectionStyle: React.CSSProperties = {
-  backgroundColor: "#131211",
-  borderBottom: "1px solid #2A2724",
-  padding: "32px 24px",
+  backgroundColor: "#2C1A11",
+  borderBottom: "1px solid #3D261A",
+  padding: "36px 24px",
   textAlign: "center",
 };
 
 const brandHeadingStyle: React.CSSProperties = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Georgia, 'Cormorant Garamond', serif",
   fontSize: "24px",
   fontWeight: "normal",
-  letterSpacing: "0.15em",
+  letterSpacing: "0.2em",
   color: "#FAF9F6",
   margin: "0",
 };
@@ -173,14 +174,15 @@ const brandHeadingStyle: React.CSSProperties = {
 const brandSubtitleStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "9px",
-  letterSpacing: "0.2em",
+  letterSpacing: "0.22em",
   color: "#D4A373",
   margin: "8px 0 0 0",
   textTransform: "uppercase",
 };
 
 const contentSectionStyle: React.CSSProperties = {
-  padding: "32px 28px",
+  padding: "36px 32px",
+  backgroundColor: "#FFFFFF",
 };
 
 const badgeWrapperStyle: React.CSSProperties = {
@@ -190,21 +192,22 @@ const badgeWrapperStyle: React.CSSProperties = {
 
 const badgeStyle: React.CSSProperties = {
   display: "inline-block",
-  padding: "5px 12px",
-  backgroundColor: "#22201D",
-  border: "1px solid #3E3A35",
+  padding: "6px 14px",
+  backgroundColor: "#F7F2EB",
+  border: "1px solid #E4D8C8",
   borderRadius: "4px",
+  color: "#895029",
   fontFamily: "monospace",
   fontSize: "10px",
-  letterSpacing: "0.1em",
-  color: "#D4A373",
+  letterSpacing: "0.12em",
   textTransform: "uppercase",
+  fontWeight: "bold",
 };
 
 const greetingHeadingStyle: React.CSSProperties = {
-  fontFamily: "Georgia, serif",
-  fontSize: "22px",
-  color: "#FAF9F6",
+  fontFamily: "Georgia, 'Cormorant Garamond', serif",
+  fontSize: "24px",
+  color: "#2C1A11",
   textAlign: "center",
   margin: "0 0 8px 0",
   fontWeight: "normal",
@@ -213,98 +216,99 @@ const greetingHeadingStyle: React.CSSProperties = {
 const introTextStyle: React.CSSProperties = {
   fontSize: "13px",
   lineHeight: "1.6",
-  color: "#9B9287",
+  color: "#5C5248",
   textAlign: "center",
   margin: "0 0 24px 0",
 };
 
 const cardStyle: React.CSSProperties = {
-  backgroundColor: "#1B1A18",
-  border: "1px solid #2A2724",
+  backgroundColor: "#FAF7F2",
+  border: "1px solid #EAE4DC",
   borderRadius: "6px",
-  padding: "18px",
-  marginBottom: "16px",
+  padding: "20px",
+  marginBottom: "20px",
 };
 
 const metaLabelStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "9px",
-  color: "#706860",
-  letterSpacing: "0.1em",
+  color: "#8C7E74",
+  letterSpacing: "0.12em",
   margin: "0 0 4px 0",
   textTransform: "uppercase",
 };
 
 const metaValueStyle: React.CSSProperties = {
+  fontFamily: "monospace",
   fontSize: "13px",
-  fontWeight: "bold",
-  color: "#FAF9F6",
+  color: "#2C1A11",
   margin: "0",
+  fontWeight: "bold",
 };
 
 const specTextStyle: React.CSSProperties = {
-  fontSize: "12px",
-  fontFamily: "monospace",
-  color: "#FAF9F6",
+  fontSize: "13px",
+  color: "#2C1A11",
   margin: "0",
 };
 
 const messageTextStyle: React.CSSProperties = {
-  fontSize: "12px",
-  color: "#FAF9F6",
-  lineHeight: "1.5",
-  margin: "0",
+  fontSize: "13px",
+  color: "#5C5248",
+  lineHeight: "1.6",
+  margin: "4px 0 0 0",
 };
 
 const sectionTitleStyle: React.CSSProperties = {
   fontFamily: "monospace",
   fontSize: "10px",
   letterSpacing: "0.15em",
-  color: "#706860",
+  color: "#8C7E74",
   textTransform: "uppercase",
-  margin: "20px 0 8px 0",
+  margin: "24px 0 8px 0",
 };
 
 const guidelineItemStyle: React.CSSProperties = {
   fontSize: "12px",
-  color: "#9B9287",
   lineHeight: "1.6",
-  margin: "0 0 8px 0",
+  color: "#5C5248",
+  margin: "0 0 10px 0",
 };
 
 const craftsmanshipNoticeStyle: React.CSSProperties = {
   fontSize: "11px",
   lineHeight: "1.5",
-  color: "#706860",
+  color: "#8C7E74",
   textAlign: "center",
-  margin: "20px 0 0 0",
+  margin: "16px 0 0 0",
+  fontStyle: "italic",
 };
 
 const footerSectionStyle: React.CSSProperties = {
-  backgroundColor: "#131211",
-  borderTop: "1px solid #2A2724",
-  padding: "24px 20px",
+  backgroundColor: "#F4EFEA",
+  borderTop: "1px solid #EAE4DC",
+  padding: "28px 24px",
   textAlign: "center",
 };
 
 const footerTextStyle: React.CSSProperties = {
   fontSize: "10px",
   fontFamily: "monospace",
-  color: "#706860",
+  color: "#7A6C62",
   margin: "0 0 4px 0",
 };
 
 const footerSubTextStyle: React.CSSProperties = {
   fontSize: "10px",
   fontFamily: "monospace",
-  color: "#9B9287",
+  color: "#8C7E74",
   margin: "0 0 8px 0",
 };
 
 const footerLegalStyle: React.CSSProperties = {
   fontSize: "9px",
   fontFamily: "monospace",
-  color: "#524C46",
+  color: "#A0948A",
   margin: "0",
 };
 

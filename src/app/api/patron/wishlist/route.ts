@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPatronWishlist, addToWishlist, removeFromWishlist } from "@/lib/patron";
+import { verifyPatronAccess } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,6 +9,11 @@ export async function GET(req: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ success: false, error: "userId is required" }, { status: 400 });
+    }
+
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
 
     const items = await getPatronWishlist(userId);
@@ -27,6 +33,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "userId and productId are required" }, { status: 400 });
     }
 
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
+
     const item = await addToWishlist(userId, productId, selectedTimberId);
     return NextResponse.json({ success: true, item }, { status: 201 });
   } catch (err: unknown) {
@@ -43,6 +54,11 @@ export async function DELETE(req: NextRequest) {
 
     if (!userId || !productId) {
       return NextResponse.json({ success: false, error: "userId and productId are required" }, { status: 400 });
+    }
+
+    const auth = await verifyPatronAccess({ userId });
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
 
     await removeFromWishlist(userId, productId);

@@ -125,25 +125,27 @@ export async function PATCH(
       );
     }
 
-    // Dispatch lifecycle update email asynchronously
+    // Dispatch lifecycle update email
     if (updatedOrder.customer_email) {
-      sendOrderStatusUpdateEmail({
-        orderNumber: updatedOrder.order_number,
-        customerName: updatedOrder.customer_name,
-        customerEmail: updatedOrder.customer_email,
-        status: updatedOrder.status,
-        items: updatedOrder.order_items?.map((item) => ({
-          productTitle: item.product_title || item.product_name,
-          timberTitle: item.timber_title || item.timber_option,
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-          lineTotal: item.line_total,
-        })),
-        total: updatedOrder.total,
-        address: updatedOrder.delivery_address,
-      }).catch((emailErr) => {
+      try {
+        await sendOrderStatusUpdateEmail({
+          orderNumber: updatedOrder.order_number,
+          customerName: updatedOrder.customer_name,
+          customerEmail: updatedOrder.customer_email,
+          status: updatedOrder.status,
+          items: updatedOrder.order_items?.map((item) => ({
+            productTitle: item.product_title || item.product_name,
+            timberTitle: item.timber_title || item.timber_option,
+            quantity: item.quantity,
+            unitPrice: item.unit_price,
+            lineTotal: item.line_total,
+          })),
+          total: updatedOrder.total,
+          address: updatedOrder.delivery_address,
+        });
+      } catch (emailErr) {
         console.error("[TEAK HAUS EMAIL ERROR] Failed to dispatch order status email:", emailErr);
-      });
+      }
     }
 
     return NextResponse.json(

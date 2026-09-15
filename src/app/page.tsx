@@ -271,7 +271,6 @@ export default function HomePage() {
                 </div>
                 <div className="p-5 flex-1 flex flex-col justify-between gap-3">
                   <div>
-                    <p className="text-[10px] text-[#895029] font-bold uppercase tracking-widest mb-1">{product.timber}</p>
                     <h3 className="font-display text-lg text-[#0e0300] leading-snug group-hover:text-[#895029] transition-colors">{product.name}</h3>
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-[#f0ede9]">
