@@ -3,22 +3,22 @@
 -- Migration: 20260915_production_security_rls.sql
 -- 
 -- DESCRIPTION:
--- Complete production hardening of Row-Level Security (RLS) policies.
--- 1. Dynamically purges all existing/legacy policies on affected tables.
--- 2. Strictly validates data types:
---    - orders.user_id [TEXT]
---    - patron_addresses.user_id [TEXT]
---    - patron_wishlists.user_id [TEXT]
---    - patron_profiles.id [TEXT]
---    - order_items.order_id [UUID]
--- 3. Uses scalar subqueries (SELECT auth.uid()) for query plan caching and casts to ::text
+-- Complete production hardening of Row-Level Security (RLS) policies and safe
+-- schema reconciliation for missing patron subsystems:
+-- 1. Safely provisions missing patron tables:
+--    - public.patron_profiles (exact intended schema from 20260911_patron_system.sql)
+--    - public.patron_wishlists (exact intended schema with unique constraint & cascade)
+-- 2. Dynamically purges all existing/legacy policies on affected tables.
+-- 3. Strictly validates data types (orders.user_id [TEXT], patron_addresses.user_id [TEXT],
+--    patron_wishlists.user_id [TEXT], patron_profiles.id [TEXT], order_items.order_id [UUID]).
+-- 4. Uses scalar subqueries (SELECT auth.uid()) for query plan caching and casts to ::text
 --    only where column type is TEXT.
--- 4. Removes public/anonymous INSERT policies on orders and order_items: orders must be
+-- 5. Removes public/anonymous INSERT policies on orders and order_items: orders must be
 --    created server-side via service_role key with verified pricing, stock, and totals.
--- 5. Preserves public INSERT only for legitimate public submissions (bespoke inquiries,
+-- 6. Preserves public INSERT only for legitimate public submissions (bespoke inquiries,
 --    studio bookings, newsletter subscriptions, swatch requests).
--- 6. Enforces customer data isolation: patrons can only read/manage their own records.
--- 7. Enforces server-controlled administrative authorization:
+-- 7. Enforces customer data isolation: patrons can only read/manage their own records.
+-- 8. Enforces server-controlled administrative authorization:
 --    (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 --
 -- IMPORTANT:
@@ -26,8 +26,56 @@
 -- Review and execute manually in the Supabase SQL Editor.
 -- ==============================================================================
 
+-- ==============================================================================
+-- 0. SAFE TABLE PROVISIONING (PATRON SUBSYSTEMS)
+-- Provisions patron_profiles and patron_wishlists if not present in live database.
+-- ==============================================================================
+
+-- 1. Patron Profiles Table
+CREATE TABLE IF NOT EXISTS public.patron_profiles (
+  id TEXT PRIMARY KEY, -- accommodates Supabase auth UUIDs and phone/patron identifiers
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  marketing_opt_in BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_patron_profiles_phone ON public.patron_profiles(phone);
+CREATE INDEX IF NOT EXISTS idx_patron_profiles_email ON public.patron_profiles(email);
+
+-- 2. Patron Wishlists Table
+CREATE TABLE IF NOT EXISTS public.patron_wishlists (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  product_id VARCHAR(255) NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  selected_timber_id VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT unique_patron_wishlist_item UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_patron_wishlists_user_id ON public.patron_wishlists(user_id);
+CREATE INDEX IF NOT EXISTS idx_patron_wishlists_product_id ON public.patron_wishlists(product_id);
+
+-- 3. Orders Table Column Reconciliation (Safe Additive Changes)
+ALTER TABLE IF EXISTS public.orders 
+  ADD COLUMN IF NOT EXISTS user_id TEXT,
+  ADD COLUMN IF NOT EXISTS shipping_address TEXT,
+  ADD COLUMN IF NOT EXISTS city VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS state VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS total_amount INTEGER;
+
+-- 4. Order Items Table Column Reconciliation (Safe Additive Changes)
+ALTER TABLE IF EXISTS public.order_items
+  ADD COLUMN IF NOT EXISTS product_title VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS timber_title VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+
 -- ------------------------------------------------------------------------------
--- 0. DYNAMIC PURGE OF ALL EXISTING POLICIES
+-- 1. DYNAMIC PURGE OF ALL EXISTING POLICIES
 -- Ensures no development-era, permissive, or unexpectedly named policies linger.
 -- ------------------------------------------------------------------------------
 
@@ -155,7 +203,7 @@ CREATE INDEX IF NOT EXISTS idx_patron_addresses_user_id ON public.patron_address
 CREATE INDEX IF NOT EXISTS idx_patron_wishlists_user_id ON public.patron_wishlists(user_id);
 
 -- ==============================================================================
--- 1. ORDERS TABLE
+-- 2. ORDERS TABLE
 -- Column types:
 --   id: UUID (PK)
 --   user_id: TEXT (accommodates Supabase auth UUIDs and patron session IDs)
@@ -202,7 +250,7 @@ CREATE POLICY "Admins delete orders"
 
 
 -- ==============================================================================
--- 2. ORDER ITEMS TABLE
+-- 3. ORDER ITEMS TABLE
 -- Column types:
 --   id: UUID (PK)
 --   order_id: UUID (FK -> orders.id [UUID])
@@ -250,7 +298,7 @@ CREATE POLICY "Admins delete order_items"
 
 
 -- ==============================================================================
--- 3. PATRON PROFILES TABLE
+-- 4. PATRON PROFILES TABLE
 -- Column types:
 --   id: TEXT (PK, stores Supabase auth UUID as text or patron ID)
 --
@@ -300,7 +348,7 @@ CREATE POLICY "Admins delete profile"
 
 
 -- ==============================================================================
--- 4. PATRON ADDRESSES TABLE (Saved Delivery Residences)
+-- 5. PATRON ADDRESSES TABLE (Saved Delivery Residences)
 -- Column types:
 --   id: UUID (PK)
 --   user_id: TEXT (stores Supabase auth UUID as text or patron ID)
@@ -354,7 +402,7 @@ CREATE POLICY "Users delete own addresses"
 
 
 -- ==============================================================================
--- 5. PATRON WISHLISTS TABLE
+-- 6. PATRON WISHLISTS TABLE
 -- Column types:
 --   id: UUID (PK)
 --   user_id: TEXT
@@ -396,7 +444,7 @@ CREATE POLICY "Users delete own wishlist"
 
 
 -- ==============================================================================
--- 6. BESPOKE ARCHITECTURAL INQUIRIES TABLE
+-- 7. BESPOKE ARCHITECTURAL INQUIRIES TABLE
 -- Security Model:
 -- - Public (anon + authenticated) can INSERT inquiries (consultation briefs).
 -- - ONLY Admins can SELECT, UPDATE, or DELETE records.
@@ -430,7 +478,7 @@ CREATE POLICY "Admins delete bespoke_inquiries"
 
 
 -- ==============================================================================
--- 7. STUDIO BOOKINGS TABLE (Showroom Walkthroughs)
+-- 8. STUDIO BOOKINGS TABLE (Showroom Walkthroughs)
 -- Security Model:
 -- - Public (anon + authenticated) can INSERT studio walkthrough reservations.
 -- - ONLY Admins can SELECT, UPDATE, or DELETE bookings.
@@ -464,7 +512,7 @@ CREATE POLICY "Admins delete studio_bookings"
 
 
 -- ==============================================================================
--- 8. NEWSLETTER SUBSCRIBERS TABLE
+-- 9. NEWSLETTER SUBSCRIBERS TABLE
 -- Security Model:
 -- - Public (anon + authenticated) can INSERT their email to subscribe.
 -- - ONLY Admins can SELECT or DELETE subscriber emails.
@@ -491,7 +539,7 @@ CREATE POLICY "Admins delete newsletter_subscribers"
 
 
 -- ==============================================================================
--- 9. SWATCH REQUESTS TABLE (Timber Sample Boxes)
+-- 10. SWATCH REQUESTS TABLE (Timber Sample Boxes)
 -- Security Model:
 -- - Public (anon + authenticated) can INSERT swatch sample requests.
 -- - ONLY Admins can SELECT or UPDATE dispatch tracking.
@@ -524,7 +572,7 @@ CREATE POLICY "Admins delete swatch_requests"
 
 
 -- ==============================================================================
--- 10. CATALOGUE TABLES (Products, Timbers, Categories, Gallery, Options)
+-- 11. CATALOGUE TABLES (Products, Timbers, Categories, Gallery, Options)
 -- Security Model:
 -- - Public read access (SELECT) is required for store catalogue browsing.
 -- - INSERT, UPDATE, DELETE are strictly restricted to authenticated Admins.

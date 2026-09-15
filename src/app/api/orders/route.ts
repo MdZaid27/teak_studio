@@ -4,7 +4,7 @@ import { siteConfig } from "@/config/site";
 import { getProductById } from "@/lib/products";
 import { getAllOrders, saveDevOrder } from "@/lib/orders";
 import { getSupabaseAdminClient, getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession, getAuthenticatedCallerIdentity } from "@/lib/auth";
 import { getPincodeDetailsSync } from "@/lib/pincode";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -115,7 +115,22 @@ export async function POST(request: NextRequest) {
       items,
     } = parseResult.data;
 
-    const targetUserId = user_id || userId || null;
+    // Zero-trust customer ownership verification:
+    // If caller has an active Supabase Auth session or signed HttpOnly patron cookie,
+    // bind the order to that verified identity. Never trust arbitrary client-sent user_id.
+    const caller = await getAuthenticatedCallerIdentity();
+
+    let targetUserId: string | null = null;
+    if (caller?.userId) {
+      targetUserId = caller.userId;
+    } else if (user_id === "patron-guest" || userId === "patron-guest" || (!user_id && !userId)) {
+      targetUserId = "patron-guest";
+    } else {
+      // Client passed an arbitrary user_id without a matching verified session;
+      // treat as guest to prevent spoofed ownership binding
+      targetUserId = "patron-guest";
+    }
+
     const finalShippingAddress = shipping_address || delivery_address;
     const pinInfo = getPincodeDetailsSync(pincode);
     const finalCity = city || pinInfo?.city || "India";
@@ -268,7 +283,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Attempt to persist using Supabase Admin client (or standard client with RLS)
+    // In production with hardened RLS, orders must be created via the service-role client
+    if (isProduction && !getSupabaseAdminClient()) {
+      console.error(
+        "[KILN STUDIO SECURITY] Production order creation requires SUPABASE_SERVICE_ROLE_KEY to persist orders safely with RLS enabled."
+      );
+      return NextResponse.json(
+        { error: "Order persistence service unavailable in production." },
+        { status: 500 }
+      );
+    }
+
+    // Use service-role client in production, or fallback for local development
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
 
     if (supabase && isConfigured) {

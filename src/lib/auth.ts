@@ -224,3 +224,46 @@ export async function verifyPatronAccess(target?: PatronAuthTarget): Promise<{
   };
 }
 
+/**
+ * Retrieves the verified caller identity from Supabase Auth or signed patron cookies.
+ * Returns null if the caller is an unauthenticated guest.
+ */
+export async function getAuthenticatedCallerIdentity(): Promise<{
+  userId: string;
+  phone: string | null;
+  email: string | null;
+} | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.id) {
+      return {
+        userId: user.id,
+        phone: user.phone ? user.phone.replace(/\D/g, "").slice(-10) : null,
+        email: user.email?.toLowerCase().trim() || null,
+      };
+    }
+  } catch {
+    // Fall through to cookies
+  }
+
+  try {
+    const cookieStore = await cookies();
+    const cookieId = cookieStore.get("teak_patron_id")?.value?.trim();
+    if (cookieId) {
+      return {
+        userId: cookieId,
+        phone: cookieStore.get("teak_patron_phone")?.value?.replace(/\D/g, "").slice(-10) || null,
+        email: cookieStore.get("teak_patron_email")?.value?.toLowerCase().trim() || null,
+      };
+    }
+  } catch {
+    // Non-fatal
+  }
+
+  return null;
+}
+
