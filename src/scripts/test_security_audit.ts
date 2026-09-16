@@ -1,5 +1,6 @@
 import { isUserAdmin } from "../lib/auth";
 import { checkRateLimit } from "../lib/rate-limit";
+import { generateSecureOtp, storeOtp, verifyStoredOtp, maskEmail, hashOtp } from "../lib/otp";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -164,6 +165,53 @@ async function runSecurityAuditTests() {
   assert(envExampleContent.includes("NEXT_PUBLIC_SUPABASE_URL"), ".env.example documents NEXT_PUBLIC_SUPABASE_URL");
   assert(envExampleContent.includes("CLOUDFLARE_R2_ACCOUNT_ID"), ".env.example documents Cloudflare R2 variables");
   assert(envExampleContent.includes("RESEND_API_KEY"), ".env.example documents RESEND_API_KEY");
+
+  // ---------------------------------------------------------------------------
+  // TEST GROUP 8: Cryptographic OTP & Access Pass Verification
+  // ---------------------------------------------------------------------------
+  console.log("\n--- 8. Cryptographic OTP & Access Pass Verification Tests ---");
+
+  // A. OTP Generation randomness & format
+  const code1 = generateSecureOtp();
+  const code2 = generateSecureOtp();
+  assert(code1.length === 6 && /^\d{6}$/.test(code1), "Generated OTP is exactly 6 numerical digits");
+  assert(code1 !== code2, "Subsequent OTP generations are distinct and cryptographically random");
+
+  // B. Email masking for patron privacy
+  assert(maskEmail("mzaid6048@gmail.com") === "m***8@gmail.com", "Correctly masks standard patron email (m***8@gmail.com)");
+  assert(maskEmail("ab@teak.in") === "a*@teak.in", "Correctly masks short username email (a*@teak.in)");
+
+  // C. Successful OTP verification lifecycle
+  const testPhone = "9888877777";
+  const testEmail = "patron.test@example.com";
+  const validCode = "729401";
+  storeOtp({ phone: testPhone, email: testEmail, code: validCode, expiryMs: 60000 });
+
+  const invalidAttempt = verifyStoredOtp(testPhone, "000000");
+  assert(!invalidAttempt.success && Boolean(invalidAttempt.error?.includes("4 attempts")), "Rejects invalid OTP and tracks remaining attempts");
+
+  const validAttempt = verifyStoredOtp(testPhone, validCode);
+  assert(validAttempt.success && validAttempt.email === testEmail, "Successfully verifies valid OTP and returns verified email");
+
+  // D. Single-use consumption (cannot reuse verified OTP)
+  const reusedAttempt = verifyStoredOtp(testPhone, validCode);
+  assert(!reusedAttempt.success, "Rejects replay attack (single-use OTP consumed on verification)");
+
+  // E. Brute-force lockout defense
+  const bruteForcePhone = "9999911111";
+  storeOtp({ phone: bruteForcePhone, email: testEmail, code: "123789", expiryMs: 60000 });
+  for (let i = 0; i < 5; i++) {
+    verifyStoredOtp(bruteForcePhone, "999999");
+  }
+  const lockoutAttempt = verifyStoredOtp(bruteForcePhone, "123789");
+  assert(!lockoutAttempt.success && Boolean(lockoutAttempt.error?.includes("exceeded")), "Locks out and purges token after 5 failed brute-force attempts");
+
+  // F. Expiration enforcement
+  const expiredPhone = "9999922222";
+  storeOtp({ phone: expiredPhone, email: testEmail, code: "654321", expiryMs: -1000 }); // expired in past
+  const expiredAttempt = verifyStoredOtp(expiredPhone, "654321");
+  assert(!expiredAttempt.success && Boolean(expiredAttempt.error?.includes("expired")), "Rejects expired OTP token");
+
 
   // ---------------------------------------------------------------------------
   // SUMMARY

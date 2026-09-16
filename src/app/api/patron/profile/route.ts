@@ -15,18 +15,19 @@ const profileSchema = z.object({
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    const userId = searchParams.get("userId") || "";
+    const phone = searchParams.get("phone") || undefined;
 
-    if (!userId) {
-      return NextResponse.json({ success: false, error: "userId is required" }, { status: 400 });
+    if (!userId && !phone) {
+      return NextResponse.json({ success: false, error: "userId or phone is required" }, { status: 400 });
     }
 
-    const auth = await verifyPatronAccess({ userId });
+    const auth = await verifyPatronAccess({ userId: userId || undefined, phone: phone || undefined });
     if (auth.errorResponse) {
       return auth.errorResponse;
     }
 
-    const profile = await getPatronProfile(userId);
+    const profile = await getPatronProfile(userId, phone);
     return NextResponse.json({ success: true, profile }, { status: 200 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to get patron profile";

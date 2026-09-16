@@ -95,18 +95,30 @@ export async function getPatronProfile(userId: string, phone?: string): Promise<
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
     if (supabase) {
       try {
-        let query = supabase.from("patron_profiles").select("*");
-        if (userId && targetPhone) {
-          query = query.or(`id.eq.${userId},phone.ilike.%${targetPhone}`);
-        } else if (userId) {
-          query = query.eq("id", userId);
-        } else if (targetPhone) {
-          query = query.ilike("phone", `%${targetPhone}`);
+        // 1. Try by userId if provided
+        if (userId) {
+          const { data, error } = await supabase
+            .from("patron_profiles")
+            .select("*")
+            .eq("id", userId)
+            .maybeSingle();
+
+          if (!error && data) {
+            return data as DbPatronProfile;
+          }
         }
 
-        const { data, error } = await query.maybeSingle();
-        if (!error && data) {
-          return data as DbPatronProfile;
+        // 2. Try by normalized phone if provided
+        if (targetPhone) {
+          const { data, error } = await supabase
+            .from("patron_profiles")
+            .select("*")
+            .ilike("phone", `%${targetPhone}%`)
+            .maybeSingle();
+
+          if (!error && data) {
+            return data as DbPatronProfile;
+          }
         }
       } catch (e) {
         console.warn("[KILN PATRON] Failed fetching profile from DB:", e);
@@ -118,11 +130,11 @@ export async function getPatronProfile(userId: string, phone?: string): Promise<
   const allProfiles = loadProfilesFromDisk();
   const found = allProfiles.find((p) => {
     if (userId && p.id === userId) return true;
-    if (targetPhone && p.phone.replace(/\D/g, "").slice(-10) === targetPhone) return true;
+    if (targetPhone && p.phone && p.phone.replace(/\D/g, "").slice(-10) === targetPhone) return true;
     return false;
   });
 
-  return found || global.__kilnDevPatronProfiles?.get(userId) || null;
+  return found || (userId ? global.__kilnDevPatronProfiles?.get(userId) : null) || null;
 }
 
 export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbPatronProfile> {
@@ -130,6 +142,8 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
     ...profile,
     updated_at: new Date().toISOString(),
   };
+
+  const cleanUpdatedPhone = (profile.phone || "").replace(/\D/g, "").slice(-10);
 
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient() || getSupabaseClient();
@@ -142,7 +156,9 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
           .maybeSingle();
 
         if (!error && data) {
-          const allProfiles = loadProfilesFromDisk().filter((p) => p.id !== profile.id);
+          const allProfiles = loadProfilesFromDisk().filter(
+            (p) => p.id !== profile.id && (!cleanUpdatedPhone || p.phone.replace(/\D/g, "").slice(-10) !== cleanUpdatedPhone)
+          );
           allProfiles.push(data as DbPatronProfile);
           saveProfilesToDisk(allProfiles);
           global.__kilnDevPatronProfiles?.set(profile.id, data as DbPatronProfile);
@@ -154,7 +170,9 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
     }
   }
 
-  const allProfiles = loadProfilesFromDisk().filter((p) => p.id !== profile.id);
+  const allProfiles = loadProfilesFromDisk().filter(
+    (p) => p.id !== profile.id && (!cleanUpdatedPhone || p.phone.replace(/\D/g, "").slice(-10) !== cleanUpdatedPhone)
+  );
   allProfiles.push(updated);
   saveProfilesToDisk(allProfiles);
 

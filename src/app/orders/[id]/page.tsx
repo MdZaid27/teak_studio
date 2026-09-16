@@ -293,7 +293,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
         {/* -------------------------------------------------------------
             B. Architectural Stepper / Status Timeline
            ------------------------------------------------------------- */}
-        <div className="bg-white border border-[#EAE7E1] rounded-2xl p-6 md:p-8 shadow-xs space-y-6 print-invoice-card avoid-break timeline-stepper">
+        <div className="bg-white border border-[#EAE7E1] rounded-2xl p-6 md:p-8 shadow-xs space-y-6 print-invoice-card avoid-break timeline-stepper overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EAE7E1] pb-4">
             <div>
               <span className="font-sans text-xs font-semibold tracking-wider text-[#766E65] uppercase block">
@@ -324,12 +324,12 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
               {/* Desktop Stepper */}
               <div className="hidden md:grid grid-cols-4 gap-4 relative pt-2">
                 {/* Background connector line */}
-                <div className="absolute top-7 left-12 right-12 h-0.5 bg-[#EAE7E1] -z-0" />
+                <div className="absolute top-7 left-[12.5%] right-[12.5%] h-0.5 bg-[#EAE7E1] -z-0" />
                 {/* Active progress connector line */}
                 <div
-                  className="absolute top-7 left-12 h-0.5 bg-[#895029] -z-0 transition-all duration-500"
+                  className="absolute top-7 left-[12.5%] h-0.5 bg-[#895029] -z-0 transition-all duration-500"
                   style={{
-                    width: `${(Math.max(0, activeStepIndex) / (TRACKING_STEPS.length - 1)) * 100}%`,
+                    width: `${(Math.max(0, activeStepIndex) / (TRACKING_STEPS.length - 1)) * 75}%`,
                   }}
                 />
 

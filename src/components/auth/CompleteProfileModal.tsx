@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 export default function CompleteProfileModal() {
@@ -19,6 +19,17 @@ export default function CompleteProfileModal() {
   const [marketingOptIn, setMarketingOptIn] = useState(profile?.marketing_opt_in ?? true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync state whenever modal opens or customerUser / profile updates
+  useEffect(() => {
+    if (isProfileModalOpen) {
+      if (profile?.first_name) setFirstName(profile.first_name);
+      if (profile?.last_name) setLastName(profile.last_name);
+      const incomingEmail = profile?.email || customerUser?.email || "";
+      if (incomingEmail) setEmail(incomingEmail);
+      setErrorMessage(null);
+    }
+  }, [isProfileModalOpen, profile, customerUser]);
 
   if (!isProfileModalOpen) return null;
 
@@ -141,15 +152,23 @@ export default function CompleteProfileModal() {
 
           {/* Email Address */}
           <div className="space-y-1">
-            <label className="font-sans text-[11px] font-semibold tracking-wider text-[#766E65] uppercase block">
-              Email Address <span className="text-[#895029]">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label className="font-sans text-[11px] font-semibold tracking-wider text-[#766E65] uppercase">
+                Email Address <span className="text-[#895029]">*</span>
+              </label>
+              {customerUser?.email && (
+                <span className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">verified</span>
+                  Verified via Access Pass
+                </span>
+              )}
+            </div>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ananya.rao@example.com"
+              placeholder="patron@example.com"
               disabled={isSubmitting}
               className="w-full px-3.5 py-2.5 bg-white border border-[#EAE7E1] rounded-xl text-sm text-[#1A1A1A] placeholder-[#A0988F] focus:outline-none focus:border-[#895029] focus:ring-1 focus:ring-[#895029]/30 transition-all"
             />

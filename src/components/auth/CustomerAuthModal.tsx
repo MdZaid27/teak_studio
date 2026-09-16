@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+
+interface PatronDetection {
+  name?: string;
+  maskedEmail: string;
+}
 
 function CustomerAuthModalContent() {
   const {
@@ -14,13 +19,19 @@ function CustomerAuthModalContent() {
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState(pendingPhone || "");
+  const [email, setEmail] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+  const [patronFound, setPatronFound] = useState<PatronDetection | null>(null);
+  const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [devNotice, setDevNotice] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(30);
 
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const checkAbortRef = useRef<AbortController | null>(null);
 
   // Resend countdown timer
   useEffect(() => {
@@ -35,17 +46,78 @@ function CustomerAuthModalContent() {
 
   const canResend = countdown === 0;
 
+  // Smart check if the phone number belongs to an existing patron
+  const checkPhoneAccount = useCallback(async (phoneDigits: string) => {
+    if (checkAbortRef.current) {
+      checkAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    checkAbortRef.current = controller;
+
+    setIsCheckingPhone(true);
+    try {
+      const res = await fetch(`/api/auth/otp/check-phone?phone=${encodeURIComponent(phoneDigits)}`, {
+        signal: controller.signal,
+      });
+      const data = await res.json();
+
+      if (data.success && data.exists) {
+        setPatronFound({
+          name: data.name,
+          maskedEmail: data.maskedEmail,
+        });
+        setShowEmailInput(false);
+      } else {
+        setPatronFound(null);
+        setShowEmailInput(true);
+        setTimeout(() => {
+          emailInputRef.current?.focus();
+        }, 100);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      // Default to showing email if check fails
+      setShowEmailInput(true);
+    } finally {
+      setIsCheckingPhone(false);
+    }
+  }, []);
+
+  // Handle phone number input with immediate 10-digit auto-detection
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitized = e.target.value.replace(/\D/g, "").slice(0, 10);
     setPhone(sanitized);
     setPendingPhone(sanitized);
+    if (errorMessage) setErrorMessage(null);
+
+    if (sanitized.length === 10 && /^[6-9]\d{9}$/.test(sanitized)) {
+      checkPhoneAccount(sanitized);
+    } else {
+      if (checkAbortRef.current) checkAbortRef.current.abort();
+      setPatronFound(null);
+      setShowEmailInput(false);
+      setIsCheckingPhone(false);
+    }
+  };
+
+  // Initial check if opened with a prefilled 10-digit phone
+  useEffect(() => {
+    if (phone.length === 10 && /^[6-9]\d{9}$/.test(phone)) {
+      checkPhoneAccount(phone);
+    }
+    return () => {
+      if (checkAbortRef.current) checkAbortRef.current.abort();
+    };
+  }, []); // Run on initial mount
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
     if (errorMessage) setErrorMessage(null);
   };
 
   const handleSendCode = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage(null);
-    setDevNotice(null);
 
     const cleanPhone = phone.replace(/\D/g, "");
     if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
@@ -53,16 +125,30 @@ function CustomerAuthModalContent() {
       return;
     }
 
+    if (showEmailInput) {
+      const cleanEmail = email.trim();
+      if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        setErrorMessage("Please enter a valid email address to receive your access pass.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
-      const res = await sendOtp(cleanPhone);
+      const res = await sendOtp(cleanPhone, showEmailInput ? email.trim() : undefined);
+      if (res.requiresEmail) {
+        setShowEmailInput(true);
+        setErrorMessage(res.error || "Welcome to TEAK HAUS. Please provide your email to receive your access pass.");
+        setTimeout(() => {
+          emailInputRef.current?.focus();
+        }, 100);
+        return;
+      }
+
       if (res.success) {
+        setMaskedEmail(res.maskedEmail || patronFound?.maskedEmail || null);
         setStep("otp");
         setCountdown(30);
-        if (res.devOtp || res.isDevFallback) {
-          setDevNotice(`Test Environment: Use verification code ${res.devOtp || "123456"}`);
-        }
-        // Focus first OTP field
         setTimeout(() => {
           otpInputsRef.current[0]?.focus();
         }, 100);
@@ -131,7 +217,7 @@ function CustomerAuthModalContent() {
     setErrorMessage(null);
 
     // Brief delay to give visual feedback of the verifying state before transition
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 350));
 
     try {
       const res = await verifyOtp(phone, code);
@@ -152,6 +238,10 @@ function CustomerAuthModalContent() {
     handleSendCode();
   };
 
+  const isFormValid =
+    phone.length === 10 &&
+    (!showEmailInput || (email.trim().length > 0 && email.includes("@")));
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div
@@ -165,7 +255,7 @@ function CustomerAuthModalContent() {
         <button
           onClick={() => setIsAuthModalOpen(false)}
           disabled={isSubmitting}
-          className="absolute top-5 right-5 p-1.5 text-[#81746f] hover:text-[#0e0300] hover:bg-[#f0ede9] rounded-full transition-colors"
+          className="absolute top-5 right-5 p-1.5 text-[#81746f] hover:text-[#0e0300] hover:bg-[#f0ede9] rounded-full transition-colors cursor-pointer"
           aria-label="Close authentication modal"
         >
           <span className="material-symbols-outlined text-[20px]">close</span>
@@ -175,15 +265,17 @@ function CustomerAuthModalContent() {
         <div className="space-y-1.5 mb-6">
           <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-[#895029] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-[#895029]" />
-            TEAK HAUS — Patron Atelier
+            TEAK HAUS &mdash; Patron Atelier
           </div>
           <h2 className="font-serif text-2xl md:text-3xl text-[#1A1A1A] font-medium leading-tight">
-            {step === "phone" ? "Sign In" : "Verify Mobile Number"}
+            {step === "phone" ? "Sign In" : "Verify Access Pass"}
           </h2>
           <p className="text-xs text-[#81746f] leading-relaxed pt-1">
             {step === "phone"
-              ? "Enter your mobile number to receive a one-time verification code."
-              : `Enter the 6-digit code sent to +91 ${phone}`}
+              ? "Enter your mobile number to receive your secure atelier access pass via email."
+              : maskedEmail
+              ? `Enter the 6-digit access pass sent to ${maskedEmail} for +91 ${phone}.`
+              : `Enter the 6-digit access pass sent to your registered email for +91 ${phone}.`}
           </p>
         </div>
 
@@ -195,23 +287,22 @@ function CustomerAuthModalContent() {
           </div>
         )}
 
-        {devNotice && (
-          <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs flex items-start gap-2 animate-in fade-in duration-150">
-            <span className="material-symbols-outlined text-[16px] text-amber-700 shrink-0 mt-0.5">info</span>
-            <div className="flex-1 space-y-0.5">
-              <span className="font-semibold block text-amber-800">Atelier Simulation Active</span>
-              <p className="leading-relaxed text-amber-900">{devNotice}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1: Phone Input Form */}
+        {/* Step 1: Phone & Smart Auto-Detected Email Form */}
         {step === "phone" ? (
-          <form onSubmit={handleSendCode} className="space-y-5">
+          <form onSubmit={handleSendCode} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
-                Mobile Number
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300]">
+                  Mobile Number
+                </label>
+                {isCheckingPhone && (
+                  <span className="flex items-center gap-1 text-[10px] text-[#895029] font-medium">
+                    <span className="material-symbols-outlined text-[12px] animate-spin">progress_activity</span>
+                    Checking account...
+                  </span>
+                )}
+              </div>
+
               <div className="flex items-center border border-[#d3c3bd] rounded-xl bg-white overflow-hidden focus-within:border-[#895029] focus-within:ring-1 focus-within:ring-[#895029]/30 transition-all">
                 <span className="px-3.5 py-3 bg-[#f0ede9] text-[#2c1a11] font-mono text-sm font-semibold border-r border-[#d3c3bd] select-none">
                   +91
@@ -224,25 +315,79 @@ function CustomerAuthModalContent() {
                   value={phone}
                   onChange={handlePhoneChange}
                   placeholder="98765 43210"
-                  autoFocus
+                  autoFocus={!showEmailInput}
                   disabled={isSubmitting}
                   className="flex-1 px-3.5 py-3 text-sm font-mono text-[#0e0300] placeholder-[#81746f] bg-transparent focus:outline-none tracking-wider"
                 />
               </div>
-              <p className="text-[10px] text-[#81746f]">
-                We will send a 6-digit OTP.
-              </p>
             </div>
+
+            {/* Smart Detection Case A: Recognized Patron */}
+            {patronFound && !showEmailInput && (
+              <div className="p-3.5 bg-[#f7f2eb] border border-[#e4d8c8] rounded-xl flex items-start gap-2.5 text-xs text-[#2c1a11] animate-in fade-in slide-in-from-top-1 duration-200">
+                <span className="material-symbols-outlined text-[18px] text-[#895029] shrink-0 mt-0.5">verified_user</span>
+                <div className="flex-1 space-y-0.5">
+                  <span className="font-semibold block text-[#0e0300]">
+                    Welcome back{patronFound.name ? `, ${patronFound.name}` : ""}!
+                  </span>
+                  <p className="text-[#81746f] text-[11px] leading-relaxed">
+                    Verification pass will be emailed to <strong className="text-[#0e0300] font-mono">{patronFound.maskedEmail}</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailInput(true)}
+                    className="text-[10px] text-[#895029] hover:text-[#0e0300] underline font-medium pt-1 block cursor-pointer"
+                  >
+                    Need to use a different email?
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Smart Detection Case B: New Patron */}
+            {showEmailInput && (
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-3 bg-[#fdfcf9] border border-[#d3c3bd] rounded-xl flex items-start gap-2.5 text-xs text-[#2c1a11]">
+                  <span className="material-symbols-outlined text-[18px] text-[#895029] shrink-0 mt-0.5">stars</span>
+                  <div className="flex-1 space-y-0.5">
+                    <span className="font-semibold block text-[#0e0300]">
+                      {patronFound ? "Update Delivery Email" : "New Patron Atelier Access"}
+                    </span>
+                    <p className="text-[#81746f] text-[11px] leading-relaxed">
+                      {patronFound
+                        ? "Enter the email where you'd like your access code delivered."
+                        : "Enter your email address below to receive your secure access pass."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#0e0300] block">
+                    Email Address
+                  </label>
+                  <input
+                    ref={emailInputRef}
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="patron@example.com"
+                    autoFocus
+                    disabled={isSubmitting}
+                    className="w-full px-3.5 py-3 text-sm text-[#0e0300] placeholder-[#81746f] border border-[#d3c3bd] rounded-xl bg-white focus:border-[#895029] focus:ring-1 focus:ring-[#895029]/30 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={isSubmitting || phone.length !== 10}
-              className="w-full py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] disabled:bg-[#81746f] disabled:cursor-not-allowed transition-all rounded-xl font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] cursor-pointer"
+              disabled={isSubmitting || !isFormValid || isCheckingPhone}
+              className="w-full mt-2 py-3.5 bg-[#0e0300] text-[#fcf9f4] hover:bg-[#895029] disabled:bg-[#81746f] disabled:cursor-not-allowed transition-all rounded-xl font-title-md text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] cursor-pointer"
             >
               {isSubmitting ? (
                 <>
                   <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
-                  <span>Requesting Code...</span>
+                  <span>Dispatching Pass...</span>
                 </>
               ) : (
                 <>
@@ -303,11 +448,11 @@ function CustomerAuthModalContent() {
               {isSubmitting ? (
                 <>
                   <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
-                  <span>Verifying...</span>
+                  <span>Verifying Pass...</span>
                 </>
               ) : (
                 <>
-                  <span>Verify &amp; Continue</span>
+                  <span>Verify &amp; Sign In</span>
                   <span className="material-symbols-outlined text-[16px]">check</span>
                 </>
               )}
@@ -322,10 +467,10 @@ function CustomerAuthModalContent() {
                   disabled={isSubmitting}
                   className="text-[#895029] hover:text-[#0e0300] font-semibold hover:underline cursor-pointer"
                 >
-                  Resend Verification Code
+                  Resend Access Pass
                 </button>
               ) : (
-                <span>Resend code in <strong className="font-mono text-[#0e0300]">{countdown}s</strong></span>
+                <span>Resend pass in <strong className="font-mono text-[#0e0300]">{countdown}s</strong></span>
               )}
             </div>
           </div>

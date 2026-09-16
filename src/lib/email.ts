@@ -5,6 +5,7 @@ import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import { OrderStatusUpdateEmail } from "@/emails/OrderStatusUpdateEmail";
 import { StudioBookingEmail } from "@/emails/StudioBookingEmail";
 import { BespokeInquiryEmail } from "@/emails/BespokeInquiryEmail";
+import { CustomerOtpEmail } from "@/emails/CustomerOtpEmail";
 import { OrderStatus } from "@/types/database";
 
 export interface EmailResult {
@@ -294,3 +295,29 @@ export async function sendBespokeInquiryEmail(inquiry: {
 }
 
 export const sendBespokeCommissionEmail = sendBespokeInquiryEmail;
+
+/**
+ * 5. Patron Authentication Access Pass (OTP) Email
+ */
+export async function sendCustomerOtpEmail(payload: {
+  email: string;
+  otpCode: string;
+  phone?: string;
+  customerName?: string;
+  expiryMinutes?: number;
+}): Promise<EmailResult> {
+  const reactElement = React.createElement(CustomerOtpEmail, {
+    otpCode: payload.otpCode,
+    patronName: payload.customerName,
+    phone: payload.phone,
+    expiryMinutes: payload.expiryMinutes || 10,
+  });
+
+  const html = await render(reactElement);
+
+  return dispatchEmail({
+    to: payload.email,
+    subject: `Your Atelier Access Pass: ${payload.otpCode} — TEAK HAUS`,
+    html,
+  });
+}

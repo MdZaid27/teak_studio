@@ -23,7 +23,17 @@ interface CustomerAuthContextType {
   setIsProfileModalOpen: (open: boolean) => void;
   pendingPhone: string;
   setPendingPhone: (phone: string) => void;
-  sendOtp: (phone10Digits: string) => Promise<{ success: boolean; error?: string; devOtp?: string; isDevFallback?: boolean }>;
+  sendOtp: (
+    phone10Digits: string,
+    email?: string
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    requiresEmail?: boolean;
+    maskedEmail?: string;
+    devOtp?: string;
+    isDevFallback?: boolean;
+  }>;
   verifyOtp: (phone10Digits: string, token: string) => Promise<{ success: boolean; error?: string; requiresProfile?: boolean }>;
   updateProfile: (data: { firstName: string; lastName: string; email: string; marketingOptIn?: boolean }) => Promise<{ success: boolean; error?: string }>;
   signOutCustomer: () => Promise<void>;
@@ -34,7 +44,6 @@ interface CustomerAuthContextType {
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
 const PATRON_STORAGE_KEY = "kiln_patron_session";
-const DEV_OTP_STORAGE_KEY = "kiln_dev_otp";
 const PATRON_PROFILE_STORAGE_KEY = "kiln_patron_profile";
 
 function isUserAdmin(
@@ -71,31 +80,41 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   }, [pendingAction]);
 
   // Load profile from local storage or server
-  const loadProfile = useCallback(async (userId: string, userPhone?: string) => {
+  const loadProfile = useCallback(async (userId: string, userPhone?: string, userEmail?: string) => {
     try {
-      const cached = localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${userId}`);
+      const cleanPhone = userPhone ? userPhone.replace(/\D/g, "").slice(-10) : "";
+      const cached =
+        localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${userId}`) ||
+        (cleanPhone ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) : null);
+
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.first_name) {
+            if (!parsed.email && userEmail) parsed.email = userEmail;
             setProfile(parsed);
             return parsed as DbPatronProfile;
           }
         } catch {}
       }
 
-      const res = await fetch(`/api/patron/profile?userId=${encodeURIComponent(userId)}`);
+      const phoneParam = userPhone ? `&phone=${encodeURIComponent(userPhone)}` : "";
+      const res = await fetch(`/api/patron/profile?userId=${encodeURIComponent(userId)}${phoneParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.profile) {
+          if (!data.profile.email && userEmail) data.profile.email = userEmail;
           setProfile(data.profile);
           localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${userId}`, JSON.stringify(data.profile));
+          if (cleanPhone) {
+            localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`, JSON.stringify(data.profile));
+          }
           return data.profile as DbPatronProfile;
         }
       } else if (userPhone) {
         const defaultProfile: DbPatronProfile = {
           id: userId,
-          email: "",
+          email: userEmail || "",
           phone: userPhone,
           first_name: "",
           last_name: "",
@@ -138,7 +157,10 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             if (parsed && parsed.phone) {
               setCustomerUser(parsed);
               syncSessionCookie(parsed);
-              const cachedProf = localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${parsed.id}`);
+              const cleanPhone = parsed.phone.replace(/\D/g, "").slice(-10);
+              const cachedProf =
+                localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${parsed.id}`) ||
+                (cleanPhone ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) : null);
               if (cachedProf) {
                 try {
                   const profParsed = JSON.parse(cachedProf);
@@ -217,71 +239,69 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   }, [supabase, loadProfile]);
 
   /**
-   * Request OTP code via Supabase Phone Auth.
+   * Request 6-digit access pass OTP sent to patron's registered or provided email.
    */
-  const sendOtp = async (phone10Digits: string) => {
-    const formattedPhone = `+91${phone10Digits.replace(/\D/g, "")}`;
-    setPendingPhone(phone10Digits);
+  const sendOtp = async (phone10Digits: string, email?: string) => {
+    const cleanDigits = phone10Digits.replace(/\D/g, "").slice(-10);
+    setPendingPhone(cleanDigits);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: cleanDigits,
+          email: email ? email.trim().toLowerCase() : undefined,
+        }),
       });
 
-      if (error) {
-        const errObj = error as { code?: string; status?: number };
-        const isProviderError =
-          error.message.includes("provider") ||
-          error.message.includes("Unsupported phone provider") ||
-          errObj.code === "phone_provider_disabled" ||
-          errObj.status === 400;
-
-        if (isProviderError) {
-          sessionStorage.setItem(DEV_OTP_STORAGE_KEY, JSON.stringify({ phone: phone10Digits, otp: "123456" }));
-          return {
-            success: true,
-            devOtp: "123456",
-            isDevFallback: true,
-          };
-        }
-
-        return { success: false, error: error.message };
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return {
+          success: false,
+          error: data.error || data.message || "Failed to send verification code.",
+          requiresEmail: data.requiresEmail,
+        };
       }
 
-      return { success: true };
-    } catch {
-      sessionStorage.setItem(DEV_OTP_STORAGE_KEY, JSON.stringify({ phone: phone10Digits, otp: "123456" }));
       return {
         success: true,
-        devOtp: "123456",
-        isDevFallback: true,
+        maskedEmail: data.maskedEmail,
+        requiresEmail: false,
       };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to connect to authentication service.";
+      return { success: false, error: msg };
     }
   };
 
   /**
    * Handle post-verification flow (profile check vs completion)
    */
-  const handlePostVerification = async (patron: CustomerUser) => {
+  const handlePostVerification = async (patron: CustomerUser, requiresProfileParam?: boolean) => {
     setCustomerUser(patron);
     localStorage.setItem(PATRON_STORAGE_KEY, JSON.stringify(patron));
     setIsAuthModalOpen(false);
 
-    // Set a server-side HttpOnly cookie so order receipts can verify
-    // ownership even for dev-mode synthetic patron sessions
-    fetch("/api/patron/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        patronId: patron.id,
-        phone: patron.phone,
-        email: patron.email,
-      }),
-    }).catch(() => {}); // fire-and-forget; non-critical
+    // Set a server-side HttpOnly cookie so order receipts and patron APIs can verify
+    // ownership immediately
+    try {
+      await fetch("/api/patron/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patronId: patron.id,
+          phone: patron.phone,
+          email: patron.email,
+        }),
+      });
+    } catch (err) {
+      console.warn("[KILN PATRON] Failed syncing session cookie:", err);
+    }
 
     // Check if profile is already complete
-    const existingProfile = await loadProfile(patron.id, patron.phone);
-    if (!existingProfile || !existingProfile.first_name || !existingProfile.last_name) {
+    const existingProfile = await loadProfile(patron.id, patron.phone, patron.email);
+    if (requiresProfileParam || !existingProfile || !existingProfile.first_name || !existingProfile.last_name) {
       setIsProfileModalOpen(true);
       return { success: true, requiresProfile: true };
     }
@@ -294,63 +314,32 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
    * Verify 6-digit OTP code and establish patron session.
    */
   const verifyOtp = async (phone10Digits: string, token: string) => {
-    const cleanDigits = phone10Digits.replace(/\D/g, "");
-    const formattedPhone = `+91${cleanDigits}`;
+    const cleanDigits = phone10Digits.replace(/\D/g, "").slice(-10);
 
-    // 1. Check dev fallback OTP first
-    const savedDevOtp = sessionStorage.getItem(DEV_OTP_STORAGE_KEY);
-    if (savedDevOtp) {
-      try {
-        const parsed = JSON.parse(savedDevOtp);
-        if (parsed.phone === cleanDigits && (parsed.otp === token.trim() || token.trim() === "123456")) {
-          const patron: CustomerUser = {
-            id: `patron-${cleanDigits}`,
-            phone: formattedPhone,
-          };
-          sessionStorage.removeItem(DEV_OTP_STORAGE_KEY);
-          return await handlePostVerification(patron);
-        }
-      } catch {}
-    }
-
-    // 2. Standard Supabase Auth verification
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: token.trim(),
-        type: "sms",
+      const res = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: cleanDigits,
+          token: token.trim(),
+        }),
       });
 
-      if (error) {
-        if (token.trim() === "123456") {
-          const patron: CustomerUser = {
-            id: `patron-${cleanDigits}`,
-            phone: formattedPhone,
-          };
-          return await handlePostVerification(patron);
-        }
-        return { success: false, error: error.message || "Invalid verification code. Please check and retry." };
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return {
+          success: false,
+          error: data.error || "Invalid verification code. Please check and retry.",
+        };
       }
 
-      if (data.user) {
-        const patron: CustomerUser = {
-          id: data.user.id,
-          phone: data.user.phone || formattedPhone,
-          email: data.user.email,
-        };
-        return await handlePostVerification(patron);
+      if (data.patron) {
+        return await handlePostVerification(data.patron, data.requiresProfile);
       }
 
       return { success: false, error: "Authentication failed. Please retry." };
     } catch (err: unknown) {
-      if (token.trim() === "123456") {
-        const patron: CustomerUser = {
-          id: `patron-${cleanDigits}`,
-          phone: formattedPhone,
-        };
-        return await handlePostVerification(patron);
-      }
-
       const msg = err instanceof Error ? err.message : "Verification failed. Please try again.";
       return { success: false, error: msg };
     }
@@ -387,9 +376,13 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       });
 
       const resData = await res.json();
+      const cleanPhone = customerUser.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
       if (res.ok && resData.success && resData.profile) {
         setProfile(resData.profile);
         localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${customerUser.id}`, JSON.stringify(resData.profile));
+        if (cleanPhone) {
+          localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`, JSON.stringify(resData.profile));
+        }
         return { success: true };
       }
     } catch (e) {
@@ -398,6 +391,10 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
 
     setProfile(updatedProfile);
     localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${customerUser.id}`, JSON.stringify(updatedProfile));
+    const cleanPhone = customerUser.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
+    if (cleanPhone) {
+      localStorage.setItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`, JSON.stringify(updatedProfile));
+    }
     return { success: true };
   };
 
@@ -408,9 +405,12 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     try {
       if (customerUser) {
         localStorage.removeItem(`${PATRON_PROFILE_STORAGE_KEY}_${customerUser.id}`);
+        const cleanPhone = customerUser.phone ? customerUser.phone.replace(/\D/g, "").slice(-10) : "";
+        if (cleanPhone) {
+          localStorage.removeItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`);
+        }
       }
       localStorage.removeItem(PATRON_STORAGE_KEY);
-      sessionStorage.removeItem(DEV_OTP_STORAGE_KEY);
       setCustomerUser(null);
       setProfile(null);
       // Clear server-side patron session cookie
