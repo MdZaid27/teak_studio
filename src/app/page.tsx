@@ -24,7 +24,7 @@ const categories = [
     count: "09 Designs",
     href: "/shop",
     image: "/images/img_025_stitch.png",
-    alt: "Malabar cane dining chair in a contemporary dining room",
+    alt: "Astrid woven cane dining chair in a contemporary dining room",
   },
   {
     label: "Bedroom",
@@ -32,7 +32,7 @@ const categories = [
     count: "08 Designs",
     href: "/shop",
     image: "/images/img_026_stitch.png",
-    alt: "Low-profile Assam teak platform bed in a serene bedroom",
+    alt: "Low-profile floating platform bed in a serene bedroom",
   },
   {
     label: "Storage",
@@ -55,43 +55,43 @@ const categories = [
 const bestsellers = [
   {
     id: "malabar-dining-chair",
-    name: "Malabar Rattan Dining Chair",
+    name: "The Astrid Cane Dining Chair",
     timber: "Indian Rosewood",
     price: "₹28,500",
     badge: "Bestseller",
     href: "/products/malabar-dining-chair",
     image: "/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png",
-    alt: "Malabar rattan dining chair in Indian Rosewood",
+    alt: "The Astrid Cane Dining Chair in Indian Rosewood",
   },
   {
     id: "hunsur-teak-dining-table",
-    name: "Hunsur Architectural Dining Table",
+    name: "The Monolith Architectural Dining Table",
     timber: "Hunsur Teak",
     price: "₹85,000",
     badge: "New Arrival",
     href: "/products/hunsur-teak-dining-table",
     image: "/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png",
-    alt: "Monolithic Hunsur teak dining table",
+    alt: "The Monolith Architectural Dining Table in solid teak",
   },
   {
     id: "fluted-tambour-credenza",
-    name: "Fluted Tambour Credenza",
+    name: "The Soren Fluted Media Credenza",
     timber: "Hunsur Teak",
     price: "₹72,000",
     badge: "Heritage Spec",
     href: "/products/fluted-tambour-credenza",
     image: "/images/stitch_screen_3450da53a7364a12896a5cedc3f366cb.png",
-    alt: "Fluted tambour teak credenza sideboard",
+    alt: "The Soren Fluted Media Credenza sideboard",
   },
   {
     id: "cubbon-platform-bed",
-    name: "Cubbon Platform Bed — King",
+    name: "The Haven Platform Bed — King",
     timber: "Assam Teak",
     price: "₹1,42,000",
     badge: "Heirloom Frame",
     href: "/shop",
     image: "/images/img_032_stitch.png",
-    alt: "Low-profile Assam teak king platform bed",
+    alt: "The Haven Platform Bed in solid Assam teak",
   },
 ];
 
@@ -320,11 +320,11 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="group relative rounded-2xl overflow-hidden aspect-[4/3] cursor-pointer">
-                <Image src="/images/img_032_stitch.png" alt="Low-profile Assam teak platform bed with floating nightstands" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image src="/images/img_032_stitch.png" alt="Low-profile platform bed with floating nightstands" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0e0300]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5">
                   <p className="text-[10px] text-[#feb383] font-bold uppercase tracking-widest mb-0.5">Bedroom</p>
-                  <h3 className="font-display text-lg text-white">Cubbon Platform Bed — King</h3>
+                  <h3 className="font-display text-lg text-white">The Haven Platform Bed — King</h3>
                 </div>
               </div>
             </div>

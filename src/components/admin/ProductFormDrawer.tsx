@@ -360,7 +360,7 @@ export function ProductFormDrawer({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Bellandur Penthouse Low Table"
+                  placeholder="e.g. The Monolith Architectural Dining Table"
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   className="w-full bg-[#1C1A18] border border-[#2A2724] focus:border-[#D4A373] rounded-lg px-3.5 py-2.5 text-sm text-[#FAF9F6] placeholder-[#5C554E] focus:outline-none transition-colors"
@@ -381,7 +381,7 @@ export function ProductFormDrawer({
                   <input
                     type="text"
                     required
-                    placeholder="bellandur-low-table"
+                    placeholder="monolith-dining-table"
                     value={slug}
                     onChange={(e) => {
                       setSlugManuallyEdited(true);

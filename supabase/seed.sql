@@ -28,7 +28,7 @@ INSERT INTO products (
 ) VALUES
 (
   'malabar-dining-chair',
-  'Malabar Rattan Dining Chair',
+  'The Astrid Cane Dining Chair',
   'dining',
   'indian-rosewood',
   28500,
@@ -44,7 +44,7 @@ INSERT INTO products (
 ),
 (
   'hunsur-teak-dining-table',
-  'Hunsur Architectural Dining Table',
+  'The Monolith Architectural Dining Table',
   'dining',
   'hunsur-teak',
   85000,
@@ -60,7 +60,7 @@ INSERT INTO products (
 ),
 (
   'fluted-tambour-credenza',
-  'Fluted Tambour Credenza Sideboard',
+  'The Soren Fluted Media Credenza',
   'storage',
   'hunsur-teak',
   72000,
@@ -76,7 +76,7 @@ INSERT INTO products (
 ),
 (
   'kaveri-coffee-table',
-  'Kaveri Low-Slung Coffee Table',
+  'The Solis Dual-Tier Coffee Table',
   'living',
   'indian-rosewood',
   46000,
@@ -92,7 +92,7 @@ INSERT INTO products (
 ),
 (
   'assam-platform-bed',
-  'Assam Floating Platform Bed',
+  'The Haven Floating Platform Bed',
   'bedroom',
   'assam-teak',
   96000,
@@ -108,7 +108,7 @@ INSERT INTO products (
 ),
 (
   'penthouse-coffee-table',
-  'Bellandur Penthouse Low Table',
+  'The Atelier Monolith Low Table',
   'living',
   'hunsur-teak',
   52000,
@@ -124,7 +124,7 @@ INSERT INTO products (
 ),
 (
   'teak-armchair-cane',
-  'Cubbon Rattan Lounger Armchair',
+  'The Pierre Cane Lounge Chair',
   'living',
   'hunsur-teak',
   34000,
@@ -140,7 +140,7 @@ INSERT INTO products (
 ),
 (
   'atelier-credenza-alt',
-  'Indiranagar Fluted Console',
+  'The Linea Fluted Entryway Console',
   'storage',
   'hunsur-teak',
   68000,
@@ -172,12 +172,12 @@ ON CONFLICT (id) DO UPDATE SET
 -- 4. Insert Product Gallery Images
 DELETE FROM product_images;
 INSERT INTO product_images (product_id, src, alt, title, display_order) VALUES
-  ('malabar-dining-chair', '/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png', 'Malabar Dining Chair in solid Indian Rosewood with curved cane rattan backrest', '45° Studio Perspective', 0),
-  ('malabar-dining-chair', '/images/stitch_screen_e1a112d35ebd4db8b6f1fd9abded5f9e.png', 'Malabar Dining Chair side profile showing tapered legs and curved back spine', 'Side Profile & Spine', 1),
-  ('malabar-dining-chair', '/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png', 'Malabar Dining Chair front alignment photography', 'Front Alignment', 2),
-  ('malabar-dining-chair', '/images/stitch_screen_9e6fefca1fcd4a72bece565d08906c86.png', 'Malabar Dining Chair in Bangalore dining room setting', 'In-Situ: Bangalore Penthouse', 3),
+  ('malabar-dining-chair', '/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png', 'The Astrid Cane Dining Chair in solid Indian Rosewood with curved cane rattan backrest', '45° Studio Perspective', 0),
+  ('malabar-dining-chair', '/images/stitch_screen_e1a112d35ebd4db8b6f1fd9abded5f9e.png', 'The Astrid Cane Dining Chair side profile showing tapered legs and curved back spine', 'Side Profile & Spine', 1),
+  ('malabar-dining-chair', '/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png', 'The Astrid Cane Dining Chair front alignment photography', 'Front Alignment', 2),
+  ('malabar-dining-chair', '/images/stitch_screen_9e6fefca1fcd4a72bece565d08906c86.png', 'The Astrid Cane Dining Chair in contemporary dining room setting', 'In-Situ: Penthouse Residence', 3),
 
-  ('hunsur-teak-dining-table', '/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png', 'Solid Hunsur Teak Architectural Dining Table in bright dining space', 'Architectural Perspective', 0),
+  ('hunsur-teak-dining-table', '/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png', 'The Monolith Architectural Dining Table in bright dining space', 'Architectural Perspective', 0),
   ('hunsur-teak-dining-table', '/images/img_037_stitch.png', 'Artisans hand-planing monolithic teak slab', 'Workshop Slab Selection', 1),
   ('hunsur-teak-dining-table', '/images/img_040_stitch.png', 'Joinery and edge profile detailing', 'Hand Jack-Planing Detail', 2),
 

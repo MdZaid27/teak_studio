@@ -73,11 +73,11 @@ export default function WoodTypesPage() {
 {/*  Secondary Companion Furniture Piece  */}
 <div className="grid grid-cols-1 sm:grid-cols-12 gap-space-md bg-surface-container p-space-md rounded">
 <div className="sm:col-span-4 aspect-square overflow-hidden rounded bg-surface-container-high">
-<img alt="Kaveri Solid Hunsur Teak Dining Table" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png" />
+<img alt="The Monolith Solid Hunsur Teak Dining Table" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png" />
 </div>
 <div className="sm:col-span-8 flex flex-col justify-center">
-<span className="font-label-caps text-label-caps text-secondary">COMPANION ARCHITECTURAL PIECE</span>
-<h4 className="font-display text-headline-sm text-primary mt-1">The Kaveri Dining Table (3.2m)</h4>
+<span className="font-label-caps text-label-caps text-secondary">FEATURED ARCHITECTURAL PIECE</span>
+<h4 className="font-display text-headline-sm text-primary mt-1">The Monolith Dining Table (3.2m)</h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
                 Fabricated with continuous 45mm thick bookmatched planks of old-growth Hunsur Teak, resting upon tapered trestle joinery.
               </p>
@@ -212,19 +212,19 @@ export default function WoodTypesPage() {
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
 <div className="bg-surface-container p-space-md rounded flex flex-col gap-space-xs">
 <div className="aspect-[4/3] overflow-hidden rounded bg-surface-container-high">
-<img alt="Indiranagar Indian Rosewood Coffee Table" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_7a4f3197cdd546acae59563d24b1dc02.png" />
+<img alt="The Solis Dual-Tier Coffee Table in Indian Rosewood" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_7a4f3197cdd546acae59563d24b1dc02.png" />
 </div>
 <span className="font-label-caps text-label-caps text-secondary mt-1">LIVING SERIES</span>
-<h4 className="font-display text-headline-sm text-primary">Indiranagar Coffee Table</h4>
+<h4 className="font-display text-headline-sm text-primary">The Solis Coffee Table</h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant">Low-slung profile with floating shelf and exposed through-tenon joint accents.</p>
 <span className="font-title-md text-title-md text-primary mt-1">₹78,000</span>
 </div>
 <div className="bg-surface-container p-space-md rounded flex flex-col gap-space-xs">
 <div className="aspect-[4/3] overflow-hidden rounded bg-surface-container-high">
-<img alt="Malabar Handcrafted Rosewood Chair" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png" />
+<img alt="The Astrid Cane Dining Chair in Rosewood" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png" />
 </div>
 <span className="font-label-caps text-label-caps text-secondary mt-1">SEATING STUDY</span>
-<h4 className="font-display text-headline-sm text-primary">Malabar Dining Chair</h4>
+<h4 className="font-display text-headline-sm text-primary">The Astrid Cane Dining Chair</h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant">Curved cane rattan backrest with hand-sculpted tapered solid rosewood frame.</p>
 <span className="font-title-md text-title-md text-primary mt-1">₹34,500</span>
 </div>
@@ -255,11 +255,11 @@ export default function WoodTypesPage() {
 {/*  Secondary Companion Furniture Piece  */}
 <div className="grid grid-cols-1 sm:grid-cols-12 gap-space-md bg-surface-container p-space-md rounded">
 <div className="sm:col-span-4 aspect-square overflow-hidden rounded bg-surface-container-high">
-<img alt="Cubbon Solid Assam Teak Platform Bed" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_b675956f7c6d401fb8ca491a37683d86.png" />
+<img alt="The Haven Solid Assam Teak Platform Bed" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="/images/stitch_screen_b675956f7c6d401fb8ca491a37683d86.png" />
 </div>
 <div className="sm:col-span-8 flex flex-col justify-center">
 <span className="font-label-caps text-label-caps text-secondary">BEDROOM SANCTUARY</span>
-<h4 className="font-display text-headline-sm text-primary mt-1">Cubbon Floating Platform Bed</h4>
+<h4 className="font-display text-headline-sm text-primary mt-1">The Haven Floating Platform Bed</h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
                 Constructed with extended linear Assam Teak side rails and an integrated hand-woven split cane headboard frame.
               </p>

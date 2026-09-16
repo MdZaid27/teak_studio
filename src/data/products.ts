@@ -46,7 +46,7 @@ export interface Product {
 export const allProducts: Product[] = [
   {
     id: "malabar-dining-chair",
-    name: "Malabar Rattan Dining Chair",
+    name: "The Astrid Cane Dining Chair",
     category: "Dining",
     timber: "Indian Rosewood",
     price: 28500,
@@ -60,22 +60,22 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_bf6e65da57e84be4850e1f3a0c37bc46.png",
-        alt: "Malabar Dining Chair in solid Indian Rosewood with curved cane rattan backrest",
+        alt: "The Astrid Cane Dining Chair in solid Indian Rosewood with curved cane rattan backrest",
         title: "45° Studio Perspective",
       },
       {
         src: "/images/stitch_screen_e1a112d35ebd4db8b6f1fd9abded5f9e.png",
-        alt: "Malabar Dining Chair side profile showing tapered legs and curved back spine",
+        alt: "The Astrid Cane Dining Chair side profile showing tapered legs and curved back spine",
         title: "Side Profile & Spine",
       },
       {
         src: "/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png",
-        alt: "Malabar Dining Chair front alignment photography",
+        alt: "The Astrid Cane Dining Chair front alignment photography",
         title: "Front Alignment",
       },
       {
         src: "/images/stitch_screen_9e6fefca1fcd4a72bece565d08906c86.png",
-        alt: "Malabar Dining Chair in contemporary dining room setting",
+        alt: "The Astrid Cane Dining Chair in contemporary dining room setting",
         title: "In-Situ: Penthouse Residence",
       },
     ],
@@ -122,13 +122,13 @@ export const allProducts: Product[] = [
   },
   {
     id: "hunsur-teak-dining-table",
-    name: "Hunsur Architectural Dining Table",
+    name: "The Monolith Architectural Dining Table",
     category: "Dining",
     timber: "Hunsur Teak",
     price: 85000,
     image: "/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png",
     dimensions: "L 220cm × W 95cm × H 76cm",
-    description: "Solid 45mm thick Hunsur teak tabletop with chamfered undercut edge and bridge base.",
+    description: "Solid 45mm thick tabletop with chamfered undercut edge and bridge base.",
     isPopular: true,
     link: "/products/hunsur-teak-dining-table",
     tagline: "Monolithic timber slab table anchored with solid trestle joinery.",
@@ -136,7 +136,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_7a14c48526084213a0e259e6d583adef.png",
-        alt: "Solid Hunsur Teak Architectural Dining Table in bright dining space",
+        alt: "The Monolith Architectural Dining Table in bright dining space",
         title: "Architectural Perspective",
       },
       {
@@ -193,7 +193,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "fluted-tambour-credenza",
-    name: "Fluted Tambour Credenza Sideboard",
+    name: "The Soren Fluted Media Credenza",
     category: "Storage",
     timber: "Hunsur Teak",
     price: 72000,
@@ -207,7 +207,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_3450da53a7364a12896a5cedc3f366cb.png",
-        alt: "Fluted Tambour Credenza in Hunsur Teak with sliding curved doors",
+        alt: "The Soren Fluted Media Credenza in Hunsur Teak with sliding curved doors",
         title: "Front View & Brass Accents",
       },
       {
@@ -264,7 +264,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "kaveri-coffee-table",
-    name: "Kaveri Low-Slung Coffee Table",
+    name: "The Solis Dual-Tier Coffee Table",
     category: "Living",
     timber: "Indian Rosewood",
     price: 46000,
@@ -277,7 +277,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_7a4f3197cdd546acae59563d24b1dc02.png",
-        alt: "Kaveri Coffee Table in solid Indian Rosewood",
+        alt: "The Solis Dual-Tier Coffee Table in solid Indian Rosewood",
         title: "Studio Angle",
       },
       {
@@ -333,7 +333,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "assam-platform-bed",
-    name: "Assam Floating Platform Bed",
+    name: "The Haven Floating Platform Bed",
     category: "Bedroom",
     timber: "Assam Teak",
     price: 96000,
@@ -347,7 +347,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_b675956f7c6d401fb8ca491a37683d86.png",
-        alt: "Assam Floating Platform Bed in solid Assam Teak with woven cane headboard",
+        alt: "The Haven Floating Platform Bed in solid Assam Teak with woven cane headboard",
         title: "Platform & Rattan Headboard",
       },
       {
@@ -404,20 +404,20 @@ export const allProducts: Product[] = [
   },
   {
     id: "penthouse-coffee-table",
-    name: "Bellandur Penthouse Low Table",
+    name: "The Atelier Monolith Low Table",
     category: "Living",
     timber: "Hunsur Teak",
     price: 52000,
     image: "/images/stitch_screen_237f1c60dc03452ba8e1e49e64d1e647.png",
     dimensions: "L 140cm × W 80cm × H 36cm",
-    description: "Oversized solid slab table featured in Architectural Digest India residential installation.",
+    description: "Oversized solid slab table featured in Architectural Digest residential installations.",
     link: "/products/penthouse-coffee-table",
     tagline: "Architectural monolithic geometry anchored with solid cylindrical legs.",
     leadTime: "In Stock — White-Glove Dispatch",
     gallery: [
       {
         src: "/images/stitch_screen_237f1c60dc03452ba8e1e49e64d1e647.png",
-        alt: "Bellandur Penthouse Low Table in Hunsur Teak",
+        alt: "The Atelier Monolith Low Table in Hunsur Teak",
         title: "Perspective View",
       },
       {
@@ -472,7 +472,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "teak-armchair-cane",
-    name: "Cubbon Rattan Lounger Armchair",
+    name: "The Pierre Cane Lounge Chair",
     category: "Living",
     timber: "Hunsur Teak",
     price: 34000,
@@ -485,7 +485,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_8a65f0befe1a49a1bbfb8674068b19b8.png",
-        alt: "Cubbon Rattan Lounger Armchair in Hunsur Teak",
+        alt: "The Pierre Cane Lounge Chair in Hunsur Teak",
         title: "Front Angle Studio",
       },
       {
@@ -541,7 +541,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "atelier-credenza-alt",
-    name: "Indiranagar Fluted Console",
+    name: "The Linea Fluted Entryway Console",
     category: "Storage",
     timber: "Hunsur Teak",
     price: 68000,
@@ -554,7 +554,7 @@ export const allProducts: Product[] = [
     gallery: [
       {
         src: "/images/stitch_screen_22974d8e0b504e5381e51d990c411be0.png",
-        alt: "Indiranagar Fluted Console in Hunsur Teak",
+        alt: "The Linea Fluted Entryway Console in Hunsur Teak",
         title: "Front View",
       },
       {

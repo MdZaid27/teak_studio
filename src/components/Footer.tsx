@@ -164,7 +164,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-[#d3c3bd]">
               <li><Link href="/shop" className="hover:text-white transition-colors">All Pieces</Link></li>
-              <li><Link href="/products/malabar-dining-chair" className="hover:text-white transition-colors">Malabar Dining Chair</Link></li>
+              <li><Link href="/products/malabar-dining-chair" className="hover:text-white transition-colors">The Astrid Cane Dining Chair</Link></li>
               <li><Link href="/shop" className="hover:text-white transition-colors">Solid Teak Dining Tables</Link></li>
               <li><Link href="/shop" className="hover:text-white transition-colors">Fluted Credenzas &amp; Sideboards</Link></li>
               <li><Link href="/shop" className="hover:text-white transition-colors">Low Platform Beds</Link></li>
