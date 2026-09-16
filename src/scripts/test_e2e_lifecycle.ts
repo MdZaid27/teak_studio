@@ -125,8 +125,14 @@ async function runE2ETestSuite() {
 
   // Step 3: Simulate LOGOUT & TIME PASSING (Wipe volatile memory maps)
   console.log("  Step 3: Simulating Patron Logout & Server Restart (clearing memory)...");
+  if (global.__teakDevPatronAddresses) {
+    global.__teakDevPatronAddresses.clear();
+  }
   if (global.__kilnDevPatronAddresses) {
     global.__kilnDevPatronAddresses.clear();
+  }
+  if (global.__teakDevPatronProfiles) {
+    global.__teakDevPatronProfiles.clear();
   }
   if (global.__kilnDevPatronProfiles) {
     global.__kilnDevPatronProfiles.clear();
@@ -269,7 +275,7 @@ async function runE2ETestSuite() {
 
     // 1. Order Confirmation Email
     const orderEmail = await sendOrderConfirmationEmail({
-      orderNumber: "KS-E2E-8899",
+      orderNumber: "TH-E2E-8899",
       customerName: "Vikramaditya Singhania",
       customerEmail: testRecipient,
       items: [
@@ -363,7 +369,7 @@ async function runE2ETestSuite() {
 
   try {
     const testOrderId = `order-e2e-${Date.now()}`;
-    const testOrderNumber = `KS-E2E-${Math.floor(1000 + Math.random() * 9000)}`;
+    const testOrderNumber = `TH-E2E-${Math.floor(1000 + Math.random() * 9000)}`;
     saveDevOrder({
       id: testOrderId,
       order_number: testOrderNumber,

@@ -25,7 +25,11 @@ export async function GET(req: NextRequest) {
       return auth.errorResponse;
     }
 
-    const orders = await getPatronOrders(identifier, userId);
+    const effectivePhone = phone || auth.callerPhone || "";
+    const effectiveEmail = email || auth.callerEmail || "";
+    const effectiveUserId = userId || auth.callerUserId || "";
+
+    const orders = await getPatronOrders(effectivePhone, effectiveUserId, effectiveEmail);
     return NextResponse.json({ success: true, orders }, { status: 200 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to fetch patron orders";

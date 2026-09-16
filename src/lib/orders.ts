@@ -7,20 +7,22 @@ export interface OrderWithItems extends DbOrder {
 
 // In-memory cache of created orders for development simulation
 declare global {
+  var __teakDevOrdersStore: Map<string, OrderWithItems> | undefined;
   var __kilnDevOrdersStore: Map<string, OrderWithItems> | undefined;
 }
 
-if (!global.__kilnDevOrdersStore) {
-  global.__kilnDevOrdersStore = new Map<string, OrderWithItems>();
+if (!global.__teakDevOrdersStore) {
+  global.__teakDevOrdersStore = global.__kilnDevOrdersStore || new Map<string, OrderWithItems>();
+  global.__kilnDevOrdersStore = global.__teakDevOrdersStore;
 }
 
 /**
  * Save an order to the in-memory development store (used in local dev when Supabase tables are pending migration).
  */
 export function saveDevOrder(order: OrderWithItems): void {
-  if (global.__kilnDevOrdersStore) {
-    global.__kilnDevOrdersStore.set(order.order_number, order);
-    global.__kilnDevOrdersStore.set(order.id, order);
+  if (global.__teakDevOrdersStore) {
+    global.__teakDevOrdersStore.set(order.order_number, order);
+    global.__teakDevOrdersStore.set(order.id, order);
   }
 }
 
@@ -59,10 +61,10 @@ export async function getOrderByNumberOrId(
       if (error) {
         if (error.code === "PGRST205" && !isProduction) {
           console.warn(
-            `[KILN STUDIO NOTICE] Table 'orders' not found in database. Checking development cache for '${cleanId}'.`
+            `[TEAK HAUS NOTICE] Table 'orders' not found in database. Checking development cache for '${cleanId}'.`
           );
         } else {
-          console.error("[KILN STUDIO DB ERROR] Failed to fetch order:", error);
+          console.error("[TEAK HAUS DB ERROR] Failed to fetch order:", error);
           if (isProduction) {
             throw new Error(`Failed to fetch order: ${error.message}`);
           }
@@ -74,8 +76,8 @@ export async function getOrderByNumberOrId(
   }
 
   // 2. Check development cache for orders placed during local session
-  if (!isProduction && global.__kilnDevOrdersStore) {
-    const cachedOrder = global.__kilnDevOrdersStore.get(cleanId);
+  if (!isProduction && global.__teakDevOrdersStore) {
+    const cachedOrder = global.__teakDevOrdersStore.get(cleanId);
     if (cachedOrder) {
       return cachedOrder;
     }
@@ -106,7 +108,7 @@ export async function getAllOrders(): Promise<OrderWithItems[]> {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to fetch all orders:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to fetch all orders:", error);
       } else if (data) {
         orders = data as OrderWithItems[];
       }
@@ -114,9 +116,9 @@ export async function getAllOrders(): Promise<OrderWithItems[]> {
   }
 
   // Merge in-memory development orders if in dev mode
-  if (!isProduction && global.__kilnDevOrdersStore) {
+  if (!isProduction && global.__teakDevOrdersStore) {
     const existingIds = new Set(orders.map((o) => o.id));
-    const devOrders = Array.from(global.__kilnDevOrdersStore.values());
+    const devOrders = Array.from(global.__teakDevOrdersStore.values());
     for (const devOrder of devOrders) {
       if (!existingIds.has(devOrder.id)) {
         orders.unshift(devOrder);
@@ -164,7 +166,7 @@ export async function updateOrderStatus(
         : await query.eq("order_number", cleanId);
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to update order status:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to update order status:", error);
         if (isProduction) {
           throw new Error(`Failed to update order status: ${error.message}`);
         }
@@ -173,13 +175,13 @@ export async function updateOrderStatus(
   }
 
   // 2. Also update in development store
-  if (global.__kilnDevOrdersStore) {
-    const cachedOrder = global.__kilnDevOrdersStore.get(cleanId);
+  if (global.__teakDevOrdersStore) {
+    const cachedOrder = global.__teakDevOrdersStore.get(cleanId);
     if (cachedOrder) {
       cachedOrder.status = status;
       cachedOrder.updated_at = updatedAt;
-      global.__kilnDevOrdersStore.set(cachedOrder.id, cachedOrder);
-      global.__kilnDevOrdersStore.set(cachedOrder.order_number, cachedOrder);
+      global.__teakDevOrdersStore.set(cachedOrder.id, cachedOrder);
+      global.__teakDevOrdersStore.set(cachedOrder.order_number, cachedOrder);
     }
   }
 

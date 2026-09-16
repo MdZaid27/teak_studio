@@ -43,8 +43,10 @@ interface CustomerAuthContextType {
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
-const PATRON_STORAGE_KEY = "kiln_patron_session";
-const PATRON_PROFILE_STORAGE_KEY = "kiln_patron_profile";
+const PATRON_STORAGE_KEY = "teak_patron_session";
+const LEGACY_PATRON_STORAGE_KEY = "kiln_patron_session";
+const PATRON_PROFILE_STORAGE_KEY = "teak_patron_profile";
+const LEGACY_PATRON_PROFILE_STORAGE_KEY = "kiln_patron_profile";
 
 function isUserAdmin(
   u: { app_metadata?: Record<string, unknown>; email?: string | null } | null
@@ -85,7 +87,11 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       const cleanPhone = userPhone ? userPhone.replace(/\D/g, "").slice(-10) : "";
       const cached =
         localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${userId}`) ||
-        (cleanPhone ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) : null);
+        localStorage.getItem(`${LEGACY_PATRON_PROFILE_STORAGE_KEY}_${userId}`) ||
+        (cleanPhone
+          ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) ||
+            localStorage.getItem(`${LEGACY_PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`)
+          : null);
 
       if (cached) {
         try {
@@ -126,7 +132,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return defaultProfile;
       }
     } catch (e) {
-      console.warn("[KILN PATRON] Failed fetching profile on load:", e);
+      console.warn("[TEAK HAUS PATRON] Failed fetching profile on load:", e);
     }
     return null;
   }, []);
@@ -135,32 +141,38 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     let isMounted = true;
 
-    const syncSessionCookie = (patron: CustomerUser) => {
-      fetch("/api/patron/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patronId: patron.id,
-          phone: patron.phone,
-          email: patron.email,
-        }),
-      }).catch(() => {});
+    const syncSessionCookie = async (patron: CustomerUser) => {
+      try {
+        await fetch("/api/patron/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patronId: patron.id,
+            phone: patron.phone,
+            email: patron.email,
+          }),
+        });
+      } catch {}
     };
 
     async function initAuth() {
       try {
         // 1. Check local patron storage first
-        const localSaved = localStorage.getItem(PATRON_STORAGE_KEY);
+        const localSaved = localStorage.getItem(PATRON_STORAGE_KEY) || localStorage.getItem(LEGACY_PATRON_STORAGE_KEY);
         if (localSaved) {
           try {
             const parsed = JSON.parse(localSaved);
-            if (parsed && parsed.phone) {
+            if (parsed && (parsed.phone || parsed.email || parsed.id)) {
+              await syncSessionCookie(parsed);
               setCustomerUser(parsed);
-              syncSessionCookie(parsed);
-              const cleanPhone = parsed.phone.replace(/\D/g, "").slice(-10);
+              const cleanPhone = parsed.phone ? parsed.phone.replace(/\D/g, "").slice(-10) : "";
               const cachedProf =
                 localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${parsed.id}`) ||
-                (cleanPhone ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) : null);
+                localStorage.getItem(`${LEGACY_PATRON_PROFILE_STORAGE_KEY}_${parsed.id}`) ||
+                (cleanPhone
+                  ? localStorage.getItem(`${PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`) ||
+                    localStorage.getItem(`${LEGACY_PATRON_PROFILE_STORAGE_KEY}_${cleanPhone}`)
+                  : null);
               if (cachedProf) {
                 try {
                   const profParsed = JSON.parse(cachedProf);
@@ -168,7 +180,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
                 } catch {}
               }
               if (isMounted) setIsLoading(false);
-              loadProfile(parsed.id, parsed.phone);
+              loadProfile(parsed.id, parsed.phone, parsed.email);
             }
           } catch {}
         }
@@ -193,7 +205,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
           }
         }
       } catch (err) {
-        console.error("[KILN STUDIO] Error initializing customer auth:", err);
+        console.error("[TEAK HAUS] Error initializing customer auth:", err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -296,7 +308,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         }),
       });
     } catch (err) {
-      console.warn("[KILN PATRON] Failed syncing session cookie:", err);
+      console.warn("[TEAK HAUS PATRON] Failed syncing session cookie:", err);
     }
 
     // Check if profile is already complete
@@ -386,7 +398,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: true };
       }
     } catch (e) {
-      console.warn("[KILN PATRON] Failed updating profile via API, saving to local store:", e);
+      console.warn("[TEAK HAUS PATRON] Failed updating profile via API, saving to local store:", e);
     }
 
     setProfile(updatedProfile);
@@ -419,7 +431,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         await supabase.auth.signOut();
       }
     } catch (err) {
-      console.error("[KILN STUDIO] Error signing out patron:", err);
+      console.error("[TEAK HAUS] Error signing out patron:", err);
     }
   };
 

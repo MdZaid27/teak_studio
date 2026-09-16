@@ -26,7 +26,7 @@ export default function WishlistTab({
             Saved Pieces &amp; Held Reserves
           </h3>
           <p className="text-xs text-[#766E65] pt-0.5">
-            Private curation of architectural kiln designs held under your patron credentials.
+            Private curation of architectural timber designs held under your patron credentials.
           </p>
         </div>
 

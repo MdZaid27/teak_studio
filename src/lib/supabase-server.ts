@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { resilientFetch } from "@/lib/supabase";
 
 /**
  * Creates a Supabase client for Server Components, Server Actions, and Route Handlers.
@@ -28,6 +29,9 @@ export async function createSupabaseServerClient() {
           // This can be safely ignored if you have middleware refreshing user sessions.
         }
       },
+    },
+    global: {
+      fetch: resilientFetch,
     },
   });
 }

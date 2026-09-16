@@ -84,7 +84,7 @@ function AccountDashboardContent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const localSaved = localStorage.getItem("kiln_patron_session");
+      const localSaved = localStorage.getItem("teak_patron_session") || localStorage.getItem("kiln_patron_session");
       if (localSaved) {
         const parsed = JSON.parse(localSaved);
         const userId = parsed?.id;
@@ -95,12 +95,16 @@ function AccountDashboardContent() {
             const a = JSON.parse(cachedAddr);
             if (Array.isArray(a) && a.length > 0) setAddresses(a);
           }
-          const cachedOrders = localStorage.getItem(`teak_patron_orders_${userId}`);
+          const cachedOrders =
+            localStorage.getItem(`teak_patron_orders_${userId}`) ||
+            localStorage.getItem(`kiln_patron_orders_${userId}`);
           if (cachedOrders) {
             const o = JSON.parse(cachedOrders);
             if (Array.isArray(o) && o.length > 0) setOrders(o);
           }
-          const cachedWishlist = localStorage.getItem(`teak_patron_wishlist_${userId}`);
+          const cachedWishlist =
+            localStorage.getItem(`teak_patron_wishlist_${userId}`) ||
+            localStorage.getItem(`kiln_patron_wishlist_${userId}`);
           if (cachedWishlist) {
             const w = JSON.parse(cachedWishlist);
             if (Array.isArray(w) && w.length > 0) setWishlistItems(w);
@@ -146,13 +150,36 @@ function AccountDashboardContent() {
   };
 
   // Fetch Orders
-  const fetchOrders = async (phoneOrEmail: string, userId?: string) => {
+  const fetchOrders = async (phoneOrEmail?: string, userId?: string, email?: string) => {
     setLoadingOrders(true);
     try {
-      const url = `/api/patron/orders?phone=${encodeURIComponent(phoneOrEmail)}${
-        userId ? `&userId=${encodeURIComponent(userId)}` : ""
-      }`;
-      const res = await fetch(url);
+      const cleanPhone = phoneOrEmail && !phoneOrEmail.includes("@") ? phoneOrEmail.replace(/\D/g, "").slice(-10) : "";
+      const effectiveEmail = email || (phoneOrEmail && phoneOrEmail.includes("@") ? phoneOrEmail : "");
+
+      const params = new URLSearchParams();
+      if (cleanPhone) params.set("phone", cleanPhone);
+      if (effectiveEmail) params.set("email", effectiveEmail);
+      if (userId) params.set("userId", userId);
+
+      const url = `/api/patron/orders?${params.toString()}`;
+      let res = await fetch(url);
+
+      // If 401 (e.g. cookie expired or race condition), re-sync patron session cookie and retry once
+      if (res.status === 401 && (cleanPhone || userId || effectiveEmail)) {
+        try {
+          await fetch("/api/patron/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              patronId: userId || `patron-${cleanPhone}`,
+              phone: cleanPhone,
+              email: effectiveEmail,
+            }),
+          });
+          res = await fetch(url);
+        } catch {}
+      }
+
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.orders) {
@@ -197,13 +224,14 @@ function AccountDashboardContent() {
     if (customerUser?.id) {
       const id = customerUser.id;
       const phone = customerUser.phone;
+      const email = customerUser.email || profile?.email || "";
       queueMicrotask(() => {
         fetchAddresses(id, phone);
-        fetchOrders(phone, id);
+        fetchOrders(phone, id, email);
         fetchWishlist(id);
       });
     }
-  }, [customerUser?.id, customerUser?.phone]);
+  }, [customerUser?.id, customerUser?.phone, customerUser?.email, profile?.email]);
 
   // Address Actions
   const handleSetDefaultAddress = async (addressId: string) => {

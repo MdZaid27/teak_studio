@@ -55,10 +55,10 @@ export default function AboutStoryPage() {
                 We live inside environments dominated by hollow surfaces. Flat-pack cabinetry engineered from crushed sawdust and formaldehyde resin, designed with intentional obsolescence to expire within a lease cycle.
               </p>
 <p className="">
-                At KILN STUDIO, we work exclusively with monolithic cuts of Malabar Teak, Sheesham, and Rosewood. Wood is not a dead, inert substance; it is a cellular archive of seasonal monsoons, mineral-rich soil, and slow decadal growth.
+                At TEAK HAUS, we work exclusively with monolithic cuts of Malabar Teak, Sheesham, and Rosewood. Wood is not a dead, inert substance; it is a cellular archive of seasonal monsoons, mineral-rich soil, and slow decadal growth.
               </p>
 <p className="">
-                When you rest your palm on a KILN STUDIO dining table, you are feeling ambient temperature equalization, natural lignin resins, and the subtle tactile resistance of fibers that weathered southern Indian sun and rain for over half a century.
+                When you rest your palm on a TEAK HAUS dining table, you are feeling ambient temperature equalization, natural lignin resins, and the subtle tactile resistance of fibers that weathered southern Indian sun and rain for over half a century.
               </p>
 </div>
 {/*  Material Metric Card  */}

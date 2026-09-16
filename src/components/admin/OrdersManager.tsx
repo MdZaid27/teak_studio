@@ -356,7 +356,7 @@ export function OrdersManager({ initialOrders }: OrdersManagerProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by Order ID (#KS-...), Patron Name, Phone, or Email..."
+              placeholder="Search by Order ID (#TH-...), Patron Name, Phone, or Email..."
               className="w-full px-4 py-2.5 pl-10 bg-[#1C1A18] border border-[#2A2724] rounded-lg text-xs text-[#FAF9F6] placeholder:text-[#706860] focus:outline-none focus:border-[#D4A373] transition-colors"
             />
             <span className="material-symbols-outlined text-[18px] text-[#706860] absolute left-3 top-2.5">

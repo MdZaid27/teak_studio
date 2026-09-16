@@ -21,7 +21,7 @@ export async function GET() {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] GET /api/newsletter failed:", err);
+    console.error("[TEAK HAUS API ERROR] GET /api/newsletter failed:", err);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: true,
+          alreadySubscribed: true,
           message: "You are already subscribed to the Atelier Journal.",
           subscriberId: result.subscriberId,
         },
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] POST /api/newsletter failed:", err);
+    console.error("[TEAK HAUS API ERROR] POST /api/newsletter failed:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

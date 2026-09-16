@@ -8,12 +8,21 @@ export async function POST(request: NextRequest) {
 
     // Check if client expects JSON or redirect
     const acceptHeader = request.headers.get("accept") || "";
-    if (acceptHeader.includes("application/json")) {
-      return NextResponse.json({ success: true, message: "Signed out successfully" });
-    }
-
     const redirectUrl = new URL("/admin/login", request.url);
-    return NextResponse.redirect(redirectUrl, { status: 303 });
+    const response = acceptHeader.includes("application/json")
+      ? NextResponse.json({ success: true, message: "Signed out successfully" })
+      : NextResponse.redirect(redirectUrl, { status: 303 });
+
+    // Clear server admin session cookie
+    response.cookies.set("teak_admin_session", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+
+    return response;
   } catch (err) {
     console.error("[AUTH SIGNOUT] Error during signout:", err);
     return NextResponse.json(

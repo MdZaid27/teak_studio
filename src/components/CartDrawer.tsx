@@ -327,7 +327,7 @@ function CartDrawerContent() {
       // 5. Navigate to order confirmation
       router.push(`/orders/${data.orderNumber || data.orderId}`);
     } catch (err: unknown) {
-      console.error("[KILN STUDIO] Order checkout error:", err);
+      console.error("[TEAK HAUS] Order checkout error:", err);
       const msg = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
       setSubmitError(msg);
       setIsSubmitting(false);

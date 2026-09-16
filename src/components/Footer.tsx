@@ -47,7 +47,7 @@ export default function Footer() {
       setFeedback({
         type: "success",
         message: data.message || `Welcome to the ${siteConfig.name} Patron List.`,
-        alreadySubscribed: Boolean(data.message?.toLowerCase().includes("already")),
+        alreadySubscribed: Boolean(data.alreadySubscribed || data.message?.toLowerCase().includes("already")),
       });
       setEmail("");
     } catch (err: unknown) {

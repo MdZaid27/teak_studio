@@ -1,5 +1,4 @@
-// ==========================================================
-// KILN STUDIO — Database & API Type Definitions
+// TEAK HAUS — Database & API Type Definitions
 // ==========================================================
 
 export interface DbCategory {

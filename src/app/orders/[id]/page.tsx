@@ -14,7 +14,7 @@ interface OrderPageProps {
   params: Promise<{ id: string }>;
 }
 
-// 4-step progress tracker definitions matching KILN STUDIO atelier lifecycle
+// 4-step progress tracker definitions matching TEAK HAUS atelier lifecycle
 const TRACKING_STEPS = [
   {
     step: 1,
@@ -27,7 +27,7 @@ const TRACKING_STEPS = [
     step: 2,
     key: "production",
     title: "Timber Selection & Production",
-    subtitle: "Mortise & tenon artisan kiln craft",
+    subtitle: "Mortise & tenon artisan joinery craft",
     icon: "carpenter",
   },
   {
@@ -81,9 +81,9 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
   try {
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
-    cookiePatronId = cookieStore.get("teak_patron_id")?.value ?? null;
-    cookiePatronPhone = cookieStore.get("teak_patron_phone")?.value ?? null;
-    cookiePatronEmail = cookieStore.get("teak_patron_email")?.value ?? null;
+    cookiePatronId = cookieStore.get("teak_patron_id")?.value ?? cookieStore.get("kiln_patron_id")?.value ?? null;
+    cookiePatronPhone = cookieStore.get("teak_patron_phone")?.value ?? cookieStore.get("kiln_patron_phone")?.value ?? null;
+    cookiePatronEmail = cookieStore.get("teak_patron_email")?.value ?? cookieStore.get("kiln_patron_email")?.value ?? null;
   } catch {
     // Non-critical; fall through
   }
@@ -124,10 +124,13 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
   // ── End auth guard ──────────────────────────────────────────────────────────
 
 
-  // Determine normalized order code
-  const displayOrderCode = order.order_number.startsWith("KS-")
-    ? order.order_number
-    : `KS-${order.order_number}`;
+  // Determine normalized order code (supports TH-, KS-, or legacy codes)
+  const displayOrderCode =
+    order.order_number.startsWith("TH-") ||
+    order.order_number.startsWith("KS-") ||
+    order.order_number.startsWith("KILN-")
+      ? order.order_number
+      : `TH-${order.order_number}`;
 
   // Hydrate items with high-res product photos if needed
   const hydratedItems = await Promise.all(

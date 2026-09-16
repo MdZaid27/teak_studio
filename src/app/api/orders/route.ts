@@ -26,7 +26,7 @@ export async function GET() {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] GET /api/orders:", err);
+    console.error("[TEAK HAUS API ERROR] GET /api/orders:", err);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
@@ -70,14 +70,14 @@ const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
 });
 
-// Helper to generate unique order code like KS-79B4A
+// Helper to generate unique order code like TH-79B4A (TEAK HAUS)
 function generateOrderNumber(): string {
   const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // clean alphanumeric without confusing chars (0, O, 1, I)
   let code = "";
   for (let i = 0; i < 5; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return `KS-${code}`;
+  return `TH-${code}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
             });
           }
         } catch (patronErr) {
-          console.warn("[KILN STUDIO] Address auto-save notice:", patronErr);
+          console.warn("[TEAK HAUS] Address auto-save notice:", patronErr);
         }
       }
     };
@@ -286,7 +286,7 @@ export async function POST(request: NextRequest) {
     // In production with hardened RLS, orders must be created via the service-role client
     if (isProduction && !getSupabaseAdminClient()) {
       console.error(
-        "[KILN STUDIO SECURITY] Production order creation requires SUPABASE_SERVICE_ROLE_KEY to persist orders safely with RLS enabled."
+        "[TEAK HAUS SECURITY] Production order creation requires SUPABASE_SERVICE_ROLE_KEY to persist orders safely with RLS enabled."
       );
       return NextResponse.json(
         { error: "Order persistence service unavailable in production." },
@@ -361,7 +361,7 @@ export async function POST(request: NextRequest) {
         if (insertErr || !orderData) {
           if (!isProduction) {
             console.warn(
-              "[KILN STUDIO NOTICE] Supabase orders table unavailable or pending migration.\n" +
+              "[TEAK HAUS NOTICE] Supabase orders table unavailable or pending migration.\n" +
               "Falling back to local development order store."
             );
             const devOrderId = `dev-sim-${Date.now()}`;
@@ -396,7 +396,7 @@ export async function POST(request: NextRequest) {
             );
           }
 
-          console.error("[KILN STUDIO DB ERROR] Failed to create order in database:", insertErr);
+          console.error("[TEAK HAUS DB ERROR] Failed to create order in database:", insertErr);
           return NextResponse.json(
             { error: `Database error creating order: ${insertErr?.message || "Unknown error"}` },
             { status: 500 }
@@ -518,7 +518,7 @@ export async function POST(request: NextRequest) {
         );
       } catch (dbErr: unknown) {
         if (!isProduction) {
-          console.warn("[KILN STUDIO NOTICE] Network error contacting database. Caching order in memory:", dbErr);
+          console.warn("[TEAK HAUS NOTICE] Network error contacting database. Caching order in memory:", dbErr);
           const devOrderId = `dev-sim-${Date.now()}`;
           await saveDevStoreOrder(devOrderId);
 
@@ -592,7 +592,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } catch (err: unknown) {
-    console.error("[KILN STUDIO API ERROR] POST /api/orders error:", err);
+    console.error("[TEAK HAUS API ERROR] POST /api/orders error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
       { error: message },

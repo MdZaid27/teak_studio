@@ -13,19 +13,25 @@ import { getPincodeDetailsSync } from "@/lib/pincode";
 
 // Global dev in-memory caches for resilient operation before/during migration
 declare global {
+  var __teakDevPatronProfiles: Map<string, DbPatronProfile> | undefined;
   var __kilnDevPatronProfiles: Map<string, DbPatronProfile> | undefined;
+  var __teakDevPatronAddresses: Map<string, DbPatronAddress[]> | undefined;
   var __kilnDevPatronAddresses: Map<string, DbPatronAddress[]> | undefined;
+  var __teakDevPatronWishlists: Map<string, DbPatronWishlist[]> | undefined;
   var __kilnDevPatronWishlists: Map<string, DbPatronWishlist[]> | undefined;
 }
 
-if (!global.__kilnDevPatronProfiles) {
-  global.__kilnDevPatronProfiles = new Map<string, DbPatronProfile>();
+if (!global.__teakDevPatronProfiles) {
+  global.__teakDevPatronProfiles = global.__kilnDevPatronProfiles || new Map<string, DbPatronProfile>();
+  global.__kilnDevPatronProfiles = global.__teakDevPatronProfiles;
 }
-if (!global.__kilnDevPatronAddresses) {
-  global.__kilnDevPatronAddresses = new Map<string, DbPatronAddress[]>();
+if (!global.__teakDevPatronAddresses) {
+  global.__teakDevPatronAddresses = global.__kilnDevPatronAddresses || new Map<string, DbPatronAddress[]>();
+  global.__kilnDevPatronAddresses = global.__teakDevPatronAddresses;
 }
-if (!global.__kilnDevPatronWishlists) {
-  global.__kilnDevPatronWishlists = new Map<string, DbPatronWishlist[]>();
+if (!global.__teakDevPatronWishlists) {
+  global.__teakDevPatronWishlists = global.__kilnDevPatronWishlists || new Map<string, DbPatronWishlist[]>();
+  global.__kilnDevPatronWishlists = global.__teakDevPatronWishlists;
 }
 
 // File-based persistence paths for surviving server reloads & logouts
@@ -42,7 +48,7 @@ function loadAddressesFromDisk(): DbPatronAddress[] {
       }
     }
   } catch (e) {
-    console.warn("[KILN PATRON] Could not read addresses from disk:", e);
+    console.warn("[TEAK HAUS PATRON] Could not read addresses from disk:", e);
   }
   return [];
 }
@@ -52,7 +58,7 @@ function saveAddressesToDisk(addresses: DbPatronAddress[]) {
   try {
     fs.writeFileSync(ADDRESSES_FILE, JSON.stringify(addresses, null, 2), "utf-8");
   } catch (e) {
-    console.warn("[KILN PATRON] Could not write addresses to disk:", e);
+    console.warn("[TEAK HAUS PATRON] Could not write addresses to disk:", e);
   }
 }
 
@@ -66,7 +72,7 @@ function loadProfilesFromDisk(): DbPatronProfile[] {
       }
     }
   } catch (e) {
-    console.warn("[KILN PATRON] Could not read profiles from disk:", e);
+    console.warn("[TEAK HAUS PATRON] Could not read profiles from disk:", e);
   }
   return [];
 }
@@ -76,7 +82,7 @@ function saveProfilesToDisk(profiles: DbPatronProfile[]) {
   try {
     fs.writeFileSync(PROFILES_FILE, JSON.stringify(profiles, null, 2), "utf-8");
   } catch (e) {
-    console.warn("[KILN PATRON] Could not write profiles to disk:", e);
+    console.warn("[TEAK HAUS PATRON] Could not write profiles to disk:", e);
   }
 }
 
@@ -121,7 +127,7 @@ export async function getPatronProfile(userId: string, phone?: string): Promise<
           }
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed fetching profile from DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed fetching profile from DB:", e);
       }
     }
   }
@@ -134,7 +140,7 @@ export async function getPatronProfile(userId: string, phone?: string): Promise<
     return false;
   });
 
-  return found || (userId ? global.__kilnDevPatronProfiles?.get(userId) : null) || null;
+  return found || (userId ? global.__teakDevPatronProfiles?.get(userId) : null) || null;
 }
 
 export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbPatronProfile> {
@@ -161,11 +167,11 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
           );
           allProfiles.push(data as DbPatronProfile);
           saveProfilesToDisk(allProfiles);
-          global.__kilnDevPatronProfiles?.set(profile.id, data as DbPatronProfile);
+          global.__teakDevPatronProfiles?.set(profile.id, data as DbPatronProfile);
           return data as DbPatronProfile;
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed upserting profile in DB, caching locally:", e);
+        console.warn("[TEAK HAUS PATRON] Failed upserting profile in DB, caching locally:", e);
       }
     }
   }
@@ -176,7 +182,7 @@ export async function upsertPatronProfile(profile: DbPatronProfile): Promise<DbP
   allProfiles.push(updated);
   saveProfilesToDisk(allProfiles);
 
-  global.__kilnDevPatronProfiles?.set(profile.id, updated);
+  global.__teakDevPatronProfiles?.set(profile.id, updated);
   return updated;
 }
 
@@ -215,7 +221,7 @@ export async function getPatronAddresses(userId: string, phone?: string): Promis
           return data as DbPatronAddress[];
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed fetching addresses from DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed fetching addresses from DB:", e);
       }
     }
   }
@@ -299,7 +305,7 @@ export async function createPatronAddress(
           return data as DbPatronAddress;
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed inserting address in DB, using fallback store:", e);
+        console.warn("[TEAK HAUS PATRON] Failed inserting address in DB, using fallback store:", e);
       }
     }
   }
@@ -318,12 +324,12 @@ export async function createPatronAddress(
   saveAddressesToDisk(allDisk);
 
   // Also update in-memory
-  let userAddrs = global.__kilnDevPatronAddresses?.get(userId) || [];
+  let userAddrs = global.__teakDevPatronAddresses?.get(userId) || [];
   if (isDefault) {
     userAddrs = userAddrs.map((a) => ({ ...a, is_default: false }));
   }
   userAddrs.unshift(newAddress);
-  global.__kilnDevPatronAddresses?.set(userId, userAddrs);
+  global.__teakDevPatronAddresses?.set(userId, userAddrs);
 
   return newAddress;
 }
@@ -371,7 +377,7 @@ export async function updatePatronAddress(
           return data as DbPatronAddress;
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed updating address in DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed updating address in DB:", e);
       }
     }
   }
@@ -413,7 +419,7 @@ export async function deletePatronAddress(userId: string, addressId: string): Pr
           return true;
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed deleting address in DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed deleting address in DB:", e);
       }
     }
   }
@@ -446,13 +452,13 @@ export async function getPatronWishlist(userId: string): Promise<DbPatronWishlis
           items = data as DbPatronWishlist[];
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed fetching wishlist from DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed fetching wishlist from DB:", e);
       }
     }
   }
 
   if (items.length === 0) {
-    items = global.__kilnDevPatronWishlists?.get(userId) || [];
+    items = global.__teakDevPatronWishlists?.get(userId) || [];
   }
 
   // Hydrate each item with product domain object
@@ -497,19 +503,19 @@ export async function addToWishlist(
           newItem.id = data.id;
         }
       } catch (e) {
-        console.warn("[KILN PATRON] Failed saving wishlist to DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed saving wishlist to DB:", e);
       }
     }
   }
 
-  const items = global.__kilnDevPatronWishlists?.get(userId) || [];
+  const items = global.__teakDevPatronWishlists?.get(userId) || [];
   const existingIdx = items.findIndex((i) => i.product_id === productId);
   if (existingIdx >= 0) {
     items[existingIdx] = newItem;
   } else {
     items.unshift(newItem);
   }
-  global.__kilnDevPatronWishlists?.set(userId, items);
+  global.__teakDevPatronWishlists?.set(userId, items);
 
   const prod = await getProductById(productId);
   if (prod) {
@@ -529,13 +535,13 @@ export async function removeFromWishlist(userId: string, productId: string): Pro
           .eq("user_id", userId)
           .eq("product_id", productId);
       } catch (e) {
-        console.warn("[KILN PATRON] Failed deleting from wishlist in DB:", e);
+        console.warn("[TEAK HAUS PATRON] Failed deleting from wishlist in DB:", e);
       }
     }
   }
 
-  const items = global.__kilnDevPatronWishlists?.get(userId) || [];
-  global.__kilnDevPatronWishlists?.set(
+  const items = global.__teakDevPatronWishlists?.get(userId) || [];
+  global.__teakDevPatronWishlists?.set(
     userId,
     items.filter((i) => i.product_id !== productId)
   );
@@ -548,30 +554,44 @@ export async function removeFromWishlist(userId: string, productId: string): Pro
 
 export async function getPatronOrders(
   customerPhoneOrEmail?: string,
-  userId?: string
+  userId?: string,
+  customerEmailParam?: string
 ): Promise<OrderWithItems[]> {
-  if (!customerPhoneOrEmail && !userId) return [];
+  if (!customerPhoneOrEmail && !userId && !customerEmailParam) return [];
 
-  const cleanPhone = customerPhoneOrEmail ? customerPhoneOrEmail.replace(/\D/g, "").slice(-10) : "";
+  const rawPhone = customerPhoneOrEmail && !customerPhoneOrEmail.includes("@") ? customerPhoneOrEmail : "";
+  const rawEmail =
+    customerEmailParam || (customerPhoneOrEmail && customerPhoneOrEmail.includes("@") ? customerPhoneOrEmail : "");
+
+  const cleanPhone = rawPhone ? rawPhone.replace(/\D/g, "").slice(-10) : "";
+  const cleanEmail = rawEmail ? rawEmail.toLowerCase().trim() : "";
   const allOrders = await getAllOrders();
 
   return allOrders.filter((order) => {
-    // 1. Direct match on patron user_id
-    if (userId && order.user_id && order.user_id === userId) {
+    // 1. Direct match on patron user_id (UUID or synthetic patron-{phone})
+    if (
+      userId &&
+      order.user_id &&
+      (order.user_id === userId || (cleanPhone && order.user_id.includes(cleanPhone)))
+    ) {
       return true;
     }
 
-    if (!customerPhoneOrEmail) return false;
-
-    // 2. Match on customer phone or email
+    // 2. Match on customer phone (10-digit normalized or substring)
     const orderPhoneClean = (order.customer_phone || "").replace(/\D/g, "").slice(-10);
-    const orderEmailClean = (order.customer_email || "").toLowerCase().trim();
-    const targetClean = customerPhoneOrEmail.toLowerCase().trim();
+    if (cleanPhone && orderPhoneClean && orderPhoneClean === cleanPhone) {
+      return true;
+    }
+    if (cleanPhone && order.customer_phone && order.customer_phone.includes(cleanPhone)) {
+      return true;
+    }
 
-    return (
-      (cleanPhone && orderPhoneClean === cleanPhone) ||
-      (targetClean && orderEmailClean === targetClean) ||
-      (cleanPhone && order.customer_phone.includes(cleanPhone))
-    );
+    // 3. Match on customer email (case-insensitive)
+    const orderEmailClean = (order.customer_email || "").toLowerCase().trim();
+    if (cleanEmail && orderEmailClean && orderEmailClean === cleanEmail) {
+      return true;
+    }
+
+    return false;
   });
 }

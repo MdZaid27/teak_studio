@@ -1,5 +1,5 @@
 /**
- * KILN STUDIO — Programmatic Supabase / PostgreSQL Seeder
+ * TEAK HAUS — Programmatic Supabase / PostgreSQL Seeder
  * Run via: npm run db:seed
  */
 
@@ -62,7 +62,7 @@ const supabaseKey =
 
 async function seed() {
   console.log("==================================================");
-  console.log("  KILN STUDIO — PostgreSQL / Supabase Seeder");
+  console.log("  TEAK HAUS — PostgreSQL / Supabase Seeder");
   console.log("==================================================");
 
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("your-project-id")) {

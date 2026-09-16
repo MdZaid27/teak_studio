@@ -21,7 +21,7 @@ export async function GET() {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] GET /api/swatch-orders failed:", err);
+    console.error("[TEAK HAUS API ERROR] GET /api/swatch-orders failed:", err);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] POST /api/swatch-orders failed:", err);
+    console.error("[TEAK HAUS API ERROR] POST /api/swatch-orders failed:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -37,7 +37,7 @@ export function NewsletterManager({
             Newsletter Patrons & Atelier Journal
           </h1>
           <p className="mt-1 text-xs text-amber-400/60 font-light">
-            Patrons receiving private kiln preview notifications, timber arrivals, and heirloom joinery chronicles.
+            Patrons receiving private preview notifications, timber arrivals, and heirloom joinery chronicles.
           </p>
         </div>
 
@@ -75,7 +75,7 @@ export function NewsletterManager({
             {initialActiveCount.toLocaleString("en-IN")}
           </div>
           <p className="mt-1 text-[11px] text-amber-400/60">
-            Receiving seasonal kiln logs and invitations
+            Receiving seasonal timber journals and invitations
           </p>
         </div>
 

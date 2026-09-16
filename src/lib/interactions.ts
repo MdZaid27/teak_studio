@@ -12,6 +12,13 @@ import crypto from "crypto";
 
 // In-memory cache for development simulation when Supabase tables are pending migration
 declare global {
+  var __teakDevInteractionsStore:
+    | {
+        inquiries: Map<string, DbBespokeInquiry>;
+        swatches: Map<string, DbSwatchRequest>;
+        subscribers: Map<string, DbNewsletterSubscriber>;
+      }
+    | undefined;
   var __kilnDevInteractionsStore:
     | {
         inquiries: Map<string, DbBespokeInquiry>;
@@ -21,12 +28,13 @@ declare global {
     | undefined;
 }
 
-if (!global.__kilnDevInteractionsStore) {
-  global.__kilnDevInteractionsStore = {
+if (!global.__teakDevInteractionsStore) {
+  global.__teakDevInteractionsStore = global.__kilnDevInteractionsStore || {
     inquiries: new Map(),
     swatches: new Map(),
     subscribers: new Map(),
   };
+  global.__kilnDevInteractionsStore = global.__teakDevInteractionsStore;
 }
 
 /**
@@ -133,7 +141,7 @@ export async function createBespokeInquiry(
     updated_at: new Date().toISOString(),
   };
 
-  global.__kilnDevInteractionsStore?.inquiries.set(devId, devRecord);
+  global.__teakDevInteractionsStore?.inquiries.set(devId, devRecord);
   return { success: true, inquiryId: devId, simulated: true };
 }
 
@@ -168,12 +176,12 @@ export async function createSwatchRequest(
     if (error) {
       if (error.code === "PGRST205" && !isProduction) {
         console.warn(
-          "[KILN STUDIO NOTICE] Table 'swatch_requests' not found in Supabase.\n" +
+          "[TEAK HAUS NOTICE] Table 'swatch_requests' not found in Supabase.\n" +
           "👉 Execute 'supabase/interactions.sql' in your Supabase SQL Editor.\n" +
           "Simulating swatch box request storage in local development."
         );
       } else {
-        console.error("[KILN STUDIO DB ERROR] Failed to save swatch request:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to save swatch request:", error);
         if (isProduction) {
           return { success: false, requestId: "", error: error.message };
         }
@@ -196,7 +204,7 @@ export async function createSwatchRequest(
     updated_at: new Date().toISOString(),
   };
 
-  global.__kilnDevInteractionsStore?.swatches.set(devId, devRecord);
+  global.__teakDevInteractionsStore?.swatches.set(devId, devRecord);
   return { success: true, requestId: devId, simulated: true };
 }
 
@@ -254,12 +262,12 @@ export async function subscribeNewsletter(
 
       if (error.code === "PGRST205" && !isProduction) {
         console.warn(
-          "[KILN STUDIO NOTICE] Table 'newsletter_subscribers' not found in Supabase.\n" +
+          "[TEAK HAUS NOTICE] Table 'newsletter_subscribers' not found in Supabase.\n" +
           "👉 Execute 'supabase/interactions.sql' in your Supabase SQL Editor.\n" +
           "Simulating newsletter subscription in local development."
         );
       } else {
-        console.error("[KILN STUDIO DB ERROR] Failed to subscribe newsletter:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to subscribe newsletter:", error);
         if (isProduction) {
           return { success: false, alreadySubscribed: false, error: error.message };
         }
@@ -270,7 +278,7 @@ export async function subscribeNewsletter(
   }
 
   // Development simulation
-  const devSubscribers = global.__kilnDevInteractionsStore?.subscribers;
+  const devSubscribers = global.__teakDevInteractionsStore?.subscribers;
   if (devSubscribers?.has(cleanEmail)) {
     return {
       success: true,
@@ -310,7 +318,7 @@ export async function getAllBespokeInquiries(): Promise<DbBespokeInquiry[]> {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to fetch bespoke inquiries:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to fetch bespoke inquiries:", error);
       } else if (data) {
         inquiries = data as DbBespokeInquiry[];
       }
@@ -318,9 +326,9 @@ export async function getAllBespokeInquiries(): Promise<DbBespokeInquiry[]> {
   }
 
   // Merge development simulation records
-  if (!isProduction && global.__kilnDevInteractionsStore?.inquiries) {
+  if (!isProduction && global.__teakDevInteractionsStore?.inquiries) {
     const existingIds = new Set(inquiries.map((i) => i.id));
-    const devInquiries = Array.from(global.__kilnDevInteractionsStore.inquiries.values());
+    const devInquiries = Array.from(global.__teakDevInteractionsStore.inquiries.values());
     for (const devInquiry of devInquiries) {
       if (!existingIds.has(devInquiry.id)) {
         inquiries.unshift(devInquiry);
@@ -370,7 +378,7 @@ export async function updateBespokeInquiryStatus(
       }
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to update bespoke inquiry status:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to update bespoke inquiry status:", error);
         if (isProduction) {
           throw new Error(`Failed to update bespoke inquiry: ${error.message}`);
         }
@@ -381,12 +389,12 @@ export async function updateBespokeInquiryStatus(
   }
 
   // Development store update
-  if (global.__kilnDevInteractionsStore?.inquiries) {
-    const cached = global.__kilnDevInteractionsStore.inquiries.get(cleanId);
+  if (global.__teakDevInteractionsStore?.inquiries) {
+    const cached = global.__teakDevInteractionsStore.inquiries.get(cleanId);
     if (cached) {
       cached.status = status;
       cached.updated_at = updatedAt;
-      global.__kilnDevInteractionsStore.inquiries.set(cleanId, cached);
+      global.__teakDevInteractionsStore.inquiries.set(cleanId, cached);
       return cached;
     }
   }
@@ -412,7 +420,7 @@ export async function getAllSwatchRequests(): Promise<DbSwatchRequest[]> {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to fetch swatch requests:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to fetch swatch requests:", error);
       } else if (data) {
         swatches = data as DbSwatchRequest[];
       }
@@ -420,9 +428,9 @@ export async function getAllSwatchRequests(): Promise<DbSwatchRequest[]> {
   }
 
   // Merge development simulation records
-  if (!isProduction && global.__kilnDevInteractionsStore?.swatches) {
+  if (!isProduction && global.__teakDevInteractionsStore?.swatches) {
     const existingIds = new Set(swatches.map((s) => s.id));
-    const devSwatches = Array.from(global.__kilnDevInteractionsStore.swatches.values());
+    const devSwatches = Array.from(global.__teakDevInteractionsStore.swatches.values());
     for (const devSwatch of devSwatches) {
       if (!existingIds.has(devSwatch.id)) {
         swatches.unshift(devSwatch);
@@ -461,7 +469,7 @@ export async function updateSwatchRequestStatus(
         .maybeSingle();
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to update swatch request status:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to update swatch request status:", error);
         if (isProduction) {
           throw new Error(`Failed to update swatch request: ${error.message}`);
         }
@@ -472,12 +480,12 @@ export async function updateSwatchRequestStatus(
   }
 
   // Development store update
-  if (global.__kilnDevInteractionsStore?.swatches) {
-    const cached = global.__kilnDevInteractionsStore.swatches.get(cleanId);
+  if (global.__teakDevInteractionsStore?.swatches) {
+    const cached = global.__teakDevInteractionsStore.swatches.get(cleanId);
     if (cached) {
       cached.status = status;
       cached.updated_at = updatedAt;
-      global.__kilnDevInteractionsStore.swatches.set(cleanId, cached);
+      global.__teakDevInteractionsStore.swatches.set(cleanId, cached);
       return cached;
     }
   }
@@ -507,7 +515,7 @@ export async function getAllNewsletterSubscribers(): Promise<{
         .order("subscribed_at", { ascending: false });
 
       if (error) {
-        console.error("[KILN STUDIO DB ERROR] Failed to fetch newsletter subscribers:", error);
+        console.error("[TEAK HAUS DB ERROR] Failed to fetch newsletter subscribers:", error);
       } else if (data) {
         subscribers = data as DbNewsletterSubscriber[];
       }
@@ -515,9 +523,9 @@ export async function getAllNewsletterSubscribers(): Promise<{
   }
 
   // Merge dev simulation records
-  if (!isProduction && global.__kilnDevInteractionsStore?.subscribers) {
+  if (!isProduction && global.__teakDevInteractionsStore?.subscribers) {
     const existingEmails = new Set(subscribers.map((s) => s.email.toLowerCase()));
-    const devSubs = Array.from(global.__kilnDevInteractionsStore.subscribers.values());
+    const devSubs = Array.from(global.__teakDevInteractionsStore.subscribers.values());
     for (const devSub of devSubs) {
       if (!existingEmails.has(devSub.email.toLowerCase())) {
         subscribers.unshift(devSub);

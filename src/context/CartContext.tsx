@@ -29,7 +29,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = "kiln_cart";
+const CART_STORAGE_KEY = "teak_cart";
+const LEGACY_CART_STORAGE_KEY = "kiln_cart";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -39,7 +40,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Hydrate cart from localStorage on mount (client-only)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      const saved = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_CART_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
@@ -49,7 +50,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (err) {
-      console.error("[KILN STUDIO] Error reading cart from localStorage:", err);
+      console.error("[TEAK HAUS] Error reading cart from localStorage:", err);
     } finally {
       queueMicrotask(() => {
         setIsHydrated(true);
@@ -63,7 +64,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch (err) {
-      console.error("[KILN STUDIO] Error saving cart to localStorage:", err);
+      console.error("[TEAK HAUS] Error saving cart to localStorage:", err);
     }
   }, [items, isHydrated]);
 

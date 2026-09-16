@@ -61,7 +61,7 @@ export async function PATCH(
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    console.error("[KILN STUDIO API ERROR] PATCH /api/swatch-orders/[id] failed:", err);
+    console.error("[TEAK HAUS API ERROR] PATCH /api/swatch-orders/[id] failed:", err);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

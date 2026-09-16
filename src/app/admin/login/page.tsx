@@ -25,44 +25,37 @@ export default function AdminLoginPage() {
 
     try {
       setIsLoading(true);
-      const supabase = createSupabaseBrowserClient();
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password: password,
+      // Primary server-side authentication (bypasses local ISP DNS blocking and sets secure cookies)
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password: password,
+        }),
       });
 
-      if (error) {
-        if (
-          error.message.toLowerCase().includes("invalid login credentials") ||
-          error.message.toLowerCase().includes("invalid grant")
-        ) {
-          setErrorMessage("Invalid credentials. Please verify your atelier email and password.");
-        } else {
-          setErrorMessage(error.message || "Authentication failed. Please try again.");
-        }
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.error || "Authentication failed. Please verify your credentials.");
         return;
       }
 
-      if (data?.session && data?.user) {
-        // Verify user has admin privileges
-        const user = data.user;
-        const email = user.email?.toLowerCase().trim();
-        const isAdmin =
-          user.app_metadata?.role === "admin" ||
-          (email && (email === "curator@teakhaus.in" || email === "admin@teakhaus.in"));
-
-        if (!isAdmin) {
-          await supabase.auth.signOut();
-          setErrorMessage("Access denied. Your account does not have curator administrative privileges.");
-          return;
-        }
-
-        // Full page redirect ensures Supabase session cookies are synced for Next.js SSR middleware
-        window.location.href = "/admin";
-      } else {
-        setErrorMessage("Unable to establish an authenticated session.");
+      // Also attempt syncing browser-side Supabase client if direct connection is available
+      try {
+        const supabase = createSupabaseBrowserClient();
+        await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: password,
+        });
+      } catch (clientSyncErr) {
+        console.warn("[ADMIN LOGIN] Client sync notice (server session is active):", clientSyncErr);
       }
+
+      // Full page redirect ensures Supabase and admin session cookies are synced for Next.js SSR middleware
+      window.location.href = data.redirect || "/admin";
     } catch (err) {
       console.error("[ADMIN LOGIN] Unexpected error:", err);
       setErrorMessage("An unexpected network error occurred. Please try again.");

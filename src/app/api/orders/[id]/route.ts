@@ -59,7 +59,7 @@ export async function GET(
       { status: 200 }
     );
   } catch (err: unknown) {
-    console.error("[KILN STUDIO API ERROR] GET /api/orders/[id]:", err);
+    console.error("[TEAK HAUS API ERROR] GET /api/orders/[id]:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
       { success: false, error: message },
@@ -142,7 +142,7 @@ export async function PATCH(
       { status: 200 }
     );
   } catch (err: unknown) {
-    console.error("[KILN STUDIO API ERROR] PATCH /api/orders/[id]:", err);
+    console.error("[TEAK HAUS API ERROR] PATCH /api/orders/[id]:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json(
       { success: false, error: message },
